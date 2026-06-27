@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Students • School Connect</title>
+<meta name="description" content="Complete student information system with photos, classes, guardian info, attendance, results and more.">
+<meta name="theme-color" content="#4f46e5">
+<link rel="canonical" href="https://hmgconcepts.github.io/schoolconnect/students.html">
+<meta property="og:title" content="Students Module">
+<meta property="og:description" content="Central student information system for schools.">
+<meta property="og:image" content="assets/img/og-cover.svg">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/img/logo.svg">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  body { background: var(--gray-100); }
+  .students-shell { max-width: 1200px; margin: 0 auto; padding: 100px 24px 60px; }
+  .students-toolbar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; }
+  .students-toolbar input { flex: 1; min-width: 200px; }
+  .students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .student-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--gray-200); box-shadow: var(--shadow); transition: var(--transition); }
+  .student-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .student-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .student-photo { width: 48px; height: 48px; border-radius: 50%; background: var(--gradient); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1.1rem; }
+  .student-info h3 { font-size: 1rem; font-weight: 800; color: var(--dark); }
+  .student-info span { font-size: 0.78rem; color: var(--gray-500); }
+  .student-detail { font-size: 0.85rem; color: var(--gray-700); line-height: 1.6; }
+  .student-detail div { padding: 4px 0; border-bottom: 1px solid var(--gray-200); }
+  .student-detail div:last-child { border: none; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/img/logo.svg" alt="">
+      <span>School Connect</span>
+    </a>
+    <button class="mobile-toggle" onclick="document.querySelector('.nav-links').classList.toggle('show')" aria-label="Menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="builder.html">Builder</a></li>
+      <li><a href="voting.html">Voting</a></li>
+      <li><a href="notifications.html">Notifications</a></li>
+      <li><a href="ecosystem.html">Ecosystem</a></li>
+      <li><a href="guide.html">Guide</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div id="pwa-install-banner" class="pwa-install">
+  <div class="pwa-install-header">
+    <img src="assets/img/logo.svg" alt="" class="pwa-install-icon">
+    <div style="flex:1">
+      <div class="pwa-install-title">📲 Install School Connect</div>
+      <div class="pwa-install-msg">Access student data offline.</div>
+    </div>
+    <button class="modal-close" data-pwa-action="dismiss">×</button>
+  </div>
+  <div class="pwa-install-actions">
+    <button class="btn btn-outline btn-sm" data-pwa-action="never">Not now</button>
+    <button class="btn btn-primary btn-sm" data-pwa-action="install">Install App</button>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<main class="students-shell">
+  <h1 style="font-size:2rem;font-weight:900;color:var(--dark);margin-bottom:8px">👨‍🎓 Students</h1>
+  <p style="color:var(--gray-600);margin-bottom:24px">Complete student information system with photos, classes, guardian info.</p>
+
+  <div class="students-toolbar">
+    <input class="form-input" placeholder="Search by name, class, or admission number…" id="search" oninput="filter()">
+    <select class="form-select" id="class-filter" onchange="filter()" style="max-width:180px">
+      <option value="">All Classes</option>
+      <option>JSS 1A</option><option>JSS 2A</option><option>JSS 3A</option>
+      <option>SSS 1A</option><option>SSS 2A</option><option>SSS 3A</option>
+    </select>
+    <button class="btn btn-primary">+ Add Student</button>
+  </div>
+
+  <div class="students-grid" id="students-grid"></div>
+</main>
+
+<footer class="footer">
+  <div class="footer-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div>
+      <h5>🎓 School Connect</h5>
+      <p style="color:var(--gray-400);font-size:0.9rem">A no-code generator that builds complete school management platforms. Free forever.</p>
+    </div>
+    <div>
+      <h5>Demo</h5>
+      <a href="voting.html">Voting</a>
+      <a href="notifications.html">Notifications</a>
+      <a href="install.html">PWA Install</a>
+    </div>
+    <div>
+      <h5>Ecosystem</h5>
+      <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener">HMG Concepts</a>
+      <a href="ecosystem.html">Explore</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 HMG Concepts · <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener" style="color:var(--gray-400)">hmgconcepts.pages.dev</a></div>
+</footer>
+
+<script src="assets/js/notifications.js"></script>
+<script src="assets/js/pwa-install.js"></script>
+<script>
+  const SAMPLE = [
+    { id: 'GIS/2024/001', name: 'Adaeze Okeke',     cls: 'JSS 3A', gender: 'F', guardian: 'Mrs. N. Okeke',     phone: '+234 803 111 0001', dob: '2010-04-12' },
+    { id: 'GIS/2024/002', name: 'Tobi Adebayo',     cls: 'JSS 3B', gender: 'M', guardian: 'Mr. K. Adebayo',    phone: '+234 803 111 0002', dob: '2010-08-21' },
+    { id: 'GIS/2024/003', name: 'Chiamaka Eze',     cls: 'SSS 1A', gender: 'F', guardian: 'Mrs. A. Eze',       phone: '+234 803 111 0003', dob: '2009-01-15' },
+    { id: 'GIS/2024/004', name: 'Ibrahim Musa',     cls: 'SSS 1C', gender: 'M', guardian: 'Mr. M. Musa',       phone: '+234 803 111 0004', dob: '2009-06-30' },
+    { id: 'GIS/2024/005', name: 'Fatima Bello',     cls: 'JSS 2A', gender: 'F', guardian: 'Mrs. S. Bello',     phone: '+234 803 111 0005', dob: '2011-02-18' },
+    { id: 'GIS/2024/006', name: 'Chinedu Okafor',   cls: 'SSS 2A', gender: 'M', guardian: 'Mr. C. Okafor',     phone: '+234 803 111 0006', dob: '2008-11-09' },
+    { id: 'GIS/2024/007', name: 'Aisha Mohammed',   cls: 'JSS 1A', gender: 'F', guardian: 'Mrs. F. Mohammed',  phone: '+234 803 111 0007', dob: '2012-07-25' },
+    { id: 'GIS/2024/008', name: 'David Eze',        cls: 'SSS 3A', gender: 'M', guardian: 'Mr. P. Eze',        phone: '+234 803 111 0008', dob: '2007-09-03' },
+    { id: 'GIS/2024/009', name: 'Blessing Udo',     cls: 'JSS 2B', gender: 'F', guardian: 'Mrs. G. Udo',       phone: '+234 803 111 0009', dob: '2011-12-14' },
+    { id: 'GIS/2024/010', name: 'Samuel Ojo',       cls: 'SSS 1B', gender: 'M', guardian: 'Mr. A. Ojo',        phone: '+234 803 111 0010', dob: '2009-03-28' }
+  ];
+
+  function render(list) {
+    const grid = document.getElementById('students-grid');
+    grid.innerHTML = list.map(s => `
+      <div class="student-card">
+        <div class="student-header">
+          <div class="student-photo">${s.name[0]}</div>
+          <div class="student-info">
+            <h3>${s.name}</h3>
+            <span>${s.id}</span>
+          </div>
+        </div>
+        <div class="student-detail">
+          <div><strong>Class:</strong> ${s.cls}</div>
+          <div><strong>Gender:</strong> ${s.gender === 'F' ? 'Female' : 'Male'}</div>
+          <div><strong>DOB:</strong> ${s.dob}</div>
+          <div><strong>Guardian:</strong> ${s.guardian}</div>
+          <div><strong>Phone:</strong> ${s.phone}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function filter() {
+    const q = (document.getElementById('search').value || '').toLowerCase();
+    const c = document.getElementById('class-filter').value;
+    render(SAMPLE.filter(s =>
+      (!q || s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)) &&
+      (!c || s.cls === c)
+    ));
+  }
+
+  render(SAMPLE);
+  if (typeof PWAInstall !== 'undefined') PWAInstall.init();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  function toast(msg, type='info', ms=3500) {
+    const c = document.getElementById('toast-container');
+    if (!c) return;
+    const t = document.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.innerHTML = '<div class="toast-msg">' + msg + '</div>';
+    c.appendChild(t);
+    setTimeout(() => { t.style.animation = 'slideOut 0.3s ease forwards'; setTimeout(() => t.remove(), 300); }, ms);
+  }
+</script>
+</body>
+</html>

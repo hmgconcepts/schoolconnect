@@ -1,0 +1,56 @@
+{
+  "name": "School Connect — Build & Run a Free School Platform | HMG Concepts",
+  "short_name": "School Connect",
+  "description": "Free no-code generator that builds complete school management platforms with voting, push notifications, PWA install and SEO lead-gen.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "categories": ["education", "productivity", "business"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "Start Building",
+      "short_name": "Build",
+      "url": "./builder.html",
+      "description": "Open the 6-step wizard to generate a school platform",
+      "icons": [{ "src": "assets/img/logo.svg", "sizes": "192x192", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Voting Demo",
+      "short_name": "Voting",
+      "url": "./voting.html",
+      "description": "See the voting & polls module in action",
+      "icons": [{ "src": "assets/img/logo.svg", "sizes": "192x192", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Notifications",
+      "short_name": "Alerts",
+      "url": "./notifications.html",
+      "description": "Open the multi-channel notification center",
+      "icons": [{ "src": "assets/img/logo.svg", "sizes": "192x192", "type": "image/svg+xml" }]
+    }
+  ],
+  "icons": [
+    { "src": "assets/img/logo.svg", "sizes": "48x48",   "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/img/logo.svg", "sizes": "72x72",   "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/img/logo.svg", "sizes": "96x96",   "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/img/logo.svg", "sizes": "144x144", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/img/logo.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "assets/img/logo.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "screenshots": [
+    {
+      "src": "assets/img/og-cover.svg",
+      "sizes": "1200x630",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "School Connect — Free school management platform"
+    }
+  ],
+  "prefer_related_applications": false
+}

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School Connect Builder — Build Your Free School Platform</title>
+<meta name="description" content="The 6-step wizard that builds a complete school management platform in minutes. 86 themes, 42 fonts, 7 presets, 88 modules. Free forever.">
+<meta name="theme-color" content="#4f46e5">
+<link rel="canonical" href="https://hmgconcepts.github.io/schoolconnect/builder.html">
+<meta property="og:title" content="School Connect Builder">
+<meta property="og:description" content="6-step wizard that builds a complete school management platform. 88 modules. Free forever.">
+<meta property="og:image" content="assets/img/og-cover.svg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/img/logo.svg">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  body { background: var(--gray-100); min-height: 100vh; }
+  .builder-shell { max-width: 1200px; margin: 0 auto; padding: 100px 24px 60px; }
+  .stepper { display: flex; gap: 4px; margin-bottom: 32px; overflow-x: auto; padding-bottom: 8px; }
+  .step-indicator { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: white; border-radius: 12px; border: 1.5px solid var(--gray-200); cursor: pointer; transition: var(--transition); flex-shrink: 0; }
+  .step-indicator:hover { border-color: var(--primary); }
+  .step-indicator.active { background: var(--gradient); color: white; border-color: transparent; }
+  .step-indicator.done { background: rgba(16,185,129,0.1); color: var(--success); border-color: rgba(16,185,129,0.3); }
+  .step-indicator .num { width: 26px; height: 26px; border-radius: 50%; background: var(--gray-200); color: var(--gray-700); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; }
+  .step-indicator.active .num { background: rgba(255,255,255,0.25); color: white; }
+  .step-indicator.done .num { background: var(--success); color: white; }
+  .step-panel { background: white; padding: 32px; border-radius: 16px; box-shadow: var(--shadow); border: 1px solid var(--gray-200); }
+  .step-panel h2 { font-size: 1.6rem; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+  .step-panel .desc { color: var(--gray-600); margin-bottom: 24px; }
+  .preset-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .preset-card { background: var(--gray-100); padding: 24px; border-radius: 12px; text-align: center; cursor: pointer; transition: var(--transition); border: 2px solid transparent; }
+  .preset-card:hover { background: white; border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .preset-card .icon { font-size: 2.4rem; margin-bottom: 8px; }
+  .preset-card h3 { font-size: 1.05rem; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
+  .preset-card p { font-size: 0.85rem; color: var(--gray-600); }
+  .theme-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .theme-card { padding: 12px; border-radius: 10px; border: 2px solid var(--gray-200); cursor: pointer; transition: var(--transition); text-align: center; }
+  .theme-card:hover { transform: translateY(-2px); border-color: var(--primary); }
+  .theme-card.selected { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.15); }
+  .theme-card .swatches { display: flex; gap: 4px; justify-content: center; margin-bottom: 8px; }
+  .theme-card .swatches span { width: 24px; height: 24px; border-radius: 50%; }
+  .theme-card .name { font-size: 0.82rem; font-weight: 700; color: var(--dark); }
+  .nav-buttons { display: flex; justify-content: space-between; margin-top: 32px; gap: 12px; }
+  .nav-buttons button { min-width: 120px; }
+  .quote-card { background: var(--gray-100); padding: 20px; border-radius: 12px; margin-top: 16px; }
+  .quote-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-200); }
+  .quote-row:last-child { border-bottom: none; font-weight: 800; padding-top: 12px; color: var(--primary); font-size: 1.1rem; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/img/logo.svg" alt="">
+      <span>School Connect</span>
+    </a>
+    <button class="mobile-toggle" onclick="document.querySelector('.nav-links').classList.toggle('show')" aria-label="Menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="builder.html" class="active">Builder</a></li>
+      <li><a href="voting.html">Voting</a></li>
+      <li><a href="notifications.html">Notifications</a></li>
+      <li><a href="ecosystem.html">Ecosystem</a></li>
+      <li><a href="guide.html">Guide</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div id="pwa-install-banner" class="pwa-install">
+  <div class="pwa-install-header">
+    <img src="assets/img/logo.svg" alt="" class="pwa-install-icon">
+    <div style="flex:1">
+      <div class="pwa-install-title">📲 Install School Connect</div>
+      <div class="pwa-install-msg">Use the builder offline. Get push updates.</div>
+    </div>
+    <button class="modal-close" data-pwa-action="dismiss">×</button>
+  </div>
+  <div class="pwa-install-actions">
+    <button class="btn btn-outline btn-sm" data-pwa-action="never">Not now</button>
+    <button class="btn btn-primary btn-sm" data-pwa-action="install">Install App</button>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<main class="builder-shell">
+  <h1 style="font-size:2.2rem;font-weight:900;color:var(--dark);margin-bottom:8px">🚀 Build Your School Platform</h1>
+  <p style="color:var(--gray-600);margin-bottom:32px">Answer a few questions, preview live, download a ZIP. 5 minutes. Free forever.</p>
+
+  <!-- Stepper -->
+  <div class="stepper">
+    <div class="step-indicator active" data-step-indicator="1" data-wizard="showStep(1)"><span class="num">1</span> School</div>
+    <div class="step-indicator" data-step-indicator="2" data-wizard="showStep(2)"><span class="num">2</span> Branding</div>
+    <div class="step-indicator" data-step-indicator="3" data-wizard="showStep(3)"><span class="num">3</span> Layout</div>
+    <div class="step-indicator" data-step-indicator="4" data-wizard="showStep(4)"><span class="num">4</span> Structure</div>
+    <div class="step-indicator" data-step-indicator="5" data-wizard="showStep(5)"><span class="num">5</span> Modules</div>
+    <div class="step-indicator" data-step-indicator="6" data-wizard="showStep(6)"><span class="num">6</span> Preview & Generate</div>
+  </div>
+
+  <!-- STEP 1: School details -->
+  <div data-step-panel="1" class="step-panel">
+    <h2>Step 1 · School Details</h2>
+    <p class="desc">Pick a preset for one-click setup, or fill the form manually.</p>
+
+    <h3 style="font-size:1rem;font-weight:800;color:var(--dark);margin:20px 0 12px">Quick Start — Choose a Preset</h3>
+    <div class="preset-grid">
+      <div class="preset-card" data-wizard="usePreset('nurseryprimary')"><div class="icon">🏠</div><h3>Nursery & Primary</h3><p>Early years + primary</p></div>
+      <div class="preset-card" data-wizard="usePreset('secondary')"><div class="icon">🏫</div><h3>Secondary</h3><p>Full secondary school</p></div>
+      <div class="preset-card" data-wizard="usePreset('fullschool')"><div class="icon">🏢</div><h3>Group of Schools</h3><p>Complete K–12</p></div>
+      <div class="preset-card" data-wizard="usePreset('tutorial')"><div class="icon">📝</div><h3>Tutorial Centre</h3><p>JAMB/WAEC prep</p></div>
+      <div class="preset-card" data-wizard="usePreset('tertiary')"><div class="icon">🎓</div><h3>College</h3><p>Tertiary institution</p></div>
+      <div class="preset-card" data-wizard="usePreset('enterprise')"><div class="icon">🌟</div><h3>Enterprise</h3><p>Every module</p></div>
+    </div>
+
+    <h3 style="font-size:1rem;font-weight:800;color:var(--dark);margin:24px 0 12px">Or Fill Manually</h3>
+    <div class="grid grid-2">
+      <div class="form-group"><label>School name *</label><input class="form-input" data-sync="schoolName" placeholder="e.g. Grace International School"></div>
+      <div class="form-group"><label>Short name</label><input class="form-input" data-sync="shortName" placeholder="e.g. GIS"></div>
+      <div class="form-group"><label>Motto</label><input class="form-input" data-sync="schoolMotto" placeholder="e.g. Excellence & Service"></div>
+      <div class="form-group"><label>Currency symbol</label><input class="form-input" data-sync="currency" value="₦"></div>
+      <div class="form-group"><label>Phone</label><input class="form-input" data-sync="phone" placeholder="+234..."></div>
+      <div class="form-group"><label>Email</label><input class="form-input" type="email" data-sync="email" placeholder="info@school.com"></div>
+      <div class="form-group"><label>School Logo</label><input class="form-input" type="file" accept="image/*" id="logoUpload"><div class="form-help">Max 1MB, will be converted to Base64</div></div>
+      <div class="form-group" style="grid-column: 1 / -1"><label>Address</label><input class="form-input" data-sync="address"></div>
+      <div class="form-group" style="grid-column: 1 / -1"><label>Campuses / Branches (comma-separated)</label><input class="form-input" data-sync="campusesRaw" placeholder="Main Campus, Annex"></div>
+    </div>
+
+    <div class="nav-buttons">
+      <div></div>
+      <button class="btn btn-primary" data-wizard="next">Next: Branding →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Branding -->
+  <div data-step-panel="2" class="step-panel" style="display:none">
+    <h2>Step 2 · Branding</h2>
+    <p class="desc">Choose a theme (14) and font (8). All free.</p>
+
+    <h3 style="font-size:1rem;font-weight:800;color:var(--dark);margin:20px 0 12px">Theme</h3>
+    <div class="theme-grid" id="theme-grid"></div>
+
+    <h3 style="font-size:1rem;font-weight:800;color:var(--dark);margin:24px 0 12px">Font</h3>
+    <div class="theme-grid" id="font-grid"></div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-outline" data-wizard="prev">← Back</button>
+      <button class="btn btn-primary" data-wizard="next">Next: Layout →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Layout -->
+  <div data-step-panel="3" class="step-panel" style="display:none">
+    <h2>Step 3 · Layout</h2>
+    <p class="desc">Pick a navigation style. All responsive on mobile.</p>
+
+    <div class="theme-grid" id="layout-grid"></div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-outline" data-wizard="prev">← Back</button>
+      <button class="btn btn-primary" data-wizard="next">Next: Structure →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Structure -->
+  <div data-step-panel="4" class="step-panel" style="display:none">
+    <h2>Step 4 · Structure</h2>
+    <p class="desc">Classes/levels your school runs.</p>
+
+    <div class="form-group"><label>Classes / Levels (comma-separated)</label>
+      <input class="form-input" data-sync="levelsRaw" placeholder="Pre-Nursery, Nursery 1, Primary 1, JSS 1, SSS 1">
+      <div class="form-help">Examples: JSS 1, JSS 2, SSS 1, SSS 2 · or Pre-Nursery through Primary 6.</div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-outline" data-wizard="prev">← Back</button>
+      <button class="btn btn-primary" data-wizard="next">Next: Modules →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: Modules -->
+  <div data-step-panel="5" class="step-panel" style="display:none">
+    <h2>Step 5 · Modules</h2>
+    <p class="desc">Tick every feature you want. <span id="module-count" style="font-weight:800;color:var(--primary)">0</span> selected.</p>
+
+    <div id="module-picker"></div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-outline" data-wizard="prev">← Back</button>
+      <button class="btn btn-primary" data-wizard="next">Next: Preview →</button>
+    </div>
+  </div>
+
+  <!-- STEP 6: Preview & Generate -->
+  <div data-step-panel="6" class="step-panel" style="display:none">
+    <h2>Step 6 · Preview & Generate</h2>
+    <p class="desc">Optional: paste Supabase keys now, or skip and add them in <code>assets/js/config.js</code> after download.</p>
+
+    <div class="grid grid-2">
+      <div class="form-group"><label>Supabase URL</label><input class="form-input" data-sync="supabaseUrl" placeholder="https://abc.supabase.co"></div>
+      <div class="form-group"><label>Anon Key</label><input class="form-input" data-sync="supabaseKey" placeholder="eyJ..."></div>
+      <div class="form-group" style="grid-column: 1 / -1"><label>Build Output Type</label>
+        <select class="form-input" data-sync="buildType">
+          <option value="traditional">Traditional (Static HTML/CSS/JS, Host on GitHub Pages/Netlify)</option>
+          <option value="modern">Modern (Node.js/Express scaffold with module bundler ready)</option>
+        </select>
+        <div class="form-help">Choose how you want to deploy and extend the codebase.</div>
+      </div>
+    </div>
+
+    <h3 style="font-size:1rem;font-weight:800;color:var(--dark);margin:24px 0 12px">💰 Instant Estimate (Optional Done-for-You)</h3>
+    <p style="font-size:0.85rem;color:var(--gray-500);margin-bottom:12px">The software itself is <strong>free forever</strong>. This estimates an <em>optional</em> build/setup service if you'd like HMG Concepts to do it for you. Tick any add-ons:</p>
+    <div id="addon-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div class="quote-card" style="margin-top:14px">
+      <div id="quote-lines"></div>
+      <div class="quote-row" style="border-top:2px solid var(--gray-200);margin-top:8px;padding-top:8px;font-weight:800"><span>Estimated total (one-off)</span><span id="quote-total">₦0</span></div>
+      <a class="btn btn-primary btn-sm" style="margin-top:10px" target="_blank"
+         href="https://wa.me/2348100866322?text=Hello%20HMG%20Concepts%2C%20I%20want%20a%20Done-for-You%20School%20Connect%20build.">Request this on WhatsApp</a>
+    </div>
+
+    <div style="margin-top:32px;padding:24px;background:linear-gradient(135deg, rgba(79,70,229,0.06) 0%, rgba(6,182,212,0.06) 100%);border-radius:12px;border:1px solid rgba(79,70,229,0.2)">
+      <h3 style="font-size:1.1rem;font-weight:800;color:var(--dark);margin-bottom:12px">📦 What you'll get</h3>
+      <ul style="margin-left:20px;line-height:1.8;color:var(--gray-700);font-size:0.95rem">
+        <li>Complete website with up to <strong>65 modules</strong> (only the ones you selected)</li>
+        <li>Full <strong>embedded CBT engine</strong> + <strong>flexible report cards</strong> (results auto-flow in)</li>
+        <li>Super features: <strong>help chatbot</strong>, <strong>Ctrl+K command palette</strong>, ID-card/certificate/flyer generators</li>
+        <li>Four one-click SQL files: <code>schema.sql</code> + <code>voting-schema.sql</code> + <code>cbt-schema.sql</code> + <code>reportcard-schema.sql</code></li>
+        <li><code>sw.js</code> (offline + push), <code>manifest.json</code> (installable PWA)</li>
+        <li><code>robots.txt</code> + <code>sitemap.xml</code> — SEO-ready; full docs &amp; troubleshooting</li>
+      </ul>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap">
+      <button class="btn btn-outline" data-wizard="save">💾 Save config</button>
+      <button class="btn btn-outline" data-wizard="shareLink">🔗 Share link</button>
+      <label class="btn btn-outline" style="cursor:pointer">📂 Load config<input type="file" accept=".json" data-wizard="load(this)" style="display:none"></label>
+      <button class="btn btn-outline" data-wizard="previewLive">👁️ Quick Preview</button>
+      <button class="btn btn-primary" data-wizard="fullPreview">🖥️ Full Interactive Preview</button>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-outline" data-wizard="prev">← Back</button>
+      <button id="generate-btn" class="btn btn-primary btn-lg" data-wizard="generate">🚀 Generate & Download ZIP</button>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div>
+      <h5>🎓 School Connect</h5>
+      <p style="color:var(--gray-400);font-size:0.9rem">A no-code generator that builds complete school management platforms. Free forever.</p>
+    </div>
+    <div>
+      <h5>Product</h5>
+      <a href="builder.html">Builder</a>
+      <a href="voting.html">Voting Demo</a>
+      <a href="notifications.html">Notifications</a>
+      <a href="install.html">PWA Install</a>
+    </div>
+    <div>
+      <h5>Ecosystem</h5>
+      <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener">HMG Concepts</a>
+      <a href="ecosystem.html">Explore</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 HMG Concepts · <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener" style="color:var(--gray-400)">hmgconcepts.pages.dev</a></div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/catalog.js"></script>
+<script src="assets/js/notifications.js"></script>
+<script src="assets/js/voting.js"></script>
+<script src="assets/js/pwa-install.js"></script>
+<script src="assets/js/wizard.js"></script>
+<script src="assets/js/generator.js"></script>
+<script src="assets/js/templates.js"></script>
+<script>
+  // === Bind the wizard FIRST so navigation works even if a later render throws ===
+  try { Wizard.init(); } catch (err) { console.error('[builder] Wizard.init failed:', err); }
+  try { if (typeof PWAInstall !== 'undefined') PWAInstall.init(); } catch (e) {}
+  try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); } catch (e) {}
+
+  // Render theme grid (guarded — a failure here must never break navigation)
+  try {
+  const themeGrid = document.getElementById('theme-grid');
+  if (themeGrid && window.SC && window.SC.THEMES) themeGrid.innerHTML = window.SC.THEMES.map(t => `
+    <div class="theme-card" onclick="selectTheme('${t.id}')">
+      <div class="swatches"><span style="background:${t.primary}"></span><span style="background:${t.accent}"></span><span style="background:${t.bg};border:1px solid #ccc"></span></div>
+      <div class="name">${t.name}</div>
+    </div>
+  `).join('');
+
+  // Render font grid
+  const fontGrid = document.getElementById('font-grid');
+  if (fontGrid && window.SC && window.SC.FONTS) fontGrid.innerHTML = window.SC.FONTS.map(f => `
+    <div class="theme-card" onclick="selectFont('${f.id}')">
+      <div style="font-family:${f.family === 'system-ui' ? 'sans-serif' : f.family},sans-serif;font-weight:700;font-size:1.4rem;color:var(--dark);margin-bottom:4px">Aa</div>
+      <div class="name">${f.name}</div>
+    </div>
+  `).join('');
+
+  // Render layout grid
+  const layoutGrid = document.getElementById('layout-grid');
+  if (layoutGrid && window.SC && window.SC.LAYOUTS) layoutGrid.innerHTML = window.SC.LAYOUTS.map(l => `
+    <div class="theme-card" onclick="selectLayout('${l.id}')">
+      <div style="font-size:2rem;margin-bottom:4px">${l.icon}</div>
+      <div class="name" style="font-weight:800">${l.name}</div>
+      <div class="form-help" style="margin-top:6px">${l.desc}</div>
+    </div>
+  `).join('');
+  } catch (err) { console.error('[builder] grid render failed (navigation still works):', err); }
+
+  function selectTheme(id) {
+    Wizard.config.themeId = id;
+    document.querySelectorAll('#theme-grid .theme-card').forEach(el => el.classList.remove('selected'));
+    if (window.event && event.currentTarget) event.currentTarget.classList.add('selected');
+    Wizard.autosave();
+  }
+  function selectFont(id) {
+    Wizard.config.fontId = id;
+    document.querySelectorAll('#font-grid .theme-card').forEach(el => el.classList.remove('selected'));
+    if (window.event && event.currentTarget) event.currentTarget.classList.add('selected');
+    Wizard.autosave();
+  }
+  function selectLayout(id) {
+    Wizard.config.layout = id;
+    document.querySelectorAll('#layout-grid .theme-card').forEach(el => el.classList.remove('selected'));
+    if (window.event && event.currentTarget) event.currentTarget.classList.add('selected');
+    Wizard.autosave();
+  }
+
+  // Helper to handle campusesRaw sync
+  document.addEventListener('input', e => {
+    if (e.target.dataset && e.target.dataset.sync === 'campusesRaw') {
+      Wizard.config.campuses = (e.target.value || '').split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (e.target.dataset && e.target.dataset.sync === 'levelsRaw') {
+      Wizard.config.levels = (e.target.value || '').split(',').map(s => s.trim()).filter(Boolean);
+    }
+  });
+
+  // Handle Logo Upload (guarded)
+  var _logoEl = document.getElementById('logoUpload');
+  if (_logoEl) _logoEl.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 1024 * 1024) {
+        toast('Logo file size must be less than 1MB', 'danger');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = event => {
+        Wizard.config.logoData = event.target.result;
+        Wizard.autosave();
+        toast('Logo added successfully!', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // (Wizard.init / PWAInstall / service-worker were already started at the top
+  //  of this script, before the grid render, so navigation can never be blocked.)
+
+  // ✨ Populate the pricing estimator add-on list and wire live recalculation.
+  (function initEstimator(){
+    var box = document.getElementById('addon-list');
+    if (box && window.Generator && Generator.PRICING) {
+      box.innerHTML = Generator.PRICING.addons.map(function(a){
+        return '<label style="display:flex;align-items:center;gap:8px;font-size:.9rem"><input type="checkbox" data-addon value="'+a.id+'" onchange="Wizard.recalcQuote()"> '+a.name+' <span style="margin-left:auto;color:var(--gray-500)">'+Generator.PRICING.currency+a.price.toLocaleString()+'</span></label>';
+      }).join('');
+    }
+    if (window.Wizard && Wizard.recalcQuote) Wizard.recalcQuote();
+  })();
+</script>
+
+<!-- ✨ Full interactive multi-page preview modal -->
+<div id="fullPreviewModal" class="modal-backdrop" style="position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:10000;display:none;align-items:center;justify-content:center;padding:2vh" onclick="if(event.target===this)Wizard.closeFullPreview()">
+  <div style="width:96vw;max-width:1200px;height:92vh;background:#fff;border-radius:14px;overflow:hidden;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #e2e8f0">
+      <strong>🖥️ Full Platform Preview <span style="color:#64748b;font-weight:400;font-size:.85rem">— click through every page with sample data</span></strong>
+      <button class="btn btn-sm btn-outline" onclick="Wizard.closeFullPreview()">✕ Close</button>
+    </div>
+    <iframe id="fullPreviewFrame" style="flex:1;width:100%;border:0"></iframe>
+  </div>
+</div>
+<style>#fullPreviewModal.show{display:flex!important}</style>
+</body>
+</html>
