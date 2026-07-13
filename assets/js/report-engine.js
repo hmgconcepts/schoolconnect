@@ -1,0 +1,229 @@
+/* ====================================================================
+   report-engine.js — School Connect v3 Academic Output Engine
+   --------------------------------------------------------------------
+   Produces/export prints:
+   1. Student report card / student record sheet
+   2. Class broadsheet
+   3. Subject broadsheet / teacher scoresheet
+
+   Designed from the supplied sample PDFs. Uses browser print/save-as-PDF.
+   No paid library and no AI API.
+   ==================================================================== */
+const ReportEngine = {
+  sb: null,
+  init(supabaseClient) { this.sb = supabaseClient || (typeof sb !== 'undefined' ? sb : null); },
+  esc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); },
+  n(v){ v=Number(v); return isNaN(v)?0:v; },
+  fmt(v, d=2){ v=this.n(v); return Number.isInteger(v)?String(v):v.toFixed(d).replace(/\.00$/,''); },
+  ordinal(n){ n=Number(n)||0; const s=['th','st','nd','rd'], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); },
+  grade(score){ score=this.n(score); if(score>=75)return'A1'; if(score>=70)return'B2'; if(score>=65)return'B3'; if(score>=60)return'C4'; if(score>=55)return'C5'; if(score>=50)return'C6'; if(score>=45)return'D7'; if(score>=40)return'E8'; return'F9'; },
+  remark(score){ const g=this.grade(score); return {A1:'Excellent',B2:'Very good',B3:'Good',C4:'Credit',C5:'Credit',C6:'Credit',D7:'Pass',E8:'Pass',F9:'Fail'}[g]||''; },
+
+
+
+  async roleScope(){
+    const db = this.sb || (typeof sb !== 'undefined' ? sb : null);
+    const role = String((window.SC_PROFILE && SC_PROFILE.role) || (window.App && App.currentRole) || '').toLowerCase();
+    const scope = { role, family: ['parent','student'].includes(role), studentIds: [], names: [], classes: [], admissionNos: [] };
+    if (!db || !scope.family || !(window.SC_PROFILE && SC_PROFILE.id)) return scope;
+    try {
+      if (role === 'student') {
+        const { data: st } = await db.from('students').select('id,full_name,class,admission_no').eq('user_id', SC_PROFILE.id).maybeSingle();
+        if (st) {
+          scope.studentIds = [st.id].filter(Boolean);
+          scope.names = [String(st.full_name || '').toLowerCase()].filter(Boolean);
+          scope.classes = [String(st.class || '').toLowerCase()].filter(Boolean);
+          scope.admissionNos = [String(st.admission_no || '').toLowerCase()].filter(Boolean);
+        }
+      } else if (role === 'parent') {
+        const { data: links } = await db.from('parent_child').select('student_id').eq('parent_id', SC_PROFILE.id);
+        const ids = (links || []).map(x => x.student_id).filter(Boolean);
+        if (ids.length) {
+          const { data: kids } = await db.from('students').select('id,full_name,class,admission_no').in('id', ids);
+          scope.studentIds = ids;
+          scope.names = (kids || []).map(k => String(k.full_name || '').toLowerCase()).filter(Boolean);
+          scope.classes = (kids || []).flatMap(k => [String(k.class || '').toLowerCase()]).filter(Boolean);
+          scope.admissionNos = (kids || []).map(k => String(k.admission_no || '').toLowerCase()).filter(Boolean);
+        }
+      }
+    } catch (_) {}
+    return scope;
+  },
+  allowRowForScope(row, scope){
+    if (!scope || !scope.family) return true;
+    const sid = String(row.student_id || '').toLowerCase();
+    const name = String(row.student_name || row.full_name || '').toLowerCase();
+    const adm = String(row.student_id_ref || row.admission_no || '').toLowerCase();
+    return !!(
+      (sid && scope.studentIds.map(String).map(x=>x.toLowerCase()).includes(sid)) ||
+      (adm && scope.admissionNos.includes(adm)) ||
+      (name && scope.names.includes(name))
+    );
+  },
+
+  school(){
+    const sc = window.SCHOOL || {};
+    return {
+      name: sc.name || 'School', shortName: sc.shortName || '', motto: sc.motto || 'Excellent In Learning And Character.',
+      address: sc.address || '', phone: sc.phone || '', email: sc.email || '', logoExt: sc.logoExt || 'svg',
+      primary: (sc.theme && sc.theme.primary) || sc.primary || '#1e2a5e', accent: (sc.theme && sc.theme.accent) || sc.accent || '#0f766e'
+    };
+  },
+
+  async loadContext(ctx={}){
+    const db = this.sb || (typeof sb !== 'undefined' ? sb : null);
+    if (!db) throw new Error('Database not configured. Add Supabase keys in assets/js/config.js.');
+    const klass = (ctx.class || ctx.className || '').trim();
+    const subject = (ctx.subject || '').trim();
+    const term = (ctx.term || '').trim();
+    const session = (ctx.session || '').trim();
+    const studentText = (ctx.student || ctx.studentName || '').trim();
+
+    const scope = await this.roleScope();
+    let q = db.from('results').select('*').limit(5000);
+    if (klass) q = q.eq('class', klass);
+    if (subject) q = q.eq('subject', subject);
+    if (term) q = q.eq('term', term);
+    if (session) q = q.eq('session', session);
+    if (studentText) q = q.ilike('student_name', '%' + studentText + '%');
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    let extraRows = [];
+    const familyFilter = (r) => this.allowRowForScope(r, scope);
+    try { let cq = db.from('cbt_results').select('*,cbt_exams(subject,class,term,session,report_column,max_score)').limit(5000); const cbtResults = await cq; (cbtResults.data||[]).forEach(x => { const e=x.cbt_exams||{}; const row={student_name:x.student_name, student_id_ref:x.student_id_ref, class:x.student_class||e.class, subject:e.subject||'CBT', term:e.term, session:e.session, cbt_score:x.percent, total:x.percent, max_score:100}; if (familyFilter(row)) extraRows.push(row); }); } catch(e) {}
+    try { const reading = await db.from('reading_scores').select('*').limit(5000); (reading.data||[]).forEach(x => { const row={student_name:x.student_name, class:x.class, subject:x.subject||'Digital Library', term:x.term, session:x.session, assignment:x.score, total:x.score, max_score:100}; if (familyFilter(row)) extraRows.push(row); }); } catch(e) {}
+    try { const subs = await db.from('lms_submissions').select('*,assignments(subject,class,title)').limit(5000); (subs.data||[]).forEach(x => { const a=x.assignments||{}; const row={student_id:x.student_id, student_name:x.student_name||'', class:a.class, subject:a.subject||a.title||'Assignment', term:x.term, session:x.session, assignment:x.score, total:x.score, max_score:100}; if (familyFilter(row)) extraRows.push(row); }); } catch(e) {}
+
+    let sq = db.from('students').select('*').limit(5000);
+    if (klass) sq = sq.eq('class', klass);
+    const { data: students } = await sq;
+
+    const baseRows = (scope.family ? (rows || []).filter(r => familyFilter(r)) : (rows || []));
+    const normalized = baseRows.concat(extraRows.filter(r => (!klass || r.class===klass) && (!subject || r.subject===subject) && (!term || r.term===term) && (!session || r.session===session))).map(r => this.normalizeResult(r, students || []));
+    return { ctx:{class:klass,subject,term,session,student:studentText}, rows:normalized, students:students||[], school:this.school(), feeBalances: await this.loadFeeBalances(students||[], term, session) };
+  },
+
+
+
+  async loadFeeBalances(students, term, session){
+    const db = this.sb || (typeof sb !== 'undefined' ? sb : null); const out={};
+    if(!db) return out;
+    try{
+      const ids=(students||[]).map(s=>s.id).filter(Boolean); let q=db.from('fee_payments').select('student_id,student_name,fee_total,amount_paid,balance,term,session').limit(5000);
+      if(term) q=q.eq('term',term); if(session) q=q.eq('session',session);
+      const {data}=await q; (data||[]).forEach(f=>{ const key=f.student_id || String(f.student_name||'').toLowerCase(); const bal=f.balance!=null?Number(f.balance):Math.max(0,(Number(f.fee_total)||0)-(Number(f.amount_paid)||0)); out[key]=bal; });
+    }catch(_){}
+    return out;
+  },
+
+  normalizeResult(r, students){
+    const name = r.student_name || r.full_name || '';
+    const st = (students||[]).find(s => (s.id && s.id===r.student_id) || (s.full_name && String(s.full_name).toLowerCase()===String(name).toLowerCase()) || (s.admission_no && s.admission_no===r.student_id_ref));
+    const project = this.n(r.project ?? r.practical ?? r.assignment ?? r.ca_project ?? 0);
+    const ca1 = this.n(r.ca1 ?? r.ca_score ?? r.ca ?? 0);
+    const ca2 = this.n(r.ca2 ?? 0);
+    const cbt = this.n(r.ca3 ?? r.cbt ?? r.cbt_score ?? r.online_score ?? 0);
+    const paper = this.n(r.exam ?? r.exam_score ?? r.paper_exam ?? 0);
+    const total = this.n(r.total ?? r.total_score ?? (project+ca1+ca2+cbt+paper));
+    return {
+      raw:r, student_id:r.student_id || (st&&st.id) || '', student_name:name || (st&&st.full_name) || 'Student',
+      admission_no:r.admission_no || r.student_id_ref || (st&&st.admission_no) || '', class:r.class || (st&&st.class) || '',
+      gender:r.gender || (st&&st.gender) || '', photo_url:r.photo_url || (st&&st.photo_url) || '',
+      subject:r.subject || 'Subject', term:r.term || '', session:r.session || '',
+      project, ca1, ca2, cbt, paper, total, max: this.n(r.max_score || r.obtainable || 100) || 100
+    };
+  },
+
+  subjects(rows){ return [...new Set(rows.map(r=>r.subject).filter(Boolean))].sort(); },
+  studentsFromRows(rows){ return [...new Set(rows.map(r=>r.student_name).filter(Boolean))].sort(); },
+
+  positionsBy(rows, groupKey='student_name'){
+    const totals = {};
+    rows.forEach(r => { totals[r[groupKey]] = (totals[r[groupKey]]||0) + this.n(r.total); });
+    const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+    const pos = {}; sorted.forEach((x,i)=>pos[x[0]]=i+1); return pos;
+  },
+
+  subjectPositions(rows){
+    const out = {};
+    this.subjects(rows).forEach(sub => {
+      const list = rows.filter(r=>r.subject===sub).sort((a,b)=>this.n(b.total)-this.n(a.total));
+      list.forEach((r,i)=>{ out[r.student_name+'|'+sub]=i+1; });
+    });
+    return out;
+  },
+
+  reportHeader(title, landscape=false){
+    const sc=this.school(); const logo='assets/img/logo.'+sc.logoExt;
+    return `<div class="re-head ${landscape?'landscape':''}">
+      <img src="${logo}" onerror="this.style.display='none'" class="re-logo">
+      <div class="re-school"><h1>${this.esc(sc.name)}</h1><p><b>${this.esc(sc.motto)}</b></p><p>${this.esc(sc.address)}</p><p>Phone No: ${this.esc(sc.phone)} &nbsp; Email: ${this.esc(sc.email)}</p></div>
+      <h2>${this.esc(title)}</h2>
+    </div>`;
+  },
+
+  async renderStudent(ctx){
+    const data = await this.loadContext(ctx); const rows = data.rows;
+    if (!rows.length) return this.empty('No result records found for this student/filter.');
+    const name = ctx.student || rows[0].student_name;
+    const studentRows = rows.filter(r => !ctx.student || r.student_name.toLowerCase().includes(String(ctx.student).toLowerCase()));
+    const list = studentRows.length ? studentRows : rows;
+    const first = list[0] || {}; const sc=data.school;
+    const total = list.reduce((a,b)=>a+this.n(b.total),0); const obtainable=list.reduce((a,b)=>a+this.n(b.max||100),0)||list.length*100;
+    const avg = obtainable ? (total/obtainable*100) : 0;
+    const bal = data.feeBalances[first.student_id] ?? data.feeBalances[String(first.student_name||'').toLowerCase()] ?? 0;
+    const logo='assets/img/logo.'+sc.logoExt;
+    const scoreRows = list.map(r=>`<tr><td class="left">${this.esc(r.subject)}</td><td>${this.fmt(r.ca1)}</td><td>${this.fmt(r.ca2)}</td><td>${this.fmt(r.cbt)}</td><td>${this.fmt(r.project)}</td><td>${this.fmt(r.paper)}</td><td><b>${this.fmt(r.total)}</b></td><td class="grade">${this.grade(r.total)}</td><td>${this.remark(r.total)}</td></tr>`).join('');
+    return `<div class="report-sheet sample-report"><div class="head"><img class="logo" src="${logo}" onerror="this.style.display='none'"><div class="school"><h1>${this.esc(sc.name)}</h1><p>📍 ${this.esc(sc.address)} · 📞 ${this.esc(sc.phone)} · ✉️ ${this.esc(sc.email)}</p><p style="font-style:italic;color:#7c2d12">Motto: ${this.esc(sc.motto)}</p></div><div class="photo">Student<br>Photo</div></div><div class="title">TERMINAL REPORT SHEET — ${this.esc(ctx.term||first.term||'TERM')}, ${this.esc(ctx.session||first.session||'SESSION')}</div><table class="info"><tr><td><b>Name:</b> ${this.esc(first.student_name)}</td><td><b>Admission No:</b> ${this.esc(first.admission_no)}</td><td><b>Class:</b> ${this.esc(first.class)}</td></tr><tr><td><b>No. in Class:</b> —</td><td><b>Attendance:</b> —</td><td><b>Position:</b> —</td></tr></table><table class="scores" style="margin-top:8px"><thead><tr><th class="left">SUBJECT</th><th>CA1<br>(10)</th><th>CA2<br>(10)</th><th>CA3/CBT<br>(10)</th><th>PROJECT<br>(10)</th><th>EXAM<br>(60)</th><th>TOTAL<br>(100)</th><th>GRADE</th><th>REMARK</th></tr></thead><tbody>${scoreRows}</tbody></table><table class="info" style="margin-top:8px"><tr><td><b>Total Score:</b> ${this.fmt(total)} / ${this.fmt(obtainable)}</td><td><b>Average:</b> ${this.fmt(avg,1)}%</td><td><b>Fees Balance:</b> ${bal===0?'₦0 (FULLY PAID)':'₦'+Number(bal).toLocaleString()}</td><td><b>Grade:</b> <span class="grade">${this.grade(avg)}</span></td></tr></table><div class="traits"><table><tr><th colspan="2">AFFECTIVE DOMAIN</th></tr><tr><td>Punctuality</td><td>—</td></tr><tr><td>Neatness</td><td>—</td></tr><tr><td>Honesty</td><td>—</td></tr></table><table><tr><th colspan="2">PSYCHOMOTOR DOMAIN</th></tr><tr><td>Handwriting</td><td>—</td></tr><tr><td>Verbal Fluency</td><td>—</td></tr><tr><td>Sports</td><td>—</td></tr></table></div><table class="comments" style="margin-top:10px"><tr><td>Class Teacher</td><td></td></tr><tr><td>Principal</td><td></td></tr><tr><td>Next Term Begins</td><td>— &nbsp;·&nbsp; <b>Fees Balance:</b> ${bal===0?'₦0 (FULLY PAID)':'₦'+Number(bal).toLocaleString()}</td></tr></table><div class="sig"><div>Class Teacher's Signature</div><div style="font-family:'Segoe Script',cursive;border-top:none;color:#1e2a5e">${this.signatureBlock()}</div><div>Principal's Signature &amp; Stamp</div></div><p class="note">This is the report card the platform prints. Generated by School Connect · HMG Concepts.</p></div>`;
+  },
+
+  async renderSubject(ctx){
+    const data=await this.loadContext(ctx); const rows=data.rows; if(!rows.length)return this.empty('No subject score records found.');
+    const sc=data.school; const sorted=rows.slice().sort((a,b)=>this.n(b.total)-this.n(a.total));
+    const avg=sorted.length?sorted.reduce((a,b)=>a+this.n(b.total),0)/sorted.length:0;
+    const body=sorted.map((r,i)=>`<tr${i===0?' class="top"':''}><td>${i+1}</td><td class="left"><b>${this.esc(r.student_name)}</b></td><td>${this.esc(r.admission_no)}</td><td>${this.fmt(r.ca1)}</td><td>${this.fmt(r.ca2)}</td><td>${this.fmt(r.cbt)}</td><td>${this.fmt(r.project)}</td><td>${this.fmt(r.paper)}</td><td><b>${this.fmt(r.total)}</b></td><td>${this.fmt(avg,1)}</td><td>${this.ordinal(i+1)}</td><td class="grade">${this.grade(r.total)}</td><td>${this.remark(r.total)}</td></tr>`).join('');
+    return `<div class="sheet subject-sheet"><h1>${this.esc(sc.name)} — SUBJECT BROADSHEET</h1><p class="meta">${this.esc(ctx.term||'TERM')} · ${this.esc(ctx.session||'SESSION')} · CLASS: ${this.esc(ctx.class||'')} · SUBJECT: ${this.esc(ctx.subject||rows[0].subject)} · Class Average: ${this.fmt(avg,1)}%</p><table><thead><tr><th>S/N</th><th class="left">FULL NAME</th><th>ADM NO.</th><th>CA1</th><th>CA2</th><th>CBT</th><th>PROJECT</th><th>EXAM</th><th>TOTAL</th><th>AVG</th><th>POS</th><th>GRADE</th><th>REMARK</th></tr></thead><tbody>${body}</tbody></table><div class="stat"><div><b>${sorted.length}</b>Candidates</div><div><b>${this.fmt(avg,1)}%</b>Average</div><div><b>${this.fmt((sorted[0]||{}).total||0)}</b>Highest</div><div><b>${this.fmt((sorted[sorted.length-1]||{}).total||0)}</b>Lowest</div></div><div class="sig"><div>Subject Teacher</div><div>Head of Department</div></div><p class="note">SAMPLE-style subject broadsheet. Generated by School Connect · HMG Concepts.</p></div>`;
+  },
+
+  async renderClass(ctx){
+    const data=await this.loadContext(ctx); const rows=data.rows; if(!rows.length)return this.empty('No class score records found.');
+    const sc=data.school; const subjects=this.subjects(rows); const students=this.studentsFromRows(rows);
+    const aggregates=students.map(st=>{ const sr=rows.filter(r=>r.student_name===st); const total=sr.reduce((a,b)=>a+this.n(b.total),0); const max=subjects.length*100; const avg=max?total/subjects.length:0; return {st,sr,total,max,avg}; }).sort((a,b)=>b.avg-a.avg);
+    const classAvg=aggregates.reduce((a,b)=>a+b.avg,0)/(aggregates.length||1);
+    const body=aggregates.map((x,i)=>`<tr${i===0?' class="top"':''}><td>${i+1}</td><td class="left"><b>${this.esc(x.st)}</b></td><td>${this.esc((x.sr[0]||{}).admission_no||'')}</td>${subjects.map(s=>{const r=x.sr.find(y=>y.subject===s);return '<td>'+(r?this.fmt(r.total):'-')+'</td>';}).join('')}<td><b>${this.fmt(x.total)}</b></td><td>${this.fmt(x.avg,1)}</td><td>${this.ordinal(i+1)}</td><td>${this.grade(x.avg)}</td><td>${this.remark(x.avg)}</td></tr>`).join('');
+    return `<div class="sheet class-sheet"><h1>${this.esc(sc.name)} — CLASS BROADSHEET</h1><p class="meta">${this.esc(ctx.term||'TERM')} · ${this.esc(ctx.session||'SESSION')} · CLASS: ${this.esc(ctx.class||'')} · ${students.length} students · Class Average: ${this.fmt(classAvg,1)}% · Max obtainable per subject: 100</p><table><thead><tr><th>S/N</th><th class="left">FULL NAME</th><th>ADM NO.</th>${subjects.map(s=>'<th class="rot"><span>'+this.esc(s)+'</span></th>').join('')}<th>TOTAL</th><th>AVG %</th><th>POS</th><th>GRADE</th><th>REMARK</th></tr></thead><tbody>${body}</tbody></table><p class="note">SAMPLE-style class broadsheet. One row per student, one column per subject, automatic totals/averages/positions/grades. Landscape A4. Generated by School Connect · HMG Concepts.</p></div>`;
+  },
+
+  empty(msg){ return `<div class="card"><h3>No output generated</h3><p>${this.esc(msg)}</p></div>`; },
+
+  signatureBlock(){
+    // ENTERPRISE V6 (issue 10): the principal's signature now resolves from
+    // EVERY place it can be saved — the Settings page (localStorage), the
+    // school_settings DB row (window.SC_SETTINGS) and config.js — and Google
+    // Drive links are converted to direct-image URLs. A white/scanned
+    // background is removed visually using mix-blend-mode:multiply +
+    // contrast/brightness filters so the ink shows cleanly on documents.
+    const sc = window.SCHOOL || {};
+    const st = window.SC_SETTINGS || {};
+    let url = '';
+    try { url = localStorage.getItem('sc-signature-url') || ''; } catch(_){}
+    url = url || st.signature_url || sc.signatureUrl || sc.signature_url || sc.principalSignature || sc.signature || '';
+    let name = '';
+    try { name = localStorage.getItem('sc-principal-name') || ''; } catch(_){}
+    name = name || st.principal_name || sc.principalName || sc.principal_name || 'Principal / Authorised Signatory';
+    if (!url) return '<div class="doc-signature"><div style="width:220px;border-top:1px solid #111;margin:34px auto 4px"></div><b>'+this.esc(name)+'</b></div>';
+    const direct = (window.Super && Super.idcard && Super.idcard.driveDirect) ? Super.idcard.driveDirect(url) : url;
+    return '<div class="doc-signature"><img src="'+this.esc(direct)+'" crossorigin="anonymous" style="max-width:180px;max-height:80px;object-fit:contain;mix-blend-mode:multiply;filter:contrast(1.35) brightness(1.06)" referrerpolicy="no-referrer" onerror="this.style.display=\'none\';this.parentElement.insertAdjacentHTML(\'afterbegin\',\'<div style=&quot;height:40px&quot;></div>\')"><div style="width:220px;border-top:1px solid #111;margin:4px auto"></div><b>'+this.esc(name)+'</b></div>';
+  },
+
+  print(title, html, landscape=false){
+    const w=window.open('','_blank'); if(!w){ if(typeof toast==='function')toast('Popup blocked. Please allow popups.','warning'); return; }
+    const sig = this.signatureBlock();
+    w.document.open(); w.document.write(`<!DOCTYPE html><html><head><title>${this.esc(title)}</title><base href="${document.baseURI.replace(/[^/]*$/,'')}">${this.printCSS(landscape)}</head><body>${html}${sig}<script>window.onload=function(){setTimeout(function(){window.print()},400)};<\/script></body></html>`); w.document.close(); w.focus();
+  },
+  printCSS(landscape=false){ return `<style>
+    @page{size:A4 ${landscape?'landscape':'portrait'};margin:${landscape?'8mm':'10mm'}}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#111;background:#fff;margin:0;padding:16px}.sheet,.report-sheet{background:#fff;padding:${landscape?'20px':'24px'};max-width:${landscape?'1100px':'760px'};margin:0 auto}.head{display:flex;align-items:center;gap:12px;border-bottom:3px solid #111;padding-bottom:8px}.logo{width:58px;height:58px;border-radius:12px;object-fit:contain}.school{flex:1;text-align:center}.school h1,h1{font-family:Georgia,serif;color:#008c7a;text-align:center;margin:0;font-size:${landscape?'22px':'21px'}}.school p{margin:2px 0;font-size:11px;color:#334155}.photo{width:82px;height:92px;border:1px dashed #94a3b8;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;color:#64748b}.title{text-align:center;background:#008c7a;color:#fff;font-weight:800;margin:8px 0;padding:5px;letter-spacing:.5px}.meta{text-align:center;font-size:11px;margin:6px 0 10px;color:#334155}table{width:100%;border-collapse:collapse}.info td,.scores th,.scores td,.traits th,.traits td,.comments td,th,td{border:1px solid #222;padding:${landscape?'3px 4px':'4px 6px'};font-size:${landscape?'9.5px':'10.5px'};text-align:center}th,.scores th,.traits th{background:#008c7a;color:#fff}.scores tr:nth-child(even),.traits tr:nth-child(even),tr:nth-child(even){background:#e6f7f4}.left{text-align:left!important;white-space:nowrap}.rot{height:96px;vertical-align:bottom}.rot span{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;font-weight:700}.top{background:#fef9c3!important}.grade{font-weight:800;color:#16a34a}.traits{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}.comments td:first-child{width:170px;font-weight:700}.sig{display:flex;justify-content:space-between;margin-top:28px;font-size:11px;text-align:center}.sig div{width:210px;border-top:1.5px solid #111;padding-top:4px;font-weight:700}.stat{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}.stat div{border:1px solid #c7d2fe;border-radius:10px;padding:8px;text-align:center;background:#eef2ff}.stat b{display:block;font-size:16px;color:#4f46e5}.note{margin-top:12px;font-size:9.5px;color:#94a3b8;text-align:center}.doc-signature{text-align:center;margin-top:18px;page-break-inside:avoid}@media print{body{background:#fff;padding:0}.sheet,.report-sheet{box-shadow:none}button{display:none!important}}</style>`; }
+
+};
+if (typeof sb !== 'undefined') ReportEngine.init(sb);
+window.ReportEngine = ReportEngine;
