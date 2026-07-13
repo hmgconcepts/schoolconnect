@@ -196,6 +196,35 @@ const ReportEngine = {
 
   empty(msg){ return `<div class="card"><h3>No output generated</h3><p>${this.esc(msg)}</p></div>`; },
 
+  /* v5: school-stamp SVG generator — official round seal with school name + motto + signature line */
+  schoolStampSvg(school){
+    const sc = school || window.SCHOOL || {};
+    const id = 'scStamp-' + Math.random().toString(36).slice(2,8);
+    const name = (sc.shortName || sc.name || 'SCHOOL').toString().toUpperCase().slice(0, 24);
+    const motto = (sc.motto || 'OFFICIAL SEAL').toString().toUpperCase().slice(0, 32);
+    const color = sc.stamp_color || '#7f1d1d';
+    return `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" class="re-stamp" style="width:120px;height:120px">
+      <defs>
+        <path id="topArc-${id}" d="M 16,60 A 44,44 0 0,1 104,60" fill="none"/>
+        <path id="botArc-${id}" d="M 18,62 A 42,42 0 0,0 102,62" fill="none"/>
+      </defs>
+      <circle cx="60" cy="60" r="55" fill="none" stroke="${color}" stroke-width="3"/>
+      <circle cx="60" cy="60" r="48" fill="none" stroke="${color}" stroke-width="1.5"/>
+      <text font-family="Georgia,serif" font-size="9" letter-spacing="2.2" font-weight="800" fill="${color}">
+        <textPath href="#topArc-${id}" startOffset="50%" text-anchor="middle">★ ${this.esc(name)} ★</textPath>
+      </text>
+      <text font-family="Georgia,serif" font-size="6.5" font-style="italic" fill="${color}">
+        <textPath href="#botArc-${id}" startOffset="50%" text-anchor="middle">${this.esc(motto)}</textPath>
+      </text>
+      <text x="60" y="56" text-anchor="middle" font-family="Georgia,serif" font-size="14" font-weight="900" fill="${color}">★</text>
+      <text x="60" y="78" text-anchor="middle" font-family="Georgia,serif" font-size="6" font-weight="700" fill="${color}">${this.esc((sc.name||'').slice(0,18).toUpperCase())}</text>
+    </svg>`;
+  },
+
+  /* v5: Affective + psychomotor domain templates for report cards */
+  affectiveTraits(){ return ['Punctuality','Neatness','Attentiveness','Honesty','Politeness','Cooperation','Self-Control']; },
+  psychomotorTraits(){ return ['Handwriting','Sports','Games','Verbal Fluency','Dexterity']; },
+
   signatureBlock(){
     // ENTERPRISE V6 (issue 10): the principal's signature now resolves from
     // EVERY place it can be saved — the Settings page (localStorage), the
