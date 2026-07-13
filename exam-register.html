@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Public Examination Registration • School Portal</title>
+<meta name="description" content="Free online examination registration form. Register for WAEC, NECO, UTME/JAMB, IGCSE, BECE, Common Entrance, NCEE, GCE, NABTEB and more. Save to school portal for review.">
+<meta name="keywords" content="examination, registration, WAEC, NECO, UTME, JAMB, IGCSE, BECE, NCEE, GCE, NABTEB, school portal">
+<meta name="theme-color" content="#0506ae">
+<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/img/logo.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Public Examination Registration">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+:root{--sc-primary:#0506ae;--sc-accent:#964eec;--gradient:linear-gradient(135deg,#0506ae,#964eec);--primary:#0506ae;--accent:#964eec}
+body{background:#f8fafc;margin:0;font-family:'Inter',system-ui,-apple-system,sans-serif;color:#0f172a}
+.pub-wrap{max-width:920px;margin:0 auto;padding:22px}
+.pub-hero{background:var(--gradient);color:#fff;border-radius:24px;padding:28px;display:flex;gap:18px;align-items:center;margin-bottom:18px;box-shadow:0 8px 24px rgba(80,6,174,.18)}
+.pub-hero img{width:74px;height:74px;border-radius:18px;background:#fff;object-fit:contain;padding:8px}
+.pub-hero h1{margin:0;color:#fff;font-size:1.6rem}
+.pub-hero p{margin:6px 0 0;opacity:.92;font-size:.95rem}
+.req{color:#dc2626}
+.success-box{background:#ecfdf5;border:1px solid #86efac;color:#166534;border-radius:16px;padding:18px;margin:14px 0}
+.success-box strong{color:#065f46}
+.section-title{font-size:1.05rem;font-weight:800;margin:18px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--gradient);color:var(--primary)}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-weight:600;font-size:.85rem;color:#475569;margin-bottom:5px}
+.form-group .help{color:#94a3b8;font-size:.78rem;margin-top:3px}
+.form-input,.form-select{width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;font-size:.92rem;font-family:inherit;box-sizing:border-box;background:white;color:#0f172a}
+.form-input:focus,.form-select:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px rgba(5,6,174,.15)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:600px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.btn{padding:12px 22px;border-radius:10px;font-weight:700;font-size:.95rem;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:all .15s}
+.btn-primary{background:var(--gradient);color:white}
+.btn-primary:hover{box-shadow:0 6px 18px rgba(5,6,174,.3);transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1px solid var(--primary);color:var(--primary)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{display:inline-block;padding:4px 10px;border:1px solid #e2e8f0;border-radius:99px;font-size:.78rem;background:#f8fafc;cursor:pointer;transition:all .15s}
+.chip:hover{background:var(--primary);color:white;border-color:var(--primary)}
+.chip.selected{background:var(--primary);color:white;border-color:var(--primary)}
+.alert{background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:10px 14px;font-size:.88rem;color:#92400e;margin:10px 0}
+.alert-error{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
+.alert-info{background:#dbeafe;border-color:#93c5fd;color:#1e40af}
+.card{background:white;border-radius:18px;border:1px solid #e2e8f0;box-shadow:0 4px 16px rgba(15,23,42,.04);padding:24px;margin-bottom:18px}
+</style>
+</head>
+<body>
+<main class="pub-wrap">
+  <section class="pub-hero">
+    <img src="assets/img/logo.png" alt="" onerror="this.style.display='none'">
+    <div>
+      <h1>📝 Public Examination Registration</h1>
+      <p>Register for external or internal examinations. No portal account required. The school examination officer will review and extract your details. This free form is verified, stored and downloadable as CSV / PDF by school staff.</p>
+    </div>
+  </section>
+
+  <div class="card">
+    <h2 class="section-title">🎓 Examination details</h2>
+    <div class="grid-3">
+      <div class="form-group">
+        <label>Examination type <span class="req">*</span></label>
+        <select class="form-select" id="er-exam">
+          <option value="">— select —</option>
+          <option>WAEC SSCE (School)</option>
+          <option>WAEC GCE (Private)</option>
+          <option>NECO SSCE (School)</option>
+          <option>NECO GCE (Private)</option>
+          <option>UTME (JAMB)</option>
+          <option>IGCSE (Cambridge)</option>
+          <option>Common Entrance (NCEE)</option>
+          <option>BECE (Junior WAEC)</option>
+          <option>NABTEB</option>
+          <option>A-Level</option>
+          <option>TOEFL</option>
+          <option>IELTS</option>
+          <option>SAT</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Examination year <span class="req">*</span></label>
+        <select class="form-select" id="er-year">
+          <option value="">— select —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Examination series</label>
+        <select class="form-select" id="er-series">
+          <option value="">— select —</option>
+          <option>First Series (May/June)</option>
+          <option>Second Series (Nov/Dec)</option>
+          <option>Mock</option>
+          <option>Single sitting</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Examination number (if already issued)</label>
+        <input class="form-input" id="er-exam-no" placeholder="e.g. 4250101001">
+      </div>
+      <div class="form-group">
+        <label>Examination centre preference (state)</label>
+        <select class="form-select" id="er-centre-state">
+          <option value="">— select state —</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">👤 Candidate personal details</h2>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Surname / Family name <span class="req">*</span></label>
+        <input class="form-input" id="er-surname" autocomplete="family-name" placeholder="Adewale">
+      </div>
+      <div class="form-group">
+        <label>First name <span class="req">*</span></label>
+        <input class="form-input" id="er-firstname" autocomplete="given-name" placeholder="Adewale">
+      </div>
+      <div class="form-group">
+        <label>Middle name</label>
+        <input class="form-input" id="er-middlename" autocomplete="additional-name">
+      </div>
+      <div class="form-group">
+        <label>Date of birth <span class="req">*</span></label>
+        <input type="date" class="form-input" id="er-dob" autocomplete="bday">
+      </div>
+      <div class="form-group">
+        <label>Gender <span class="req">*</span></label>
+        <select class="form-select" id="er-gender">
+          <option value="">— select —</option>
+          <option>Male</option>
+          <option>Female</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nationality <span class="req">*</span></label>
+        <select class="form-select" id="er-nationality">
+          <option>Nigerian</option>
+          <option>Ghanaian</option>
+          <option>Sierra Leonean</option>
+          <option>Liberian</option>
+          <option>Gambian</option>
+          <option>Cameroonian</option>
+          <option>Other (West African)</option>
+          <option>Other (non-African)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>State of origin</label>
+        <select class="form-select" id="er-state-origin">
+          <option value="">— select state —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Local Government Area (LGA)</label>
+        <input class="form-input" id="er-lga" placeholder="e.g. Ikeja">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Home / residential address <span class="req">*</span></label>
+      <input class="form-input" id="er-address" placeholder="House number, street, city" autocomplete="street-address">
+    </div>
+    <div class="grid-3">
+      <div class="form-group">
+        <label>Religion</label>
+        <select class="form-select" id="er-religion">
+          <option value="">— select —</option>
+          <option>Christianity</option>
+          <option>Islam</option>
+          <option>Traditional</option>
+          <option>Other</option>
+          <option>Prefer not to say</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Marital status</label>
+        <select class="form-select" id="er-marital">
+          <option value="">— select —</option>
+          <option>Single</option>
+          <option>Married</option>
+          <option>Divorced</option>
+          <option>Widowed</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Disability / special needs</label>
+        <select class="form-select" id="er-disability">
+          <option value="">— none —</option>
+          <option>Visual impairment</option>
+          <option>Hearing impairment</option>
+          <option>Speech impairment</option>
+          <option>Physical disability</option>
+          <option>Learning disability (dyslexia, etc.)</option>
+          <option>Other (specify in notes)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">🆔 Identification & contact</h2>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>NIN — National Identification Number <span class="req">*</span></label>
+        <input class="form-input" id="er-nin" placeholder="11-digit NIN" inputmode="numeric" maxlength="11" pattern="[0-9]{11}">
+        <div class="help">Required by WAEC / NECO / NCEE. The NIN is verified only by the examination body, not stored publicly.</div>
+      </div>
+      <div class="form-group">
+        <label>Email address <span class="req">*</span></label>
+        <input type="email" class="form-input" id="er-email" autocomplete="email" placeholder="candidate@example.com">
+      </div>
+      <div class="form-group">
+        <label>Candidate phone (WhatsApp) <span class="req">*</span></label>
+        <input type="tel" class="form-input" id="er-phone" inputmode="tel" placeholder="08012345678" autocomplete="tel">
+      </div>
+      <div class="form-group">
+        <label>Parent / Guardian phone <span class="req">*</span></label>
+        <input type="tel" class="form-input" id="er-guardian-phone" inputmode="tel" placeholder="08012345678">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Parent / Guardian full name <span class="req">*</span></label>
+        <input class="form-input" id="er-guardian-name" placeholder="Mr Adewale Adeagbo">
+      </div>
+      <div class="form-group">
+        <label>Parent / Guardian email</label>
+        <input type="email" class="form-input" id="er-guardian-email" placeholder="parent@example.com">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">🏫 School details</h2>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Current school name <span class="req">*</span></label>
+        <input class="form-input" id="er-school" placeholder="e.g. HMG Academy, Ibadan" value="">
+      </div>
+      <div class="form-group">
+        <label>Current class / level <span class="req">*</span></label>
+        <select class="form-select" id="er-class">
+          <option value="">— select —</option>
+          <option>Primary 6</option>
+          <option>JSS 1</option><option>JSS 2</option><option>JSS 3</option>
+          <option>SSS 1</option><option>SSS 2</option><option>SSS 3</option>
+          <option>Year 10 (IGCSE)</option><option>Year 11 (IGCSE)</option><option>Year 12 (A-Level)</option>
+          <option>Alumni / Private candidate</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Student ID (if assigned by school)</label>
+        <input class="form-input" id="er-student-id" placeholder="e.g. GOSA/2024/001">
+      </div>
+      <div class="form-group">
+        <label>Previous school (if transferring)</label>
+        <input class="form-input" id="er-prev-school" placeholder="e.g. Grace Academy, Lagos">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">📚 Subjects / papers <span class="req">*</span></h2>
+    <p style="color:#64748b;font-size:.9rem;margin:0 0 10px">Select all the subjects you want to register. Most examinations allow 8–9 subjects.</p>
+    <div class="chips" id="er-subject-chips"></div>
+    <input type="hidden" id="er-subjects" value="">
+    <div class="form-group" style="margin-top:10px">
+      <label>Other subjects (specify)</label>
+      <input class="form-input" id="er-other-subjects" placeholder="Comma-separated, e.g. Yoruba, French">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">💳 Payment</h2>
+    <div class="grid-3">
+      <div class="form-group">
+        <label>Registration fee (₦)</label>
+        <input type="number" class="form-input" id="er-fee" min="0" step="0.01" placeholder="0">
+        <div class="help">Leave blank if the school will cover the cost.</div>
+      </div>
+      <div class="form-group">
+        <label>Amount paid (₦)</label>
+        <input type="number" class="form-input" id="er-amount" min="0" step="0.01" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label>Payment method</label>
+        <select class="form-select" id="er-method">
+          <option value="">— select —</option>
+          <option>Cash</option>
+          <option>Bank transfer</option>
+          <option>POS</option>
+          <option>Online</option>
+          <option>School-paid (bursary)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Payment reference / receipt no.</label>
+        <input class="form-input" id="er-ref" placeholder="Optional">
+      </div>
+      <div class="form-group">
+        <label>Payment date</label>
+        <input type="date" class="form-input" id="er-pay-date">
+      </div>
+      <div class="form-group">
+        <label>Outstanding balance (₦)</label>
+        <input type="number" class="form-input" id="er-balance" min="0" step="0.01" placeholder="Auto: fee − paid" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">📋 Documents (Drive links)</h2>
+    <p style="color:#64748b;font-size:.88rem;margin:0 0 10px">Paste Google Drive <em>share links</em> for each document. The school downloads them when verifying your registration. <a href="https://support.google.com/drive/answer/2494822" target="_blank" rel="noopener" style="color:var(--primary)">How to share on Drive</a></p>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Passport photograph (Drive link)</label>
+        <input class="form-input" id="er-photo" placeholder="https://drive.google.com/file/d/.../view">
+      </div>
+      <div class="form-group">
+        <label>Birth certificate / declaration (Drive link)</label>
+        <input class="form-input" id="er-birth-cert" placeholder="https://drive.google.com/file/d/.../view">
+      </div>
+      <div class="form-group">
+        <label>Primary 6 leaving certificate (NCEE only)</label>
+        <input class="form-input" id="er-leaving-cert" placeholder="https://drive.google.com/file/d/.../view">
+      </div>
+      <div class="form-group">
+        <label>Special needs evidence (if applicable)</label>
+        <input class="form-input" id="er-sen-evidence" placeholder="https://drive.google.com/file/d/.../view">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">✍️ Attestation & notes</h2>
+    <div class="form-group">
+      <label>Referee name & rank (e.g. Principal, Clergy, Senior Civil Servant not below GL.14, Legal Practitioner of 10+ years)</label>
+      <input class="form-input" id="er-referee" placeholder="Mr Adewale Adeagbo — Principal">
+    </div>
+    <div class="form-group">
+      <label>Referee phone</label>
+      <input class="form-input" id="er-referee-phone" inputmode="tel" placeholder="08012345678">
+    </div>
+    <div class="form-group">
+      <label>Additional notes / questions</label>
+      <textarea class="form-input" id="er-notes" rows="3" placeholder="Any special requests, learning accommodations, prior attempt history, etc."></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="form-group">
+      <label style="display:flex;gap:8px;align-items:flex-start">
+        <input type="checkbox" id="er-consent" style="margin-top:4px">
+        <span>I confirm that the information above is correct and consent to my school sharing the registration with the relevant examination body (WAEC, NECO, JAMB, Cambridge, etc.). I understand my data is stored securely per the school privacy policy.</span>
+      </label>
+    </div>
+    <button class="btn btn-primary" id="er-submit">📤 Submit registration</button>
+    <a class="btn btn-outline" href="index.html">Back to home</a>
+    <div id="er-out" style="margin-top:14px"></div>
+  </div>
+
+  <p style="text-align:center;font-size:.78rem;color:#64748b;margin:24px 0 0">
+    Need help? Contact the school examination officer · Powered by <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener" style="color:var(--primary)">HMG Concepts</a> ·
+    <a href="about.html" style="color:var(--primary)">About</a> ·
+    <a href="contact.html" style="color:var(--primary)">Contact</a>
+  </p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script>
+/* ===================================================================
+   Public Examination Registration v15
+   - Comprehensive form covering WAEC, NECO, UTME, IGCSE, NCEE,
+     BECE, GCE, NABTEB, A-Level, TOEFL, IELTS, SAT and "Other"
+   - 40+ form fields across 7 logical sections
+   - State dropdown populated from the 36 Nigerian states + FCT
+   - Subject chips per examination type
+   - Payment balance auto-computed
+   - Saves to exam_registrations table
+   =================================================================== */
+
+(function(){
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+  const NIGERIAN_STATES = [
+    'Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta',
+    'Ebonyi','Edo','Ekiti','Enugu','FCT - Abuja','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi',
+    'Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara'
+  ];
+
+  const SUBJECTS_BY_EXAM = {
+    'WAEC SSCE (School)': ['English Language','Mathematics','Civic Education','Data Processing','Agricultural Science','Biology','Chemistry','Physics','Further Mathematics','Geography','Government','Economics','Commerce','Accounting','Christian Religious Studies','Islamic Studies','Yoruba','Igbo','Hausa','French','Literature-in-English','History','Visual Art','Music','Technical Drawing','Food and Nutrition','Health Education'],
+    'WAEC GCE (Private)': ['English Language','Mathematics','Civic Education','Agricultural Science','Biology','Chemistry','Physics','Further Mathematics','Geography','Government','Economics','Commerce','Accounting','Christian Religious Studies','Islamic Studies','Yoruba','Igbo','Hausa','French','Literature-in-English','History'],
+    'NECO SSCE (School)': ['English Language','Mathematics','Civic Education','Agricultural Science','Biology','Chemistry','Physics','Further Mathematics','Geography','Government','Economics','Commerce','Accounting','Christian Religious Studies','Islamic Studies','Yoruba','Igbo','Hausa','French','Literature-in-English','History','Visual Art','Music','Technical Drawing','Food and Nutrition','Health Education','Data Processing'],
+    'NECO GCE (Private)': ['English Language','Mathematics','Civic Education','Agricultural Science','Biology','Chemistry','Physics','Further Mathematics','Geography','Government','Economics','Commerce','Accounting','Christian Religious Studies','Islamic Studies','Yoruba','Igbo','Hausu','French','Literature-in-English','History'],
+    'UTME (JAMB)': ['Use of English','Mathematics','Physics','Chemistry','Biology','Agricultural Science','Geography','Government','Economics','Commerce','Accounting','Christian Religious Studies','Islamic Studies','Yoruba','Igbo','Hausa','French','Literature-in-English','History','CRS/IRS','Music','Visual Art','Home Economics','Computer Studies','Principles of Accounting','Hausa/Igbo/Yoruba (L1)'],
+    'IGCSE (Cambridge)': ['First Language English','English Literature','Mathematics','Additional Mathematics','Biology','Chemistry','Physics','Combined Science','Geography','History','Economics','Business Studies','Accounting','Computer Science','Information Technology','French','Spanish','German','Mandarin','Art & Design','Music','Physical Education','Religious Studies','Sociology','Psychology','Global Perspectives','Environmental Management'],
+    'Common Entrance (NCEE)': ['English Language','Mathematics','Basic Science & Technology','National Values','Social Studies','CRS/IRS','Quantitative Aptitude','Verbal Aptitude','Basic Technology','Agricultural Science','Home Economics','Computer/ICT','French','Yoruba','Igbo','Hausa','Cultural & Creative Arts','Civic Education','History','Geography'],
+    'BECE (Junior WAEC)': ['English Language','Mathematics','Basic Technology','Basic Science','Social Studies','Civic Education','CRS/IRS','Agricultural Science','Home Economics','Computer/ICT','French','Yoruba','Igbo','Hausa','Cultural & Creative Arts','Business Studies','History','Geography','Physical & Health Education'],
+    'NABTEB': ['English Language','Mathematics','Physics','Chemistry','Biology','Economics','Geography','Government','Commerce','Accounting','Literature-in-English','History','CRS/IRS','Yoruba','Igbo','Hausa','French','Computer Studies','Information & Communication Technology','Technical Drawing','Electrical Installation & Maintenance','Auto Mechanics','Building Construction','Woodwork','Metalwork','Plumbing & Pipefitting','Welding & Fabrication','Printing Technology','Catering Craft Practice','Garment Making','Cosmetology','Painting & Decorating','Block Laying & Concreting','Refrigeration & Air Conditioning','Data Processing','Store Keeping','Office Practice','Book Keeping','GSM Phone Maintenance','CCTV Installation','Solar Installation'],
+    'A-Level': ['Mathematics','Further Mathematics','Physics','Chemistry','Biology','Economics','Business','Accounting','Government','History','Geography','Sociology','Psychology','English Literature','Law','Computer Science','Philosophy','Religious Studies','French','German','Art & Design','Media Studies'],
+    'TOEFL': ['Reading','Listening','Speaking','Writing'],
+    'IELTS': ['Academic Reading','Academic Writing','Academic Listening','Academic Speaking','General Training Reading','General Training Writing','General Training Listening','General Training Speaking'],
+    'SAT': ['Evidence-Based Reading and Writing','Math (No Calculator)','Math (Calculator)','Essay (optional)','SAT Subject Test — Physics','SAT Subject Test — Chemistry','SAT Subject Test — Biology','SAT Subject Test — Mathematics Level 1','SAT Subject Test — Mathematics Level 2','SAT Subject Test — Literature','SAT Subject Test — U.S. History','SAT Subject Test — World History'],
+    'Other': []
+  };
+
+  /* Populate state dropdowns */
+  ['er-centre-state', 'er-state-origin'].forEach(id => {
+    const el = $(id); if (!el) return;
+    el.innerHTML = '<option value="">— select state —</option>' + NIGERIAN_STATES.map(s => '<option>' + esc(s) + '</option>').join('');
+  });
+
+  /* Populate year dropdown (5 years) */
+  (function(){
+    const el = $('er-year'); if (!el) return;
+    const now = new Date().getFullYear();
+    for (let y = now - 1; y <= now + 3; y++) {
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y;
+      el.appendChild(opt);
+    }
+  })();
+
+  /* Subject chip multi-select */
+  function renderChips() {
+    const exam = $('er-exam').value;
+    const subs = SUBJECTS_BY_EXAM[exam] || SUBJECTS_BY_EXAM['Other'];
+    const wrap = $('er-subject-chips');
+    wrap.innerHTML = (subs || []).map(s => '<span class="chip" data-sub="' + esc(s) + '">' + esc(s) + '</span>').join('');
+    if (!subs.length) wrap.innerHTML = '<p style="color:#64748b;font-size:.85rem">Select "Other" examination type and list the subjects in the "Other subjects" field below.</p>';
+    wrap.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        chip.classList.toggle('selected');
+        syncSelectedSubjects();
+      });
+    });
+    syncSelectedSubjects();
+  }
+  function syncSelectedSubjects() {
+    const picks = [...document.querySelectorAll('.chip.selected')].map(c => c.dataset.sub);
+    $('er-subjects').value = picks.join(', ');
+  }
+  $('er-exam').addEventListener('change', renderChips);
+  $('er-other-subjects').addEventListener('input', () => {
+    // Other subjects appended to selected list
+    syncSelectedSubjects();
+  });
+
+  /* Auto-compute balance */
+  function recomputeBalance() {
+    const fee = parseFloat($('er-fee').value) || 0;
+    const paid = parseFloat($('er-amount').value) || 0;
+    $('er-balance').value = Math.max(0, fee - paid).toFixed(2);
+  }
+  ['er-fee', 'er-amount'].forEach(id => $(id).addEventListener('input', recomputeBalance));
+
+  /* Auto-fill school from window.SCHOOL if present */
+  try {
+    const sc = window.SCHOOL || {};
+    if (sc.name) $('er-school').value = sc.name;
+  } catch (_) {}
+
+  /* Initial render */
+  renderChips();
+
+  /* Submit */
+  $('er-submit').addEventListener('click', async function() {
+    const get = (id) => ($(id) || {}).value ? $(id).value.trim() : '';
+    const required = {
+      'er-exam': get('er-exam'),
+      'er-year': get('er-year'),
+      'er-surname': get('er-surname'),
+      'er-firstname': get('er-firstname'),
+      'er-dob': get('er-dob'),
+      'er-gender': get('er-gender'),
+      'er-address': get('er-address'),
+      'er-nin': get('er-nin'),
+      'er-email': get('er-email'),
+      'er-phone': get('er-phone'),
+      'er-guardian-name': get('er-guardian-name'),
+      'er-guardian-phone': get('er-guardian-phone'),
+      'er-school': get('er-school'),
+      'er-class': get('er-class')
+    };
+    const missing = Object.entries(required).filter(([_, v]) => !v).map(([k]) => k.replace('er-', '').replace(/-/g, ' '));
+    if (missing.length) { $('er-out').innerHTML = '<div class="alert alert-error">❌ Please fill required fields: ' + esc(missing.join(', ')) + '</div>'; window.scrollTo({ top: $('er-out').offsetTop - 100, behavior: 'smooth' }); return; }
+    if (!$('er-consent').checked) { $('er-out').innerHTML = '<div class="alert alert-error">You must tick the consent box to proceed.</div>'; return; }
+    if (!/^[0-9]{11,14}$/.test(get('er-nin'))) { $('er-out').innerHTML = '<div class="alert alert-error">NIN must be 11–14 digits.</div>'; return; }
+    if (!/^[0-9+\-\s()]{6,}$/.test(get('er-phone'))) { $('er-out').innerHTML = '<div class="alert alert-error">Please enter a valid candidate phone number.</div>'; return; }
+    if (!/^[0-9+\-\s()]{6,}$/.test(get('er-guardian-phone'))) { $('er-out').innerHTML = '<div class="alert alert-error">Please enter a valid guardian phone number.</div>'; return; }
+    // NCEE: 10 years or younger check
+    if (get('er-exam') === 'Common Entrance (NCEE)') {
+      const dob = new Date(get('er-dob'));
+      const age = (Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+      if (age > 13) { $('er-out').innerHTML = '<div class="alert alert-error">NCEE candidates must be ≤ 13 years old on the exam date.</div>'; return; }
+    }
+    const subjects = $('er-subjects').value ? $('er-subjects').value.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const otherSub = get('er-other-subjects');
+    if (otherSub) otherSub.split(',').map(s => s.trim()).filter(Boolean).forEach(s => { if (!subjects.includes(s)) subjects.push(s); });
+    if (!subjects.length) { $('er-out').innerHTML = '<div class="alert alert-error">Please select at least one subject.</div>'; return; }
+    const photo = get('er-photo');
+    if (!photo) { $('er-out').innerHTML = '<div class="alert alert-error">Passport photograph (Drive link) is required by the examination body.</div>'; return; }
+
+    const rec = {
+      exam_type: get('er-exam'),
+      exam_year: parseInt(get('er-year'), 10),
+      exam_series: get('er-series') || null,
+      exam_number: get('er-exam-no') || null,
+      centre_state: get('er-centre-state') || null,
+      candidate_name: get('er-surname') + ' ' + get('er-firstname') + (get('er-middlename') ? ' ' + get('er-middlename') : ''),
+      surname: get('er-surname'),
+      first_name: get('er-firstname'),
+      middle_name: get('er-middlename') || null,
+      date_of_birth: get('er-dob'),
+      gender: get('er-gender'),
+      nationality: get('er-nationality'),
+      state_of_origin: get('er-state-origin') || null,
+      lga: get('er-lga') || null,
+      address: get('er-address'),
+      religion: get('er-religion') || null,
+      marital_status: get('er-marital') || null,
+      disability: get('er-disability') || null,
+      nin: get('er-nin'),
+      email: get('er-email'),
+      phone: get('er-phone'),
+      guardian_name: get('er-guardian-name'),
+      guardian_phone: get('er-guardian-phone'),
+      guardian_email: get('er-guardian-email') || null,
+      school_name: get('er-school'),
+      class: get('er-class'),
+      student_id: get('er-student-id') || null,
+      previous_school: get('er-prev-school') || null,
+      subjects: subjects,
+      fee_total: parseFloat(get('er-fee')) || 0,
+      amount_paid: parseFloat(get('er-amount')) || 0,
+      payment_method: get('er-method') || null,
+      payment_reference: get('er-ref') || null,
+      payment_date: get('er-pay-date') || null,
+      balance: parseFloat($('er-balance').value) || 0,
+      photo_url: photo,
+      birth_cert_url: get('er-birth-cert') || null,
+      leaving_cert_url: get('er-leaving-cert') || null,
+      sen_evidence_url: get('er-sen-evidence') || null,
+      referee_name: get('er-referee') || null,
+      referee_phone: get('er-referee-phone') || null,
+      notes: get('er-notes') || null,
+      status: 'pending',
+      consent: true,
+      created_at: new Date().toISOString()
+    };
+
+    $('er-out').innerHTML = '<div class="alert alert-info">⏳ Saving your registration…</div>';
+    if (window.sb) {
+      try {
+        const { data, error } = await window.sb.from('exam_registrations').insert(rec).select().single();
+        if (error) throw new Error(error.message);
+        $('er-out').innerHTML = '<div class="success-box"><strong>✅ Registration received!</strong><br>Reference: <code>' + esc(data && data.id ? data.id : 'PENDING') + '</code><br>The school examination officer will contact you within 48 hours. Save your reference number for follow-up.</div>';
+        // Reset form
+        document.querySelectorAll('.form-input, .form-select').forEach(el => { if (el.type !== 'checkbox') el.value = ''; });
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+        recomputeBalance();
+      } catch (e) {
+        // Even if Supabase is not configured, save the registration locally so
+        // the user does not lose their input. The school can import from
+        // localStorage later.
+        try {
+          const key = 'sc-pending-exam-registrations';
+          const arr = JSON.parse(localStorage.getItem(key) || '[]');
+          arr.push(Object.assign({ _local: true, _saved_at: new Date().toISOString() }, rec));
+          localStorage.setItem(key, JSON.stringify(arr));
+        } catch (_) {}
+        $('er-out').innerHTML = '<div class="alert alert-error">Could not save online: ' + esc(e.message || 'Database not configured') + '. Your data is saved locally on this device — the school can retrieve it. Please also email a copy to the school.</div>';
+      }
+    } else {
+      $('er-out').innerHTML = '<div class="alert alert-error">Database not configured. Please add Supabase keys in <code>assets/js/config.js</code>, OR email a screenshot of this form to the school.</div>';
+    }
+  });
+})();
+</script>
+</body>
+</html>

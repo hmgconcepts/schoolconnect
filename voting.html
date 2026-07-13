@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voting & Polls Demo • School Connect</title>
+<meta name="description" content="Live demo of the School Connect voting & polls module. Class prefects, head boy/girl elections, anonymous ballots, real-time results. 100% free, no AI API.">
+<meta name="theme-color" content="#7c3aed">
+<link rel="canonical" href="https://schoolconnectportal.vercel.app/voting.html">
+<meta property="og:title" content="Voting & Polls Demo • School Connect">
+<meta property="og:description" content="Class prefects, head boy/girl, anonymous ballots. Live results with multi-channel notifications.">
+<meta property="og:image" content="assets/img/og-cover.svg">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="assets/img/logo.svg">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  body { background: linear-gradient(135deg, #f8faff 0%, #fff 100%); min-height:100vh; }
+  .demo-banner { background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+  .demo-banner-icon { font-size: 1.8rem; }
+  .demo-banner-text { flex: 1; }
+  .demo-banner-text strong { color: #7c3aed; display: block; margin-bottom: 4px; }
+  .demo-banner-text small { color: var(--gray-600); font-size: 0.85rem; }
+  .polls-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+  .polls-header h1 { font-size: 2.2rem; font-weight: 900; color: var(--dark); margin: 0; }
+  .polls-header p { color: var(--gray-600); margin: 4px 0 0 0; }
+</style>
+</head>
+<body>
+
+<!-- ============== NAV ============== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/img/logo.svg" alt="">
+      <span>School Connect</span>
+    </a>
+    <button class="mobile-toggle" onclick="document.querySelector('.nav-links').classList.toggle('show')" aria-label="Menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="voting.html" class="active">Voting</a></li>
+      <li><a href="notifications.html">Notifications</a></li>
+      <li><a href="install.html">Install</a></li>
+      <li><a href="ecosystem.html">Ecosystem</a></li>
+      <li><a href="builder.html" class="btn-primary">Build Now</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ============== PWA INSTALL BANNER ============== -->
+<div id="pwa-install-banner" class="pwa-install">
+  <div class="pwa-install-header">
+    <img src="assets/img/logo.svg" alt="" class="pwa-install-icon">
+    <div style="flex:1">
+      <div class="pwa-install-title">📲 Install School Connect</div>
+      <div class="pwa-install-msg">Vote, get notified and view results offline — install the app.</div>
+    </div>
+    <button class="modal-close" data-pwa-action="dismiss">×</button>
+  </div>
+  <div class="pwa-install-actions">
+    <button class="btn btn-outline btn-sm" data-pwa-action="never">Not now</button>
+    <button class="btn btn-primary btn-sm" data-pwa-action="install">Install App</button>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- ============== CONTENT ============== -->
+<main style="padding:120px 24px 80px;max-width:1100px;margin:0 auto">
+
+  <div class="polls-header">
+    <div>
+      <h1>🗳️ Voting &amp; Polls</h1>
+      <p>Class prefects · Head boy/girl · Staff polls · Anonymous ballots</p>
+    </div>
+    <button class="btn btn-primary" data-vote-action="create">+ Create Poll</button>
+  </div>
+
+  <div class="demo-banner">
+    <div class="demo-banner-icon">🎬</div>
+    <div class="demo-banner-text">
+      <strong>Live demo (Demo Mode)</strong>
+      <small>This page runs without a Supabase connection — your votes are saved to localStorage so you can see real UI behaviour. On the deployed platform, votes persist to the database and trigger push notifications.</small>
+    </div>
+  </div>
+
+  <!-- Filter chips -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px">
+    <button class="btn btn-primary btn-sm">All</button>
+    <button class="btn btn-outline btn-sm">Open</button>
+    <button class="btn btn-outline btn-sm">Closed</button>
+    <button class="btn btn-outline btn-sm">My votes</button>
+  </div>
+
+  <div id="polls-list"><span class="pulse">Loading polls…</span></div>
+
+</main>
+
+<!-- Modal -->
+<div id="modal-backdrop" class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Modal</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="modal-body" class="modal-body"></div>
+    <div id="modal-footer" class="modal-footer"></div>
+  </div>
+</div>
+
+<!-- ============== FOOTER ============== -->
+<footer class="footer">
+  <div class="footer-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div>
+      <h5>🎓 School Connect</h5>
+      <p style="color:var(--gray-400);font-size:0.9rem">A no-code generator that builds complete school management platforms. Free forever.</p>
+    </div>
+    <div>
+      <h5>Demo</h5>
+      <a href="voting.html">Voting</a>
+      <a href="notifications.html">Notifications</a>
+      <a href="install.html">PWA Install</a>
+    </div>
+    <div>
+      <h5>Ecosystem</h5>
+      <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener">HMG Concepts</a>
+      <a href="ecosystem.html">Explore</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 HMG Concepts · <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener" style="color:var(--gray-400)">hmgconcepts.pages.dev</a></div>
+</footer>
+
+<!-- ============== SCRIPTS ============== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/catalog.js"></script>
+<script src="assets/js/notifications.js"></script>
+<script src="assets/js/voting.js"></script>
+<script src="assets/js/pwa-install.js"></script>
+<script>
+  // Demo data (3 sample polls)
+  const DEMO_POLLS = [
+    {
+      id: 'demo-1', title: '🏆 Head Boy Election 2026',
+      description: 'Vote for the Head Boy of Grace International School. The winner will represent the student body for the 2026/2027 academic year.',
+      type: 'single_choice',
+      candidates: [
+        { id: 'c1', name: 'Adaeze Okeke',     info: 'JSS 3A — "For unity & excellence"', photo: '' },
+        { id: 'c2', name: 'Tobi Adebayo',     info: 'JSS 3B — "Building the future"', photo: '' },
+        { id: 'c3', name: 'Chiamaka Eze',     info: 'SSS 1A — "Together we rise"', photo: '' },
+        { id: 'c4', name: 'Ibrahim Musa',     info: 'SSS 1C — "Service above self"', photo: '' }
+      ],
+      opens_at: new Date(Date.now() - 86400000 * 3).toISOString(),
+      closes_at: new Date(Date.now() + 86400000 * 4).toISOString(),
+      allow_multiple: false, anonymous: false, audience: 'students',
+      status: 'open'
+    },
+    {
+      id: 'demo-2', title: '🎨 Inter-House Sports — Best Mascot',
+      description: 'Which mascot best represents our school spirit? Anonymous vote.',
+      type: 'single_choice',
+      candidates: [
+        { id: 'c1', name: '🐅 Tigers (Red House)',   info: 'Courage & strength',     photo: '' },
+        { id: 'c2', name: '🦅 Eagles (Blue House)',  info: 'Vision & leadership',    photo: '' },
+        { id: 'c3', name: '🦁 Lions (Gold House)',   info: 'Pride & determination',  photo: '' },
+        { id: 'c4', name: '🐻 Bears (Green House)',  info: 'Steadfast & reliable',   photo: '' }
+      ],
+      opens_at: new Date(Date.now() - 86400000 * 7).toISOString(),
+      closes_at: new Date(Date.now() + 86400000 * 1).toISOString(),
+      allow_multiple: false, anonymous: true, audience: 'all',
+      status: 'open'
+    },
+    {
+      id: 'demo-3', title: '📚 Staff Poll — New Library Books Priority',
+      description: 'Which subjects need the most new books for the next term?',
+      type: 'multiple_choice',
+      candidates: [
+        { id: 'c1', name: 'STEM (Maths, Physics, Chem)', info: 'Critical shortage', photo: '' },
+        { id: 'c2', name: 'Literature & Languages',       info: 'New WAEC syllabus', photo: '' },
+        { id: 'c3', name: 'History & Civics',            info: 'Modern relevance', photo: '' },
+        { id: 'c4', name: 'Arts & Vocational',           info: 'Career skills',     photo: '' }
+      ],
+      opens_at: new Date(Date.now() - 86400000 * 14).toISOString(),
+      closes_at: new Date(Date.now() - 86400000 * 2).toISOString(),
+      allow_multiple: true, anonymous: false, audience: 'staff',
+      status: 'closed'
+    }
+  ];
+
+  // Demo mode: store votes in localStorage
+  function getDemoVotes() { try { return JSON.parse(localStorage.getItem('demo-votes') || '{}'); } catch { return {}; } }
+  function setDemoVotes(v) { localStorage.setItem('demo-votes', JSON.stringify(v)); }
+
+  const VotingDemo = {
+    async listPolls() { return DEMO_POLLS; },
+    async getResults(pollId) {
+      const poll = DEMO_POLLS.find(p => p.id === pollId);
+      if (!poll) return null;
+      const votes = getDemoVotes()[pollId] || [];
+      // Pre-seed some fake votes for demo realism
+      const fakeTally = { 'demo-1': { c1: 47, c2: 38, c3: 56, c4: 29 }, 'demo-2': { c1: 89, c2: 102, c3: 76, c4: 65 }, 'demo-3': { c1: 12, c2: 9, c3: 6, c4: 8 } };
+      const tally = Object.assign({}, fakeTally[pollId] || {});
+      votes.forEach(cid => { tally[cid] = (tally[cid] || 0) + 1; });
+      const total = Object.values(tally).reduce((a, b) => a + b, 0) || 1;
+      const candidates = poll.candidates.map(c => ({ ...c, votes: tally[c.id] || 0, percent: Math.round((tally[c.id] || 0) / total * 100) }));
+      return { poll, candidates, totalVotes: total };
+    },
+    async vote(pollId, candidateId) {
+      const all = getDemoVotes();
+      all[pollId] = all[pollId] || [];
+      if (all[pollId].includes(candidateId)) {
+        all[pollId] = all[pollId].filter(c => c !== candidateId);
+      } else {
+        all[pollId].push(candidateId);
+      }
+      setDemoVotes(all);
+      return { data: { ok: true } };
+    },
+    async closePoll() { return { data: { ok: true } }; }
+  };
+
+  // Render poll cards
+  async function renderPolls() {
+    const container = document.getElementById('polls-list');
+    if (!container) return;
+    const polls = await VotingDemo.listPolls();
+    container.innerHTML = polls.map(p => pollCard(p)).join('');
+    polls.forEach(p => refreshResults(p.id));
+  }
+
+  function pollCard(p) {
+    const status = p.status === 'open' ? 'badge-success' : 'badge-info';
+    const allowMulti = p.allow_multiple;
+    return `
+      <div class="card" style="margin-bottom:24px" id="poll-${p.id}">
+        <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:12px">
+          <div>
+            <h2 style="font-size:1.4rem;font-weight:800;color:var(--dark);margin-bottom:4px">${esc(p.title)}</h2>
+            <span class="badge ${status}">${p.status}</span>
+            ${p.anonymous ? '<span class="badge badge-info">🔒 anonymous</span>' : ''}
+            ${allowMulti ? '<span class="badge badge-warning">multi-select</span>' : ''}
+            <span class="badge badge-info">${p.audience}</span>
+          </div>
+        </div>
+        <p style="color:var(--gray-700);line-height:1.6;margin-bottom:20px">${esc(p.description)}</p>
+        <div class="grid grid-2" id="poll-${p.id}-candidates" style="margin-bottom:16px">
+          ${p.candidates.map(c => `
+            <div class="vote-card" onclick="castVote('${p.id}','${c.id}',${allowMulti})">
+              <div class="vote-candidate-photo">${esc((c.name||'?')[1] || '?')}</div>
+              <div class="vote-candidate-name">${esc(c.name)}</div>
+              <div class="vote-candidate-info">${esc(c.info)}</div>
+              <div class="vote-progress"><div class="vote-progress-bar" style="width:0%"></div></div>
+              <div class="vote-percent">0%</div>
+            </div>
+          `).join('')}
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:0.85rem;color:var(--gray-500);padding-top:12px;border-top:1px solid var(--gray-200)">
+          <span>📊 <strong id="poll-${p.id}-total">0</strong> votes</span>
+          <span>👥 ${p.audience}</span>
+          ${p.closes_at ? `<span>⏰ closes ${new Date(p.closes_at).toLocaleDateString()}</span>` : ''}
+          ${p.status === 'open' ? '<span style="color:var(--success);font-weight:700">✓ You can still vote</span>' : '<span style="color:var(--gray-500)">Voting closed</span>'}
+        </div>
+      </div>`;
+  }
+
+  async function refreshResults(pollId) {
+    const results = await VotingDemo.getResults(pollId);
+    if (!results) return;
+    const totalEl = document.getElementById(`poll-${pollId}-total`);
+    if (totalEl) totalEl.textContent = results.totalVotes;
+    results.candidates.forEach(c => {
+      const card = document.querySelector(`.vote-card[onclick*="${c.id}"]`);
+      if (!card) return;
+      const bar = card.querySelector('.vote-progress-bar');
+      const pct = card.querySelector('.vote-percent');
+      if (bar) bar.style.width = c.percent + '%';
+      if (pct) pct.textContent = c.percent + '% · ' + c.votes + ' votes';
+    });
+  }
+
+  async function castVote(pollId, candidateId, allowMulti) {
+    if (DEMO_POLLS.find(p => p.id === pollId).status !== 'open') {
+      toast('Voting has closed.', 'warning'); return;
+    }
+    const res = await VotingDemo.vote(pollId, candidateId);
+    toast('✅ Vote recorded!', 'success');
+    await refreshResults(pollId);
+    // Simulate notification
+    setTimeout(() => {
+      toast('🔔 Notification sent to your device (demo)', 'info', 2500);
+    }, 600);
+  }
+
+  // Modal helpers
+  function openModal(title, body, footer) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-body').innerHTML = body;
+    document.getElementById('modal-footer').innerHTML = footer || '<button class="btn btn-outline" onclick="closeModal()">Close</button>';
+    document.getElementById('modal-backdrop').classList.add('show');
+  }
+  function closeModal() { document.getElementById('modal-backdrop').classList.remove('show'); }
+  function toast(msg, type='info', ms=3500) {
+    const c = document.getElementById('toast-container');
+    if (!c) return;
+    const t = document.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.innerHTML = '<div class="toast-msg">' + msg + '</div>';
+    c.appendChild(t);
+    setTimeout(() => { t.style.animation = 'slideOut 0.3s ease forwards'; setTimeout(() => t.remove(), 300); }, ms);
+  }
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+  // Create-poll modal
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-vote-action]');
+    if (t && t.dataset.voteAction === 'create') {
+      openModal('Create New Poll', `
+        <form id="poll-form" class="form">
+          <div class="form-group"><label>Title</label>
+            <input class="form-input" name="title" required placeholder="e.g. Head Girl Election 2026"></div>
+          <div class="form-group"><label>Description</label>
+            <textarea class="form-textarea" name="description"></textarea></div>
+          <div class="form-group"><label>Type</label>
+            <select class="form-select" name="type">
+              <option value="single_choice">Single choice</option>
+              <option value="multiple_choice">Multiple choice</option>
+              <option value="yes_no">Yes / No</option>
+              <option value="ranked">Ranked</option>
+            </select></div>
+          <div class="form-group"><label>Candidates (one per line)</label>
+            <textarea class="form-textarea" name="candidates" rows="4" placeholder="Adaeze Okeke | JSS 3A" required></textarea></div>
+          <div class="form-group"><label>Audience</label>
+            <select class="form-select" name="audience">
+              <option value="all">Everyone</option>
+              <option value="students">Students</option>
+              <option value="staff">Staff</option>
+              <option value="parents">Parents</option>
+            </select></div>
+          <div class="form-group"><label><input type="checkbox" name="anonymous"> Allow anonymous votes</label></div>
+          <div class="form-group"><label><input type="checkbox" name="allow_multiple"> Allow multiple selections</label></div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--gray-200);display:flex;gap:12px">
+            <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="createPollDemo()">Create Poll (Demo)</button>
+          </div>
+        </form>`);
+    }
+  });
+
+  function createPollDemo() {
+    closeModal();
+    toast('✅ Poll created! (In demo mode — on the live platform, this saves to Supabase and notifies all eligible voters.)', 'success', 5000);
+  }
+
+  // Init
+  if (typeof PWAInstall !== 'undefined') PWAInstall.init();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  renderPolls();
+</script>
+</body>
+</html>
