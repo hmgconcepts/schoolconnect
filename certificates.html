@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Voting &amp; Polls • School Connect Demo School</title>
-<meta name="description" content="School Connect Demo School — Voting &amp; Polls. Free school management platform by HMG Concepts.">
+<title>Certificates • School Connect Demo School</title>
+<meta name="description" content="School Connect Demo School — Certificates. Free school management platform by HMG Concepts.">
 <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
 <link rel="icon" type="image/png" href="assets/img/logo.svg">
@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<meta property="og:title" content="Voting &amp; Polls • School Connect Demo School">
+<meta property="og:title" content="Certificates • School Connect Demo School">
 <meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
 <meta property="og:image" content="assets/img/logo.svg">
 <meta property="og:type" content="website">
@@ -244,7 +244,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
         </a><a href="alumni.html" data-module-id="alumni" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
           <span class="app-nav-icon">🤝</span>
           <span>Alumni</span>
-        </a><a href="certificates.html" data-module-id="certificates" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="">
+        </a><a href="certificates.html" data-module-id="certificates" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="active">
           <span class="app-nav-icon">📜</span>
           <span>Certificates</span>
         </a><a href="admissions.html" data-module-id="admissions" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
@@ -412,7 +412,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
   <main class="app-main">
     <header class="app-topbar">
       <button class="mobile-toggle" onclick="App.toggleSidebar()" title="Menu">☰</button>
-      <h1 class="app-page-title">Voting &amp; Polls</h1>
+      <h1 class="app-page-title">Certificates</h1>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
         
         <button class="btn btn-sm btn-outline" onclick="if(window.Super)Super.chatbot.explainPage()" title="About this page">ℹ️ Help</button>
@@ -423,11 +423,39 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
     </header>
     <div class="app-content">
       
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
-        <p style="color:var(--gray-600);margin:0">Cast your vote in class elections, head-boy/girl contests and staff polls. Live results update in real time.</p>
-        <button class="btn btn-primary" data-vote-action="create" data-admin-only>+ New Poll</button>
+      <div class="card" style="margin-bottom:16px">
+        <p style="color:var(--gray-600);margin:0">Issue branded, printable certificates (achievement, graduation,
+        testimonial) each with a unique <strong>verification code</strong>. CBT exams also auto-issue certificate codes.</p>
       </div>
-      <div id="polls-list"><span class="pulse">Loading polls…</span></div>
+      <div class="card" style="margin-bottom:16px" data-staff-only>
+        <h3>✏️ Content</h3>
+        <div class="grid grid-2">
+          <div class="form-group"><label>Recipient (pick a student or type)</label><select class="form-select" id="ct-student" onchange="CTUI.pickStudent(this.value)"><option value="">— type below —</option></select></div>
+          <div class="form-group"><label>Recipient name</label><input class="form-input" id="ct-name" oninput="CTUI.render()"></div>
+          <div class="form-group"><label>Certificate title</label><input class="form-input" id="ct-title" value="CERTIFICATE OF ACHIEVEMENT" oninput="CTUI.render()"></div>
+          <div class="form-group"><label>Signatory</label><input class="form-input" id="ct-sig" value="Head of School" oninput="CTUI.render()"></div>
+          <div class="form-group"><label>Date</label><input class="form-input" type="date" id="ct-date" oninput="CTUI.render()"></div>
+        </div>
+        <div class="form-group"><label>Body text</label><textarea class="form-input" id="ct-body" rows="2" oninput="CTUI.render()">has successfully met the requirements and is hereby recognised for outstanding achievement.</textarea></div>
+        <h3 style="margin-top:14px">🎨 Design</h3>
+        <div class="grid grid-2">
+          <div class="form-group"><label>Layout</label><select class="form-select" id="ct-layout" onchange="CTUI.render()"><option value="premium">Premium (Gold — like sample)</option><option value="classic">Classic</option><option value="modern">Modern</option><option value="elegant">Elegant</option></select></div>
+          <div class="form-group"><label>Font</label><select class="form-select" id="ct-font" onchange="CTUI.render()"><option value="Georgia, serif">Georgia (serif)</option><option value="'Times New Roman', serif">Times</option><option value="Arial, sans-serif">Arial</option><option value="'Courier New', monospace">Courier</option><option value="Garamond, serif">Garamond</option></select></div>
+          <div class="form-group"><label>Primary colour</label><input class="form-input" type="color" id="ct-pc" value="#0506ae" oninput="CTUI.render()"></div>
+          <div class="form-group"><label>Accent colour</label><input class="form-input" type="color" id="ct-ac" value="#964eec" oninput="CTUI.render()"></div>
+          <div class="form-group"><label>Border style</label><select class="form-select" id="ct-border" onchange="CTUI.render()"><option value="double">Double</option><option value="solid">Solid</option><option value="ridge">Ridge</option><option value="dashed">Dashed</option></select></div>
+          <div class="form-group"><label>Signature image (PNG)</label><input class="form-input" type="file" accept="image/*" id="ct-sigimg" onchange="CTUI.sigUpload(event)"></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-primary" onclick="CTUI.save()">💾 Save &amp; Print</button><button class="btn btn-outline" onclick="CTUI.saveDesign()">💾 Save design template</button></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <h3>🎓 CBT Certificates</h3>
+        <p style="color:var(--gray-600)">When a student completes a CBT exam with certificates enabled, the result receives a certificate code. Staff/admin can print the certificate here; students can view their own awarded certificates when RLS allows.</p>
+        <button class="btn btn-outline" onclick="CTUI.loadCBTCerts()">↻ Load CBT Certificates</button>
+        <div id="ct-cbt-list" style="margin-top:12px"><p style="color:var(--gray-500)">Click load to view CBT certificate results.</p></div>
+      </div>
+      <div id="ct-preview" style="display:flex;justify-content:center;overflow:auto"></div>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
       © 2026 School Connect Demo School · Built by <a href="https://cssadewale.pages.dev" target="_blank" rel="noopener">Adewale Samson Adeagbo</a> · Powered by <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener">HMG Concepts</a> · <a href="developer.html">About the developer</a>
@@ -453,4 +481,92 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
   if (window.Enterprise) Enterprise.init(sb);
   if (window.CRUD) CRUD.init(sb);
 </script>
-</body></html>
+<script>
+const CTUI={ code:'', sig:'',
+  v(id){ var e=document.getElementById(id); return e?e.value:''; },
+  async loadStudents(){ if(!sb)return; const sel=document.getElementById('ct-student'); const {data}=await sb.from('students').select('full_name').order('full_name').limit(1000); while(sel.options.length>1)sel.remove(1); var seen=new Set(); (data||[]).forEach(s=>{var v=String(s.full_name||'').trim(),k=v.toLowerCase(); if(!v||seen.has(k))return; seen.add(k); var o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o);}); },
+  pickStudent(v){ if(v){document.getElementById('ct-name').value=v;} this.render(); },
+  sigUpload(ev){ var f=ev.target.files[0]; if(!f)return; if(f.size>500*1024){toast('Signature should be under 500KB','warning');return;} var r=new FileReader(); r.onload=()=>{ CTUI.sig=r.result; CTUI.render(); }; r.readAsDataURL(f); },
+  opts(){ return { name:this.v('ct-name'), title:this.v('ct-title'), signatory:this.v('ct-sig'), date:this.v('ct-date'), body:this.v('ct-body'),
+    layout:this.v('ct-layout'), font:this.v('ct-font'), pc:this.v('ct-pc'), ac:this.v('ct-ac'), border:this.v('ct-border'), sig:this.sig, code:this.code }; },
+  html(o){ var sc=(window.SCHOOL||{}); var logo='assets/img/logo.'+(sc.logoExt||'svg');
+    var sigBlock = o.sig ? '<img src="'+o.sig+'" referrerpolicy="no-referrer" style="height:50px;display:block;margin:0 auto -6px;mix-blend-mode:multiply;filter:contrast(1.3) brightness(1.05)">' : '';
+    var dmy=(v)=>{ if(!v) v=new Date(); var d=new Date(v); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); };
+    if(o.layout==='premium'){
+      var gold='#c9a227', navy=o.pc||'#1e2a5e';
+      var rosette='<div style="position:relative;width:120px;margin:6px auto 0">'+
+        '<div style="width:104px;height:104px;margin:0 auto;border-radius:50%;background:radial-gradient(circle at 32% 28%,#f6e27a,#c9a227 58%,#8a6d1a);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.25)">'+
+          '<div style="width:78px;height:78px;border-radius:50%;border:2px solid #fff8e1;display:flex;align-items:center;justify-content:center;text-align:center;color:#3b2f0b;font-family:Georgia,serif;font-weight:800;font-size:.55rem;line-height:1.25;padding:6px">'+esc((sc.shortName||sc.name||'SCHOOL').toUpperCase())+'<br>★ ★ ★</div></div>'+
+        '<div style="position:absolute;left:50%;transform:translateX(-58%);bottom:-26px;width:26px;height:36px;background:'+navy+';clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)"></div>'+
+        '<div style="position:absolute;left:50%;transform:translateX(-8%);bottom:-26px;width:26px;height:36px;background:'+navy+';clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)"></div></div>';
+      return '<div style="position:relative;width:760px;max-width:96vw;background:#fff;padding:6px;box-shadow:0 12px 34px rgba(0,0,0,.18)">'+
+        '<div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,'+navy+' 0,transparent 18%),linear-gradient(315deg,'+navy+' 0,transparent 18%);opacity:.92"></div>'+
+        '<div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,'+gold+' 0,transparent 12%),linear-gradient(315deg,'+gold+' 0,transparent 12%);opacity:.85"></div>'+
+        '<div style="position:relative;border:2px solid '+gold+';outline:1px solid '+gold+';outline-offset:6px;padding:44px 48px;text-align:center;font-family:Georgia,\'Times New Roman\',serif;background:#fffefb">'+
+          '<img src="'+logo+'" style="width:92px;height:92px;object-fit:contain" onerror="this.style.display=\'none\'">'+
+          '<h1 style="margin:12px 0 4px;color:'+navy+';font-size:2rem;letter-spacing:1.5px;font-weight:900">'+esc((sc.name||'SCHOOL').toUpperCase())+'</h1>'+
+          (sc.address?'<p style="margin:2px 0;font-size:.86rem;color:#334155">📍 '+esc(sc.address)+'</p>':'')+
+          (sc.phone?'<p style="margin:2px 0;font-size:.86rem;color:#334155">📞 Tel: '+esc(sc.phone)+'</p>':'')+
+          (sc.motto?'<p style="margin:10px auto;font-style:italic;color:#7c2d12;font-size:.92rem;max-width:560px;border-top:1px solid '+gold+';border-bottom:1px solid '+gold+';padding:5px 0">— Motto: '+esc(sc.motto)+' —</p>':'')+
+          '<h2 style="margin:20px 0 0;font-size:3rem;letter-spacing:8px;color:'+gold+';font-weight:700">'+esc((o.title||'CERTIFICATE').toUpperCase().replace(/CERTIFICATE.*/,'CERTIFICATE'))+'</h2>'+
+          '<div style="font-size:1.05rem;letter-spacing:6px;color:'+navy+';margin:2px 0 16px">— OF '+esc((o.subtitle||'COMPLETION').toUpperCase())+' —</div>'+
+          '<div style="display:inline-block;background:linear-gradient(90deg,#8a6d1a,'+gold+',#f6e27a,'+gold+',#8a6d1a);color:#fff;font-size:.8rem;letter-spacing:3px;padding:7px 34px;clip-path:polygon(3% 0,97% 0,100% 50%,97% 100%,3% 100%,0 50%);font-weight:700">THIS IS TO CERTIFY THAT</div>'+
+          '<h2 style="margin:26px auto 0;max-width:560px;border-bottom:2px solid '+navy+';padding-bottom:8px;font-size:1.7rem;color:#111;font-family:\'Segoe Script\',Georgia,serif">'+esc(o.name||'\u00A0')+'</h2>'+
+          '<p style="max-width:560px;margin:16px auto 4px;line-height:1.7;color:#1f2937">'+esc(o.body||'has successfully completed the programme.')+'</p>'+
+          '<p style="max-width:520px;margin:4px auto;font-style:italic;color:#475569;font-size:.9rem">We commend your effort and dedication.<br>We look forward to your continued success.</p>'+
+          rosette+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:44px;font-size:.78rem;color:'+navy+';font-weight:700">'+
+            '<div style="width:200px"><div style="border-top:1.5px solid '+navy+';padding-top:4px">EXAMINATION OFFICER</div></div>'+
+            '<div style="width:200px">'+sigBlock+'<div style="border-top:1.5px solid '+navy+';padding-top:4px">'+esc((o.signatory||'PRINCIPAL').toUpperCase())+'</div></div></div>'+
+          '<div style="margin-top:18px;font-size:.8rem;color:'+navy+';font-weight:700">DATE: <span style="border-bottom:1px solid '+navy+';padding:0 34px">'+esc(dmy(o.date))+'</span></div>'+
+          '<p style="margin-top:14px;font-size:.68rem;color:#94a3b8">Verification code: <strong>'+esc(o.code)+'</strong> · verify at verify-certificate.html</p>'+
+        '</div></div>';
+    }
+    var bg = o.layout==='modern' ? 'background:linear-gradient(135deg,'+o.pc+'10,'+o.ac+'10)' : (o.layout==='elegant'?'background:#fffef8':'background:#fff');
+    return '<div style="width:820px;max-width:96vw;border:12px '+o.border+' '+o.pc+';padding:42px;text-align:center;font-family:'+o.font+';'+bg+'">'+
+      '<img src="'+logo+'" style="width:64px;height:64px;border-radius:12px;object-fit:contain" onerror="this.style.display=\'none\'">'+
+      '<h1 style="margin:8px 0 2px;color:'+o.pc+'">'+esc(sc.name||"School")+'</h1>'+
+      '<p style="color:#64748b;margin:0 0 18px">'+esc(sc.motto||'')+'</p>'+
+      '<h2 style="letter-spacing:3px;color:'+o.ac+'">'+esc(o.title||"CERTIFICATE")+'</h2>'+
+      '<p style="margin:16px 0 4px">This is to certify that</p>'+
+      '<h2 style="margin:0;border-bottom:2px solid '+o.ac+';display:inline-block;padding:0 30px 6px">'+esc(o.name||"_______")+'</h2>'+
+      '<p style="max-width:560px;margin:18px auto;line-height:1.6">'+esc(o.body||'')+'</p>'+
+      '<div style="display:flex;justify-content:space-between;margin-top:40px;font-size:.85rem">'+
+        '<div>____________________<br>Date: '+esc(dmy(o.date))+'</div>'+
+        '<div>'+sigBlock+'____________________<br>'+esc(o.signatory||"Head of School")+'</div></div>'+
+      '<p style="margin-top:22px;font-size:.72rem;color:#94a3b8">Verification code: <strong>'+esc(o.code)+'</strong></p></div>';
+  },
+  render(){ if(!this.code) this.code=(window.Super?Super.cert.code():'SC-'+Math.random().toString(36).slice(2,8).toUpperCase()); document.getElementById('ct-preview').innerHTML=this.html(this.opts()); },
+
+  async loadCBTCerts(){
+    const box=document.getElementById('ct-cbt-list'); if(!box||!sb)return;
+    box.innerHTML='<p class="pulse">Loading CBT certificates…</p>';
+    let q=sb.from('cbt_results').select('*, cbt_exams(title,subject,class,term,session)').not('cert_code','eq','').order('created_at',{ascending:false}).limit(200); const role=String((window.SC_PROFILE&&SC_PROFILE.role)||'').toLowerCase(); if(role==='student'){ const st=await sb.from('students').select('full_name,admission_no').eq('user_id',SC_PROFILE.id).maybeSingle(); if(st.data){ q=q.or('student_name.eq.'+st.data.full_name+',student_id_ref.eq.'+(st.data.admission_no||'')); } } const {data,error}=await q;
+    if(error){box.innerHTML='<p style="color:#dc2626">'+esc(error.message)+'</p>';return;}
+    let rows=data||[]; if(String((window.SC_PROFILE&&SC_PROFILE.role)||'').toLowerCase()==='parent'){ const links=await sb.from('parent_child').select('student_id').eq('parent_id',SC_PROFILE.id); const ids=(links.data||[]).map(x=>x.student_id); const kids=ids.length?(await sb.from('students').select('full_name,admission_no').in('id',ids)).data||[]:[]; const names=kids.map(k=>String(k.full_name).toLowerCase()); const adm=kids.map(k=>k.admission_no).filter(Boolean); rows=rows.filter(r=>names.includes(String(r.student_name).toLowerCase())||adm.includes(r.student_id_ref)); }
+    if(!rows.length){box.innerHTML='<p style="color:var(--gray-500)">No CBT certificates found yet.</p>';return;}
+    box.innerHTML='<div class="table-wrap"><table><thead><tr><th>Date</th><th>Student</th><th>Exam</th><th>Score</th><th>Code</th><th>Action</th></tr></thead><tbody>'+rows.map(r=>'<tr><td>'+esc((r.created_at||'').slice(0,10))+'</td><td>'+esc(r.student_name||'')+'</td><td>'+esc((r.cbt_exams&&r.cbt_exams.title)||'CBT')+'</td><td>'+esc(r.score)+'/'+esc(r.total)+' ('+esc(r.percent)+'%)</td><td><b>'+esc(r.cert_code||'')+'</b></td><td><button class="btn btn-sm btn-primary" onclick="CTUI.printCBTCert(\''+r.id+'\')">Print</button></td></tr>').join('')+'</tbody></table></div>';
+  },
+  async printCBTCert(id){
+    if(!sb)return; const {data:r,error}=await sb.from('cbt_results').select('*, cbt_exams(title,subject,class,term,session)').eq('id',id).maybeSingle();
+    if(error||!r){toast('Certificate record not found','warning');return;}
+    const ex=r.cbt_exams||{}; this.code=r.cert_code||this.code;
+    const old={name:this.v('ct-name'),title:this.v('ct-title'),body:this.v('ct-body')};
+    const o={ name:r.student_name||'Student', title:'CERTIFICATE OF CBT COMPLETION', signatory:this.v('ct-sig')||'Head of School', date:(r.created_at||new Date().toISOString()).slice(0,10),
+      body:'has successfully completed '+(ex.title||'the CBT examination')+' in '+(ex.subject||'')+' with a score of '+r.score+'/'+r.total+' ('+r.percent+'%).',
+      layout:this.v('ct-layout')||'classic', font:this.v('ct-font')||'Georgia, serif', pc:this.v('ct-pc')||'#0506ae', ac:this.v('ct-ac')||'#964eec', border:this.v('ct-border')||'double', sig:this.sig, code:r.cert_code||this.code };
+    const w=window.open('','_blank'); if(!w){toast('Popup blocked','warning');return;} w.document.write('<html><head><title>CBT Certificate</title><base href="'+document.baseURI.replace(/[^/]*$/,'')+'"></head><body style="display:flex;justify-content:center;padding:16px">'+this.html(o)+'<script>window.onload=function(){var i=[].slice.call(document.images),n=i.length;if(!n)return window.print();var d=function(){if(--n<=0)setTimeout(function(){window.print()},300)};i.forEach(function(m){if(m.complete)d();else{m.onload=d;m.onerror=d}})};<\/script></body></html>'); w.document.close();
+  },
+  print(){ var w=window.open('','_blank'); w.document.write('<html><head><title>Certificate</title><base href="'+document.baseURI.replace(/[^/]*$/,'')+'"></head><body style="display:flex;justify-content:center;padding:16px">'+this.html(this.opts())+'<script>window.onload=function(){var i=[].slice.call(document.images),n=i.length;if(!n)return window.print();var d=function(){if(--n<=0)setTimeout(function(){window.print()},300)};i.forEach(function(m){if(m.complete)d();else{m.onload=d;m.onerror=d}})};<\/script></body></html>'); w.document.close(); },
+  async save(){ const o=this.opts();
+    if(sb){ try{ await sb.from('certificates').insert({ student_id:null, type:o.title, serial_no:o.code, signed_by:o.signatory }); }catch(e){} }
+    if(window.App && App.logActivity) App.logActivity('issue','certificate',o.code);
+    this.print();
+  },
+  async saveDesign(){ if(!sb){toast('DB not configured','warning');return;} const o=this.opts();
+    const {error}=await sb.from('certificate_designs').insert({ name:o.title+' design', title:o.title, primary_color:o.pc, accent_color:o.ac, font:o.font, layout:o.layout, body_text:o.body, signatory:o.signatory, signature_data:o.sig, border_style:o.border });
+    if(error){toast(error.message,'danger');return;} toast('Design template saved ✓','success');
+  }
+};
+document.addEventListener('DOMContentLoaded',()=>{ CTUI.loadStudents(); CTUI.render(); }); CTUI.render();
+</script></body></html>

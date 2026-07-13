@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Voting &amp; Polls • School Connect Demo School</title>
-<meta name="description" content="School Connect Demo School — Voting &amp; Polls. Free school management platform by HMG Concepts.">
+<title>Teacher Overview • School Connect Demo School</title>
+<meta name="description" content="School Connect Demo School — Teacher Overview. Free school management platform by HMG Concepts.">
 <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
 <link rel="icon" type="image/png" href="assets/img/logo.svg">
@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<meta property="og:title" content="Voting &amp; Polls • School Connect Demo School">
+<meta property="og:title" content="Teacher Overview • School Connect Demo School">
 <meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
 <meta property="og:image" content="assets/img/logo.svg">
 <meta property="og:type" content="website">
@@ -99,7 +99,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
     <div id="modal-footer" class="modal-footer"></div>
   </div>
 </div>
-<div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher parent student">
+<div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
         <img src="assets/img/logo.svg" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{textContent:('G'),style:'width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900'}))">
@@ -412,7 +412,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
   <main class="app-main">
     <header class="app-topbar">
       <button class="mobile-toggle" onclick="App.toggleSidebar()" title="Menu">☰</button>
-      <h1 class="app-page-title">Voting &amp; Polls</h1>
+      <h1 class="app-page-title">Teacher Overview</h1>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
         
         <button class="btn btn-sm btn-outline" onclick="if(window.Super)Super.chatbot.explainPage()" title="About this page">ℹ️ Help</button>
@@ -422,12 +422,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
       </div>
     </header>
     <div class="app-content">
-      
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
-        <p style="color:var(--gray-600);margin:0">Cast your vote in class elections, head-boy/girl contests and staff polls. Live results update in real time.</p>
-        <button class="btn btn-primary" data-vote-action="create" data-admin-only>+ New Poll</button>
-      </div>
-      <div id="polls-list"><span class="pulse">Loading polls…</span></div>
+      <div class="card" style="margin-bottom:16px;background:#eef2ff;border-color:#c7d2fe"><h3 style="margin-top:0">👨‍🏫 Teacher / Staff Dashboard Overview</h3><p style="color:var(--gray-700);line-height:1.7;margin:0">Admin-only overview of a teacher's operational dashboard: assigned subjects, attendance work, results entered, CBT exams, scheme of work, lesson plans and messages.</p></div><div id="to-view"><p class="pulse">Loading…</p></div>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
       © 2026 School Connect Demo School · Built by <a href="https://cssadewale.pages.dev" target="_blank" rel="noopener">Adewale Samson Adeagbo</a> · Powered by <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener">HMG Concepts</a> · <a href="developer.html">About the developer</a>
@@ -453,4 +448,48 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
   if (window.Enterprise) Enterprise.init(sb);
   if (window.CRUD) CRUD.init(sb);
 </script>
-</body></html>
+<script>
+const TO={
+ async init(){
+  const box=document.getElementById('to-view');
+  if(!sb){box.innerHTML='<div class="card">Database not configured. Add Supabase keys in assets/js/config.js.</div>';return;}
+  const {data:{user}} = await sb.auth.getUser().then(r=>r, ()=>({data:{user:null}}));
+  if (!window.SC_PROFILE && window.App && !App.currentRole) { setTimeout(()=>TO.init(), 500); return; }
+  const profile = window.SC_PROFILE || {};
+  const role = String(profile.role || (window.App&&App.currentRole) || '').toLowerCase();
+  const isTeacher = ['staff','teacher'].includes(role);
+  let id = new URLSearchParams(location.search).get('staff');
+  if(isTeacher){
+    const me = await sb.from('staff').select('id').or('email.eq.'+(user&&user.email?user.email:'' )+',user_id.eq.'+(user&&user.id?user.id:'00000000-0000-0000-0000-000000000000')).maybeSingle().then(r=>r, ()=>({data:null}));
+    id = me.data && me.data.id;
+    if(!id){ box.innerHTML='<div class="card"><h3>Your staff profile is not linked yet</h3><p>Please ask the admin to make sure your Staff record email matches your login email.</p></div>'; return; }
+  }
+  if(!id){ await this.selector(); return; }
+  await this.load(id, isTeacher);
+ },
+ async selector(){
+  const box=document.getElementById('to-view');
+  const {data,error}=await sb.from('staff').select('id,full_name,email,phone,role,staff_type,subject_taught').order('full_name').limit(1000);
+  if(error){box.innerHTML='<div class="card"><h3>Could not load staff</h3><p>'+esc(error.message)+'</p></div>';return;}
+  box.innerHTML='<div class="card"><h2>Select a Teacher / Staff Member</h2><p style="color:var(--gray-600)">Admin and Super Admin may inspect any teacher dashboard. Teachers see only their own profile.</p><div class="form-group"><label>Teacher / Staff</label><select class="form-select" onchange="if(this.value)location.href=\'teacher-overview.html?staff=\'+this.value"><option value="">— choose —</option>'+(data||[]).map(s=>'<option value="'+s.id+'">'+esc(s.full_name||'Unnamed')+' — '+esc(s.role||s.staff_type||'staff')+'</option>').join('')+'</select></div></div>';
+ },
+ async load(id, ownOnly){
+  const box=document.getElementById('to-view'); box.innerHTML='<p class="pulse">Loading teacher overview…</p>';
+  const st=await sb.from('staff').select('*').eq('id',id).maybeSingle();
+  if(st.error||!st.data){box.innerHTML='<div class="card"><h3>Staff member not found</h3><p>Select another staff member from the Staff page.</p><a class="btn btn-outline" href="teacher-overview.html">Choose staff</a></div>';return;}
+  const s=st.data||{}; const name=s.full_name||s.name||'';
+  const safe=async(q)=>{try{const r=await q;return r&&!r.error?(r.data||[]):[]}catch(e){return[]}};
+  const [sub,res,cbt,sow,lp,att] = await Promise.all([
+    safe(sb.from('subjects').select('*').or('teacher.eq.'+name+',teacher_id.eq.'+id).limit(200)),
+    safe(sb.from('results').select('*').or('teacher_id.eq.'+id+',teacher.eq.'+name).limit(500)),
+    safe(sb.from('cbt_exams').select('*').eq('teacher_id',id).limit(200)),
+    safe(sb.from('scheme_of_work').select('*').or('teacher.eq.'+name+',teacher_id.eq.'+id).limit(500)),
+    safe(sb.from('lesson_plans').select('*').or('teacher.eq.'+name+',teacher_id.eq.'+id).limit(500)),
+    safe(sb.from('attendance').select('*').or('teacher_id.eq.'+id+',recorded_by.eq.'+id).limit(500))
+  ]);
+  box.innerHTML='<div class="card"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><h2>'+esc(name||'Teacher')+'</h2><p>'+esc(s.role||s.designation||s.staff_type||'')+' · '+esc(s.email||'')+' · '+esc(s.phone||'')+'</p><p style="color:var(--gray-600)">Subject(s): '+esc(s.subject_taught||'-')+' · Department: '+esc(s.department||'-')+'</p></div>'+(ownOnly?'':'<a class="btn btn-outline" href="teacher-overview.html">Choose another</a>')+'</div></div>'+ 
+  '<div class="stats-grid"><div class="stat-card"><div class="stat-value">'+sub.length+'</div><div class="stat-label">Assigned Subjects</div></div><div class="stat-card"><div class="stat-value">'+res.length+'</div><div class="stat-label">Results Entered</div></div><div class="stat-card"><div class="stat-value">'+cbt.length+'</div><div class="stat-label">CBT Exams</div></div><div class="stat-card"><div class="stat-value">'+sow.length+'</div><div class="stat-label">Scheme Rows</div></div><div class="stat-card"><div class="stat-value">'+lp.length+'</div><div class="stat-label">Lesson Plans</div></div><div class="stat-card"><div class="stat-value">'+att.length+'</div><div class="stat-label">Attendance Rows</div></div></div>'+ 
+  '<div class="grid grid-2"><div class="card"><h3>Assigned Subjects</h3>'+(sub.length?'<ul>'+sub.map(x=>'<li>'+esc(x.name||x.subject||'-')+'</li>').join('')+'</ul>':'<p>No subjects assigned yet.</p>')+'</div><div class="card"><h3>Recent CBT Exams</h3>'+(cbt.length?'<ul>'+cbt.slice(0,8).map(x=>'<li><b>'+esc(x.code||'')+'</b> — '+esc(x.title||x.subject||'')+'</li>').join('')+'</ul>':'<p>No CBT exams created yet.</p>')+'</div></div>'+ 
+  '<div class="card"><h3>Quick links</h3><a class="btn btn-outline" href="results.html">Results</a> <a class="btn btn-outline" href="cbt.html">CBT</a> <a class="btn btn-outline" href="sow.html">Scheme</a> <a class="btn btn-outline" href="lesson_plans.html">Lesson Plans</a> <a class="btn btn-outline" href="messages.html">Messages</a></div>';
+ }}; document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>TO.init(),400));
+</script></body></html>
