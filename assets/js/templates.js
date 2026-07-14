@@ -345,7 +345,7 @@ ${T.setupRequiredBanner()}
       'students','classes','subjects','attendance','results','report_cards','academic_records',
       'cbt','cbt_prompts','entrance','assignments','timetable','timetable_generator','sow',
       'lesson_plans','library','digital_library','eresources','announcements','events','messages','inbox',
-      'complaints','broadcast','diary','checkin','behaviour','conduct','health','support_plans',
+      'complaints','broadcast','diary','checkin','checkin_staff','checkin-staff','behaviour','conduct','health','support_plans',
       'certificates','reports','directory','rubrics','counselling','substitutions','helpdesk','book_request'
     ]);
     const parentSet = new Set([
@@ -380,7 +380,7 @@ ${T.setupRequiredBanner()}
       career_counseling:'🧭', document_builder:'🧾', fleet_tracking:'🛰️', facility_booking:'🏟️', compliance:'✅',
       activity_log:'🧮', lesson_plans:'🗒️', behaviour:'🏅', support_plans:'🧩',
       donations:'💝', substitutions:'🔁', helpdesk:'🆘', payments_online:'💳', notifications:'🔔',
-      'report_cards':'🧾', 'admin-data':'🗄️', flyer:'📰', approvals:'✅', 'timetable-generator':'🗓️', checkin:'📲', diary:'📔', surveys:'🗒️', menu:'🍽️', settings:'⚙️',
+      'report_cards':'🧾', 'admin-data':'🗄️', flyer:'📰', approvals:'✅', 'timetable-generator':'🗓️', checkin:'📲', 'checkin-staff':'⏰', 'checkin_staff':'⏰', diary:'📔', surveys:'🗒️', menu:'🍽️', settings:'⚙️',
       digital_library:'📚', 'cbt-prompts':'🧩', entrance:'🎯', storage:'🗄️', developer:'👨‍💻',
       payroll:'🧾', staff_loans:'🏦', staff_bonus:'🎁', appraisals:'⭐', 'student-profile':'👤', academic_records:'📄',
       rubrics:'📐', transcripts:'🎓', transfer_cert:'📄', counselling:'💬'
@@ -410,7 +410,7 @@ ${T.setupRequiredBanner()}
       activity_log:'Activity Log', lesson_plans:'Lesson Plans', behaviour:'Behaviour',
       support_plans:'Support Plans', donations:'Donations', substitutions:'Substitutions',
       helpdesk:'Help Desk', payments_online:'Online Pay', 'report_cards':'Report Cards',
-      'admin-data':'Admin Data', approvals:'Approvals', flyer:'Flyer', checkin:'QR Check-in', diary:'Diary',
+      'admin-data':'Admin Data', approvals:'Approvals', flyer:'Flyer', checkin:'QR Check-in', 'checkin-staff':'Staff Check-In', 'checkin_staff':'Staff Check-In', diary:'Diary',
       surveys:'Surveys', menu:'Menu', academic_records:'Records'
     };
     return map[id] || fallbackName || id;
@@ -446,11 +446,11 @@ ${T.setupRequiredBanner()}
       ['Academic Setup','academic_setup.html'],['Approvals','approvals.html'],['Students','students.html'],['Staff','staff.html'],['Parents','parents.html'],['Parent–Child Links','parents.html'],['Classes','classes.html'],['Subjects','subjects.html'],['Departments','departments.html'],
       ['Admissions','admissions.html'],['Finance','finance.html'],['Fees','fees.html'],['Payroll','payroll.html'],['Staff Loans','staff_loans.html'],['Staff Bonus','staff_bonus.html'],['Appraisals','appraisals.html'],
       ['Analytics','analytics.html'],['Admin Data','admin-data.html'],['Storage','storage.html'],['Compliance','compliance.html'],['Activity Log','activity_log.html'],['Settings','settings.html'],
-      ['Timetable Generator','timetable-generator.html'],['QR Check-in','checkin.html'],['Surveys','surveys.html'],['Menu Planner','menu.html'],['Fleet','fleet_tracking.html'],['Facilities','facility_booking.html'],['Inventory','inventory.html'],['Documents','document_builder.html'],
+      ['Timetable Generator','timetable-generator.html'],['QR Check-in','checkin.html'],['Staff Check-In','checkin-staff.html'],['Surveys','surveys.html'],['Menu Planner','menu.html'],['Fleet','fleet_tracking.html'],['Facilities','facility_booking.html'],['Inventory','inventory.html'],['Documents','document_builder.html'],
       ['ID Cards','idcards.html'],['Certificates','certificates.html'],['Flyer','flyer.html'],['Broadcast','broadcast.html'],['Announcements','announcements.html'],['Voting','voting.html']
     ];
     const staffLinks = [
-      ['My Account','profile.html'],['Change Password','change-password.html'],['Attendance','attendance.html'],['Results','results.html'],['CBT Manager','cbt.html'],['CBT Prompts','cbt-prompts.html'],['Report Cards','report-cards.html'],['Academic Records','academic-records.html'],['Assignments','assignments.html'],['Scheme of Work','sow.html'],['Lesson Plans','lesson_plans.html'],['Timetable','timetable.html'],['Digital Library','digital_library.html'],['Library','library.html'],['Behaviour','behaviour.html'],['Support Plans','support_plans.html'],['Diary','diary.html'],['Messages','messages.html'],['Inbox','inbox.html'],['Students','students.html']
+      ['My Account','profile.html'],['Change Password','change-password.html'],['Staff Check-In','checkin-staff.html'],['Attendance','attendance.html'],['Results','results.html'],['CBT Manager','cbt.html'],['CBT Prompts','cbt-prompts.html'],['Report Cards','report-cards.html'],['Academic Records','academic-records.html'],['Assignments','assignments.html'],['Scheme of Work','sow.html'],['Lesson Plans','lesson_plans.html'],['Timetable','timetable.html'],['Digital Library','digital_library.html'],['Library','library.html'],['Behaviour','behaviour.html'],['Support Plans','support_plans.html'],['Diary','diary.html'],['Messages','messages.html'],['Inbox','inbox.html'],['Students','students.html']
     ];
     const parentLinks = [
       ['My Account','profile.html'],['Change Password','change-password.html'],['Child Dashboard','student-profile.html'],['Fees / Balance','fees.html'],['Results','results.html'],['Report Cards','report-cards.html'],['Attendance','attendance.html'],['Assignments','assignments.html'],['Diary','diary.html'],['Timetable','timetable.html'],['Messages','inbox.html'],['Announcements','announcements.html'],['Complaint','complaints.html'],['Apply / Admissions','apply.html']

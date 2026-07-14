@@ -333,6 +333,70 @@ const Enterprise = {
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tamper-evident-audit-trail-' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
       } catch (e) { alert('Export failed: ' + e.message); }
     }
+  },
+
+  /* ================= 20) Voting & Polls Connector ================= */
+  voting: {
+    async list() {
+      if (typeof Voting !== 'undefined') {
+        const polls = await Voting.listPolls();
+        // Translate candidates column to options for compatibility
+        const translated = (polls || []).map(p => {
+          const opts = p.candidates ? JSON.parse(p.candidates) : [];
+          return Object.assign({}, p, { options: opts.map((c, i) => ({ id: c.id || 'c'+(i+1), label: c.name || c.label || '', desc: c.info || c.desc || '' })) });
+        });
+        return { data: translated };
+      }
+      return { data: [] };
+    },
+    async create(p) {
+      if (typeof Voting !== 'undefined') {
+        const mappedCandidates = (p.options || []).map((o, i) => ({ id: o.id || 'c'+(i+1), name: o.label || '', info: o.desc || '', photo: '' }));
+        const r = await Voting.createPoll({
+          title: p.title,
+          description: p.description,
+          candidates: mappedCandidates,
+          type: p.type,
+          closes_at: p.closes_on,
+          anonymous: p.anonymous,
+          allow_multiple: p.multi_winner,
+          audience: p.audience
+        });
+        return r;
+      }
+      return { error: 'Voting module missing' };
+    },
+    async vote(pollId, candidateIndices) {
+      if (typeof Voting !== 'undefined') {
+        const { poll } = await Voting.getResults(pollId);
+        const candidates = poll.candidates ? JSON.parse(poll.candidates) : [];
+        const chosenIds = candidateIndices.map(idx => {
+          const c = candidates[idx];
+          return c ? c.id : 'c' + (idx + 1);
+        });
+        // Call Voting.vote for each chosen ID
+        let lastRes = null;
+        for (const cid of chosenIds) {
+          lastRes = await Voting.vote(pollId, cid);
+        }
+        return lastRes || { error: 'No choices voted' };
+      }
+      return { error: 'Voting module missing' };
+    },
+    async update(pollId, patch) {
+      if (typeof Voting !== 'undefined') {
+        if (patch.status === 'closed') {
+          await Voting.closePoll(pollId);
+          return { data: { status: 'closed' } };
+        } else {
+          if (Voting.sb) {
+            await Voting.sb.from('polls').update({ status: 'open' }).eq('id', pollId);
+            return { data: { status: 'open' } };
+          }
+        }
+      }
+      return { error: 'Voting module missing' };
+    }
   }
 };
 

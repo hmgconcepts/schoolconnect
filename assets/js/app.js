@@ -258,7 +258,12 @@ const App = {
         ['Announcements','announcements.html'],['Analytics','analytics.html'],
         ['Access Manager','#role-access-manager'],['Admin Data','admin-data.html']
       ];
-      q.innerHTML = links.map(x => '<a class="btn btn-outline btn-sm" href="'+x[1]+'">'+x[0]+'</a>').join('');
+      const filteredLinks = links.filter(link => {
+        const href = link[1];
+        if (href.startsWith('#')) return true;
+        return App.canAccessPage(href, role);
+      });
+      q.innerHTML = filteredLinks.map(x => '<a class="btn btn-outline btn-sm" href="'+x[1]+'">'+x[0]+'</a>').join('');
     }
     App.injectAccessManager(role);
   },
@@ -449,6 +454,20 @@ const App = {
   roleAccessMap: null,
   roleWriteMap: null,
 
+  canAccessPage(pageFileName, role) {
+    if (App.isAdminRole(role)) return true;
+    const id = this.normalizeModuleId(pageFileName);
+    const map = this.roleAccessMap || {};
+    if (map[id] && Array.isArray(map[id])) {
+      return map[id].includes(role) || (role === 'teacher' && map[id].includes('staff')) || (role === 'staff' && map[id].includes('teacher'));
+    }
+    if (typeof T !== 'undefined' && T.roleAllow) {
+      const allow = T.roleAllow(id).toLowerCase().split(/\s+/).filter(Boolean);
+      return allow.some(a => ['any','all','public', role].includes(a) || (role === 'teacher' && a === 'staff') || (role === 'staff' && a === 'teacher'));
+    }
+    return true;
+  },
+
   loadRoleAccessMap() {
     try {
       const saved = localStorage.getItem('sc-role-access-map');
@@ -463,7 +482,10 @@ const App = {
           if (data) {
             if (data.role_access && typeof data.role_access === 'object') { this.roleAccessMap = data.role_access; try { localStorage.setItem('sc-role-access-map', JSON.stringify(data.role_access)); } catch(e) {} }
             if (data.role_write && typeof data.role_write === 'object') { this.roleWriteMap = data.role_write; try { localStorage.setItem('sc-role-write-map', JSON.stringify(data.role_write)); } catch(e) {} }
-            if (this.currentRole) { this.applyRoleNav(this.currentRole); }
+            if (this.currentRole) { 
+              this.applyRoleNav(this.currentRole); 
+              this.applyRoleDashboard(this.currentRole, this.currentProfile);
+            }
           }
         }).catch(()=>{});
       } catch(e) {}

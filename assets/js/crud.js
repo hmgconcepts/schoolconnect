@@ -618,7 +618,7 @@ const CRUD = {
 
     // Non-admin data scoping: never show another learner/family's private records.
     // strictStudentModules = one learner only; classAssignedModules = class-wide resources like assignments/e-resources.
-    const strictStudentModules = ['results', 'attendance', 'fees', 'report_cards', 'certificates', 'payments_online'];
+    const strictStudentModules = ['results', 'attendance', 'fees', 'report_cards', 'certificates', 'payments_online', 'idcards'];
     const classAssignedModules = ['assignments', 'eresources', 'digital_library', 'library_borrowers', 'timetable'];
     const messageModules = ['messages', 'inbox', 'complaints', 'helpdesk'];
     const studentOwnedModules = strictStudentModules.concat(classAssignedModules, messageModules);
