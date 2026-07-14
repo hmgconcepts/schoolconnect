@@ -880,17 +880,64 @@ end $$;
 
 
 -- ---- Results ownership: staff can read academic scores, but only admins or the teacher who created a score may update/delete it ----
-drop policy if exists "results_select_v5" on public.results;
-drop policy if exists "results_insert_v5" on public.results;
-drop policy if exists "results_update_v5" on public.results;
-drop policy if exists "results_delete_v5" on public.results;
-create policy "results_select_v5" on public.results for select using (
-  public.is_staff(auth.uid()) or public.is_parent_of(auth.uid(), student_id)
-  or student_id in (select id from public.students where user_id = auth.uid())
+drop policy if exists "results_update_teacher" on public.results;
+drop policy if exists "results_delete_teacher" on public.results;
+create policy "results_update_teacher" on public.results for update using (public.is_admin(auth.uid()) or teacher_id = auth.uid());
+create policy "results_delete_teacher" on public.results for delete using (public.is_admin(auth.uid()) or teacher_id = auth.uid());
+
+-- ---- Affective & Psychomotor Domains (NEW in v9) ----
+create table if not exists public.affective_traits (
+  id uuid primary key default uuid_generate_v4(),
+  student_id uuid references public.students(id) on delete cascade,
+  term text, session text,
+  ratings jsonb default '{}'::jsonb, -- {trait: rating, ...}
+  teacher_id uuid references public.profiles(id),
+  created_at timestamptz default now(),
+  unique(student_id, term, session)
 );
-create policy "results_insert_v5" on public.results for insert with check (public.is_staff(auth.uid()));
-create policy "results_update_v5" on public.results for update using (public.is_admin(auth.uid()) or teacher_id = auth.uid()) with check (public.is_admin(auth.uid()) or teacher_id = auth.uid());
-create policy "results_delete_v5" on public.results for delete using (public.is_admin(auth.uid()) or teacher_id = auth.uid());
+alter table public.affective_traits enable row level security;
+create policy "read_affective" on public.affective_traits for select using (auth.role() = 'authenticated');
+create policy "write_affective" on public.affective_traits for all using (public.is_staff(auth.uid()));
+
+create table if not exists public.psychomotor_traits (
+  id uuid primary key default uuid_generate_v4(),
+  student_id uuid references public.students(id) on delete cascade,
+  term text, session text,
+  ratings jsonb default '{}'::jsonb,
+  teacher_id uuid references public.profiles(id),
+  created_at timestamptz default now(),
+  unique(student_id, term, session)
+);
+alter table public.psychomotor_traits enable row level security;
+create policy "read_psychomotor" on public.psychomotor_traits for select using (auth.role() = 'authenticated');
+create policy "write_psychomotor" on public.psychomotor_traits for all using (public.is_staff(auth.uid()));
+
+create table if not exists public.report_comments (
+  id uuid primary key default uuid_generate_v4(),
+  student_id uuid references public.students(id) on delete cascade,
+  term text, session text,
+  class_teacher_comment text,
+  principal_comment text,
+  next_term_begins date,
+  created_at timestamptz default now(),
+  unique(student_id, term, session)
+);
+alter table public.report_comments enable row level security;
+create policy "read_comments" on public.report_comments for select using (auth.role() = 'authenticated');
+create policy "write_comments" on public.report_comments for all using (public.is_staff(auth.uid()));
+
+-- ---- Update RLS for teacher isolation on key academic tables ----
+do $$
+declare t text;
+declare owned_tables text[] := array['assignments','scheme_of_work','lesson_plans','cbt_exams','attendance'];
+begin
+  foreach t in array owned_tables loop
+    execute format('drop policy if exists "update_own_%s" on public.%I', t, t);
+    execute format('drop policy if exists "delete_own_%s" on public.%I', t, t);
+    execute format('create policy "update_own_%s" on public.%I for update using (public.is_admin(auth.uid()) or teacher_id = auth.uid() or posted_by = auth.uid() or recorded_by = auth.uid())', t, t);
+    execute format('create policy "delete_own_%s" on public.%I for delete using (public.is_admin(auth.uid()) or teacher_id = auth.uid() or posted_by = auth.uid() or recorded_by = auth.uid())', t, t);
+  end loop;
+end $$;
 
 -- ---- Attendance: parents see own children; staff manage ----
 drop policy if exists "att_read"  on public.attendance;
