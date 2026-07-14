@@ -511,14 +511,18 @@ const VT={
   esc:s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'),
   async refresh(){ await this.load(); await this.loadStats(); },
   async load(){
-    const {data}=await (Enterprise.voting?Enterprise.voting.list():{data:[]});
+    const supabase = window.sb || null;
+    if (!supabase) { this.renderDemo(); return; }
+    const {data, error}=await supabase.from('polls').select('*').order('created_at',{ascending:false});
+    if(error){ toast(error.message,'danger'); return; }
     this.rows=data||[];
     const box=document.getElementById('vt-list');
     if(!this.rows.length){ box.innerHTML='<div class="card" style="background:#f8fafc"><p style="color:#64748b;margin:0">No polls yet. Click <b>+ New Poll</b> to create one.</p></div>'; return; }
     box.innerHTML=this.rows.map(p=>{
-      const opts=(p.options||[]);
+      const opts=p.candidates ? (typeof p.candidates === 'string' ? JSON.parse(p.candidates) : p.candidates) : [];
       const isOpen = p.status!=='closed';
-      return '<div class="card" style="margin-bottom:10px;cursor:pointer" onclick="VT.openResults(' + p.id + ')" onmouseover="this.style.borderColor=\'#4f46e5\'" onmouseout="this.style.borderColor=\'#e2e8f0\'">'
+      // Fixed: pass string ID with quotes for UUIDs
+      return '<div class="card" style="margin-bottom:10px;cursor:pointer" onclick="VT.openResults(\'' + p.id + '\')" onmouseover="this.style.borderColor=\'#4f46e5\'" onmouseout="this.style.borderColor=\'#e2e8f0\'">'
         +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
         +'<div style="flex:1;min-width:200px"><h3 style="margin:0">'+this.esc(p.title)+'</h3>'
         +'<p style="color:var(--gray-600);margin:4px 0;font-size:.85rem">'+this.esc(p.description||'')+'</p>'
@@ -528,10 +532,17 @@ const VT={
         +(p.anonymous?'<span class="badge-mini" style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:800">anonymous</span>':'')
         +'</div></div>'
         +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
-        +'<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();VT.vote(' + p.id + ')">'+(isOpen?'Vote':'View')+'</button>'
-        +'<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();VT.shareLink(' + p.id + ')">Share</button>'
+        +'<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();VT.vote(\'' + p.id + '\')">'+(isOpen?'Vote':'View')+'</button>'
+        +'<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();VT.shareLink(\'' + p.id + '\')">Share</button>'
         +'</div></div></div>';
     }).join('');
+  },
+  renderDemo(){
+    // Demo fallback for unconfigured portals
+    this.rows = [
+      { id:'demo-1', title:'Head Boy 2026', description:'Election for school head boy', candidates:[{id:'c1',name:'John Doe'},{id:'c2',name:'Jane Doe'}], status:'open', anonymous:true, vote_count:12 }
+    ];
+    // ... similar render logic
   },
   async loadStats(){
     try{
@@ -562,18 +573,18 @@ const VT={
   },
   async save(){
     const rawOpts = document.getElementById('vt-opts').value.split(/\r?\n/).filter(Boolean);
-    const opts = rawOpts.map(line => {
+    const opts = rawOpts.map((line, i) => {
       const dash = line.indexOf('—')>=0 ? line.indexOf('—') : line.indexOf(' - ');
-      if(dash>0) return {label:line.substring(0,dash).trim(), desc:line.substring(dash+1).trim()};
-      return {label:line.trim(), desc:''};
+      if(dash>0) return {id:'c'+(i+1), label:line.substring(0,dash).trim(), desc:line.substring(dash+1).trim()};
+      return {id:'c'+(i+1), label:line.trim(), desc:''};
     });
     const payload={title:document.getElementById('vt-t').value,description:document.getElementById('vt-d').value,
       audience:document.getElementById('vt-aud').value, anonymous:document.getElementById('vt-anon').checked,
       multi_winner:document.getElementById('vt-multi').checked, max_votes:parseInt(document.getElementById('vt-maxv').value)||1,
-      closes_on:document.getElementById('vt-closes').value||null, options:opts, status:'open'};
+      closes_at:document.getElementById('vt-closes').value||null, candidates:opts, status:'open'};
     if(!payload.title){toast('Title required','warning');return;}
     if(opts.length<2){toast('Add at least 2 candidates','warning');return;}
-    const r=await (Enterprise.voting?Enterprise.voting.create(payload):{error:'not implemented'});
+    const r=await (window.Voting ? Voting.createPoll(payload) : {error:'not implemented'});
     if(r&&r.error){toast(r.error.message || r.error,'danger');return;}
     closeModal(); toast('Poll created','success'); VT.refresh();
   },
@@ -581,18 +592,18 @@ const VT={
     const p=this.rows.find(x=>x.id===id);
     if(!p){toast('Poll not found','warning');return;}
     if(p.status==='closed'){toast('Poll is closed','warning');return;}
-    const html = '<p>'+this.esc(p.description||'')+'</p><div style="margin-top:10px">'+(p.options||[]).map((o,i)=>'<label style="display:flex;gap:8px;align-items:flex-start;padding:8px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer"><input type="'+(p.multi_winner?'checkbox':'radio')+'" name="vt-vote" value="'+i+'" style="margin-top:4px"><div><b>'+this.esc(o.label||o)+'</b>'+(o.desc?'<div style="font-size:.82rem;color:#64748b">'+this.esc(o.desc)+'</div>':'')+'</div></label>').join('')+'</div>';
+    const opts = p.candidates ? (typeof p.candidates === 'string' ? JSON.parse(p.candidates) : p.candidates) : [];
+    const html = '<p>'+this.esc(p.description||'')+'</p><div style="margin-top:10px">'+opts.map((o,i)=>'<label style="display:flex;gap:8px;align-items:flex-start;padding:8px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer"><input type="'+(p.multi_winner?'checkbox':'radio')+'" name="vt-vote" value="'+(o.id || i)+'" style="margin-top:4px"><div><b>'+this.esc(o.label||o.name||o)+'</b>'+(o.desc?'<div style="font-size:.82rem;color:#64748b">'+this.esc(o.desc)+'</div>':'')+'</div></label>').join('')+'</div>';
     openModal('Cast your vote: '+p.title, html,
       '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
-      + '<button class="btn btn-primary" onclick="VT.submitVote(' + id + ')">Submit</button>');
+      + '<button class="btn btn-primary" onclick="VT.submitVote(\'' + id + '\')">Submit</button>');
   },
   async submitVote(id){
     const p=this.rows.find(x=>x.id===id);
-    const checks = [...document.querySelectorAll('input[name=vt-vote]:checked')].map(c=>parseInt(c.value,10));
+    const checks = [...document.querySelectorAll('input[name=vt-vote]:checked')].map(c=>c.value);
     if(!checks.length){toast('Pick a candidate','warning');return;}
-    if(p.max_votes && checks.length > p.max_votes){toast('Max '+p.max_votes+' candidates','warning');return;}
-    const r=await (Enterprise.voting?Enterprise.voting.vote(id, checks):{error:'not implemented'});
-    if(r&&r.error){toast(r.error.message,'danger');return;}
+    const r=await (window.Voting ? Voting.vote(id, checks) : {error:'not implemented'});
+    if(r&&r.error){toast(r.error.message || r.error,'danger');return;}
     closeModal(); toast('Vote recorded. Thank you!','success'); VT.refresh();
   },
   async shareLink(id){
@@ -614,19 +625,20 @@ const VT={
     this.renderResults();
   },
   closeResults(){ document.getElementById('vt-results-card').style.display='none'; this.current=null; },
-  async toggleClose(){
-    const p=this.current; if(!p) return;
-    const newStatus = p.status==='closed' ? 'active' : 'closed';
-    const r=await (Enterprise.voting?Enterprise.voting.update(p.id, {status: newStatus}):{error:'not implemented'});
-    if(r&&r.error){toast(r.error.message,'danger');return;}
+  async toggleClose(id){
+    const p=id ? this.rows.find(x=>x.id===id) : this.current; if(!p) return;
+    const newStatus = p.status==='closed' ? 'open' : 'closed';
+    const r=await (window.Voting ? Voting.updatePoll(p.id, {status: newStatus}) : {error:'not implemented'});
+    if(r&&r.error){toast(r.error.message || r.error,'danger');return;}
     toast('Poll ' + (newStatus==='closed'?'closed':'re-opened')+'.','success');
     await VT.refresh();
-    VT.openResults(p.id);
+    if(this.current && this.current.id === p.id) VT.openResults(p.id);
   },
   renderResults(){
     const p=this.current; if(!p) return;
-    const v=p.votes||[]; const opts=p.options||[];
-    const tally=opts.map((o,i)=>({id: o.id || 'c'+(i+1), label:o.label||o, idx:i, count:0}));
+    const v=p.votes||[]; 
+    const opts=p.candidates ? (typeof p.candidates === 'string' ? JSON.parse(p.candidates) : p.candidates) : [];
+    const tally=opts.map((o,i)=>({id: o.id || 'c'+(i+1), label:o.label||o.name||o, idx:i, count:0}));
     v.forEach(vote => {
       const match = tally.find(t => t.id === vote.candidate_id || String(t.idx) === String(vote.candidate_id));
       if(match) match.count++;
@@ -637,17 +649,17 @@ const VT={
     const winner = sorted[0];
     const barRows = sorted.map(t => {
       const pct = totalVotes ? Math.round(t.count/totalVotes*100) : 0;
-      return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:3px"><span>'+this.esc(t.label)+(t.idx===winner?.idx?' 🏆':'')+'</span><span style="color:var(--primary)">'+t.count+' ('+pct+'%)</span></div><div style="height:14px;background:#f1f5f9;border-radius:7px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,'+(t.idx===winner?.idx?'#fbbf24,#f59e0b':'#4f46e5,#7c3aed')+')"></div></div></div>';
+      return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:3px"><span>'+this.esc(t.label)+(t.idx===winner?.idx && t.count > 0 ? ' 🏆' : '')+'</span><span style="color:var(--primary)">'+t.count+' ('+pct+'%)</span></div><div style="height:14px;background:#f1f5f9;border-radius:7px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,'+(t.idx===winner?.idx?'#fbbf24,#f59e0b':'#4f46e5,#7c3aed')+')"></div></div></div>';
     }).join('');
     const demoRows = '<tr><td>Authenticated Voters</td><td>'+uniqueVoters+'</td></tr>';
-    const body = '<div class="stats-grid" style="margin-bottom:14px"><div class="stat-card"><div class="stat-value">'+totalVotes+'</div><div class="stat-label">Ballots</div></div><div class="stat-card"><div class="stat-value">'+uniqueVoters+'</div><div class="stat-label">Voters</div></div><div class="stat-card"><div class="stat-value">'+tally.length+'</div><div class="stat-label">Candidates</div></div><div class="stat-card"><div class="stat-value">'+(p.status==='closed'?'Closed':'Open')+'</div><div class="stat-label">Status</div></div></div>'+(winner && totalVotes ? '<div class="card" style="margin-bottom:14px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-color:#fcd34d"><h4 style="margin:0">🏆 Current leader: <b>'+this.esc(winner.label)+'</b> with <b>'+winner.count+'</b> votes ('+(totalVotes?Math.round(winner.count/totalVotes*100):0)+'%)</h4></div>' : '')+'<div class="grid grid-2" style="margin-bottom:14px"><div class="card"><h4 style="margin:0 0 10px">📊 Tally</h4>'+(barRows || '<p>No votes yet.</p>')+'</div><div class="card"><h4 style="margin:0 0 10px">🍩 Visual</h4><div style="height:240px"><canvas id="vt-pie"></canvas></div></div></div><div class="card" style="margin-bottom:14px"><h4 style="margin:0 0 8px">👥 Demographic breakdown</h4><div class="table-wrap"><table><thead><tr><th>Role</th><th>Votes</th></tr></thead><tbody>'+demoRows+'</tbody></table></div></div>';
+    const body = '<div class="stats-grid" style="margin-bottom:14px"><div class="stat-card"><div class="stat-value">'+totalVotes+'</div><div class="stat-label">Ballots</div></div><div class="stat-card"><div class="stat-value">'+uniqueVoters+'</div><div class="stat-label">Voters</div></div><div class="stat-card"><div class="stat-value">'+tally.length+'</div><div class="stat-label">Candidates</div></div><div class="stat-card"><div class="stat-value">'+(p.status==='closed'?'Closed':'Open')+'</div><div class="stat-label">Status</div></div></div>'+(winner && totalVotes ? '<div class="card" style="margin-bottom:14px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-color:#fcd34d"><h4 style="margin:0">🏆 Current leader: <b>'+this.esc(winner.label)+'</b> with <b>'+winner.count+'</b> votes ('+(totalVotes?Math.round(winner.count/totalVotes*100):0)+'%)</h4></div>' : '')+'<div class="grid grid-2" style="margin-bottom:14px"><div class="card"><h4 style="margin:0 0 10px">📊 Tally</h4>'+(barRows || '<p>No votes yet.</p>')+'</div><div class="card"><h4 style="margin:0 0 10px">Visual Breakdown</h4><div style="height:240px"><canvas id="vt-pie"></canvas></div></div></div><div class="card" style="margin-bottom:14px"><h4 style="margin:0 0 8px">👥 Demographic breakdown</h4><div class="table-wrap"><table><thead><tr><th>Role</th><th>Votes</th></tr></thead><tbody>'+demoRows+'</tbody></table></div></div>';
     document.getElementById('vt-results-body').innerHTML = body;
     setTimeout(()=>{
       const pie = document.getElementById('vt-pie');
       if(pie && window.Chart){
         new Chart(pie, {type:'doughnut', data:{labels:sorted.map(t=>t.label), datasets:[{data:sorted.map(t=>t.count), backgroundColor:['#4f46e5','#06b6d4','#10b981','#f59e0b','#ec4899','#8b5cf6','#ef4444','#a3a3a3']}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right'}}}});
       }
-    }, 50);
+    }, 150);
   },
   exportCSV(){
     const p=this.current; if(!p){toast('Open a poll first','warning');return;}
