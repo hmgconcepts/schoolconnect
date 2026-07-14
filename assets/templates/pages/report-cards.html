@@ -442,8 +442,13 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
       <div id="rc-cols" data-staff-only></div>
       <div id="rc-grid"></div>
       <div class="card" style="margin-top:16px">
-        <h3>📄 Step 4 · Generate outputs</h3>
-        <p style="color:var(--gray-600);font-size:.9rem">Generate printable termly outputs from the recorded scores (all subjects).</p>
+        <h3>📄 Step 4 · Generate & Fine-tune outputs</h3>
+        <p style="color:var(--gray-600);font-size:.9rem">Fill traits, comments and generate printable termly outputs.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <button class="btn btn-outline" onclick="CRUD.bulkFillTraits('affective')">⭐ Bulk Affective</button>
+          <button class="btn btn-outline" onclick="CRUD.bulkFillTraits('psychomotor')">🏃 Bulk Psychomotor</button>
+          <button class="btn btn-outline" onclick="CRUD.openForm('report_comments')">💬 Comments</button>
+        </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <input class="form-input" id="rc-student" placeholder="Student name for report card" style="max-width:240px">
           <button class="btn btn-primary" onclick="RC.reportCard()">🧾 Student Report Card</button>
