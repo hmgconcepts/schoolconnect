@@ -921,6 +921,18 @@ const CRUD = {
       const ex = await this.sb.from('parent_child').select('id').eq('parent_id', payload.parent_id).eq('student_id', payload.student_id).maybeSingle().then(r=>r, ()=>({data:null}));
       if (ex.data) { toast('This parent is already linked to this child. Choose another child or update the existing link.', 'warning', 7000); return; }
     }
+    const sharedTables = ['library', 'digital_library', 'gallery', 'eresources', 'events', 'announcements'];
+    if (id && window.App && !App.isAdminRole(App.currentRole) && !sharedTables.includes(d.table)) {
+      const { data: row } = await this.sb.from(d.table).select('*').eq('id', id).maybeSingle();
+      if (row && (row.teacher_id || row.posted_by || row.teacher)) {
+        const uid = window.SC_PROFILE?.id;
+        const uname = window.SC_PROFILE?.full_name;
+        if (row.teacher_id !== uid && row.posted_by !== uid && row.teacher !== uname) {
+          toast('Access Denied: You cannot modify records created by another subject teacher.', 'danger', 6000);
+          return;
+        }
+      }
+    }
     const runSave = async (pl) => id ? await this.sb.from(d.table).update(pl).eq('id', id) : await this.sb.from(d.table).insert(pl);
     let res = await runSave(payload);
     // ENTERPRISE V6 (issues 16, 26, 32, 35): self-healing writes. If the target

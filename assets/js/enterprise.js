@@ -95,7 +95,12 @@ const Enterprise = {
     },
     async list() { if (!Enterprise.sb) return { data: [] }; return await Enterprise.sb.from('surveys').select('*').eq('is_open', true).order('created_at', { ascending: false }); },
     async respond(surveyId, answers) { if (!Enterprise.sb) return { error: 'No DB' }; return await Enterprise.sb.from('survey_responses').insert({ survey_id: surveyId, answers }); },
-    async results(surveyId) { if (!Enterprise.sb) return { data: [] }; return await Enterprise.sb.from('survey_responses').select('*').eq('survey_id', surveyId); }
+    async results(surveyId) { if (!Enterprise.sb) return { data: [] }; return await Enterprise.sb.from('survey_responses').select('*').eq('survey_id', surveyId); },
+    async delete(surveyId) {
+      if (!Enterprise.sb) return { error: 'No DB' };
+      await Enterprise.sb.from('survey_responses').delete().eq('survey_id', surveyId);
+      return await Enterprise.sb.from('surveys').delete().eq('id', surveyId);
+    }
   },
 
   /* ================= 5) Menu / meal planner ================= */

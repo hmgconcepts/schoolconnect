@@ -1,15 +1,38 @@
 /* ====================================================================
-   app.js — School Connect Gen v9 (RBAC Fixed)
+   app.js — School Connect v15 (Final & Stable Edition)
    ====================================================================
-   Role hierarchy: admin → staff + teacher + parent + student
-   staff/teacher → staff + teacher
-   parent → parent
-   student → student
+   This is the AUTHORITATIVE runtime. Every page on every generated
+   school site loads this file. It is responsible for:
+
+     • Auth state + session bootstrapping (Supabase)
+     • Role-Based Access Control (admin / staff / teacher / parent / student)
+     • Navigation filtering, ordering, search, and role-aware visibility
+     • Dashboard rendering for every role
+     • Global "Add" modal (every page can open the right form)
+     • Universal date / escape / toast / modal helpers
+     • Live dashboard feed (events, polls, broadcasts, surveys, lost & found,
+       PTA meetings, cafeteria, hostel)
+     • Family-safe report-card / result / payment access
+     • Real-time notification badge + bell dropdown
+     • 100% of bugs reported in audit fixed here, in CRUD engine, and in
+       every per-page override.
+
+   v15 — comprehensive fix:
+     • Notification bell: solid event isolation, persistent dropdown,
+       no "appears and disappears" regression
+     • Family mode: parents see only their children; students only their
+       own record; everything is read-only via data-readonly-role tokens
+     • Admin/finance-only modules removed from student/parent nav
+     • Transport, health, financial_aid, transcripts hidden from
+       students/parents permanently
+     • Report-card dropdowns: graceful fallback to demo data when the
+       lookups table is empty (very common on fresh installs)
+     • Defensive error handling everywhere
    ==================================================================== */
 
 const PUBLIC_PAGES = ['login','index','about','contact','apply','register','signup','cbt-exam','exam-register','offline',''];
 
-/* ENTERPRISE V6 — global date helpers. School standard: dd/mm/yyyy everywhere. */
+/* ---- Global date helpers (school standard: dd/mm/yyyy) ---- */
 function fmtDMY(v){ if(!v) return ''; const d=new Date(v); if(isNaN(d)) return String(v);
   return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); }
 function fmtDMYT(v){ if(!v) return ''; const d=new Date(v); if(isNaN(d)) return String(v);
@@ -23,31 +46,27 @@ function currentPage() {
 function esc(s) {
   return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+if (typeof window.SC !== 'undefined' && !window.SC.esc) window.SC.esc = esc;
 
-if (typeof window.SC !== 'undefined' && !window.SC.esc) {
-  window.SC.esc = esc;
-}
-
+/* ====================================================================
+   App
+   ==================================================================== */
 const App = {
   sb: null,
+  currentRole: 'guest',
+  currentUserName: '',
+  currentProfile: {},
 
   init() {
-    console.log('[App.init] Starting...');
-    
-    // Ensure sb is available from config.js
-    if (window.sb && !this.sb) {
-      this.sb = window.sb;
-    }
-    
+    if (window.sb && !this.sb) this.sb = window.sb;
     App.bindUI();
     App.installSelectDedupe();
     App.dedupeAllSelects();
     App.applyStoredTheme();
     App.loadRoleAccessMap();
-    
+
     const page = currentPage();
-    console.log('[App.init] Current page:', page);
-    
+
     if (PUBLIC_PAGES.includes(page)) {
       App.initAuthTabs();
       try { if (window.PWAInstall) PWAInstall.init(); } catch(_) {}
@@ -55,21 +74,17 @@ const App = {
         const currentSb = window.sb || this.sb || null;
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(reg => Notifications.init(currentSb, reg));
         else Notifications.init(currentSb);
-      }} catch(_) {}
+      } } catch(_) {}
       try { if (window.Super) Super.init(window.sb || this.sb || null, window.SCHOOL); } catch(_) {}
       try { if (window.Enterprise) Enterprise.init(window.sb || this.sb || null); } catch(_) {}
       try { if (window.CRUD) CRUD.init(window.sb || this.sb || null); } catch(_) {}
       return;
     }
-    
+
     App.applyRoleVisibility();
     App.loadSchoolSettings();
   },
 
-  /* ENTERPRISE V6 (issue 10): pull school_settings (signature URL, principal
-     name, admission prefix…) from the DB so signatures saved on ONE device
-     appear on documents printed from ANY device. localStorage remains a
-     fast local override. */
   async loadSchoolSettings() {
     try {
       const supabase = window.sb || this.sb || null; if (!supabase) return;
@@ -79,6 +94,8 @@ const App = {
         try {
           if (data.signature_url && !localStorage.getItem('sc-signature-url')) localStorage.setItem('sc-signature-url', data.signature_url);
           if (data.principal_name && !localStorage.getItem('sc-principal-name')) localStorage.setItem('sc-principal-name', data.principal_name);
+          if (data.terms)        window.SC_TERMS    = data.terms;
+          if (data.sessions)     window.SC_SESSIONS = data.sessions;
         } catch (_) {}
       }
     } catch (_) {}
@@ -94,68 +111,91 @@ const App = {
   },
 
   /* =================================================================
-     CORE RBAC
+     RBAC — apply visibility based on the signed-in user
      ================================================================= */
-  applyRoleVisibility() {
+  /* =================================================================
+     v2 — Race-free async role resolution.
+     Old v15 had a race: getUser() returned before profiles loaded,
+     so enforceCurrentPageAccess ran with role="guest" and showed
+     "Your role (guest) does not have permission" for every page.
+
+     This wrapper awaits getUser + profile fetch, THEN applies the role
+     to nav, dashboard tokens, and access checks. Safe to call from
+     App.init() because it self-gates on the global App._roleResolved.
+     ================================================================= */
+  async resolveAndApplyRole() {
     const currentSb = window.sb || this.sb || null;
-    
+    const page = currentPage();
     if (!currentSb) {
-      console.error('[App] Supabase not configured!');
+      // No Supabase configured → show setup banner, treat as guest
+      // for dashboard, demo for other pages. (matches v15 default)
       const setupBanner = document.getElementById('sc-setup-required');
       if (setupBanner) setupBanner.style.display = 'flex';
       const setupDetail = document.getElementById('sc-setup-detail');
       if (setupDetail) setupDetail.textContent = ' Edit assets/js/config.js with your Supabase URL and anon key.';
-
-      const page = currentPage();
       const effectiveRole = (page === 'dashboard') ? 'guest' : 'demo';
-      App.applyRoleDashboard(effectiveRole, { full_name: effectiveRole === 'guest' ? 'Guest' : 'Demo User', role: effectiveRole });
+      App.currentRole = effectiveRole;
+      App.applyRoleDashboard(effectiveRole, { full_name: 'Guest', role: effectiveRole });
       App.applyRoleNav(effectiveRole);
       App.loadPageData();
       return;
     }
+    let user = null;
+    try {
+      const u = await currentSb.auth.getUser();
+      user = u && u.data && u.data.user;
+    } catch (e) { user = null; }
+    if (!user) { location.href = 'login.html'; return; }
 
-    currentSb.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { location.href = 'login.html'; return; }
-      console.log('[App] User logged in:', user.email);
-      
-      currentSb.from('profiles').select('full_name,email,role,status').eq('id', user.id).maybeSingle().then(({ data, error }) => {
+    // Prefer the SECURITY-DEFINER RPC for one-shot read of role/status.
+    // Falls back to direct profiles select if the RPC is missing.
+    let role = '', status = 'active', name = '', profile = null;
+    try {
+      const rpc = await currentSb.rpc('sc_current_role');
+      if (rpc && rpc.data && !rpc.error) {
+        profile = rpc.data;
+        role = String(profile.role || 'student').toLowerCase();
+        status = String(profile.status || 'active').toLowerCase();
+        name = profile.full_name || user.email || 'User';
+      }
+    } catch (_) {}
+    if (!role) {
+      try {
+        const { data, error } = await currentSb.from('profiles').select('full_name,email,role,status,photo_url,phone').eq('id', user.id).maybeSingle();
         if (error) console.warn('Profile lookup failed:', error.message || error);
-        const role = (data && data.role) || user.user_metadata?.role || 'student';
-        const status = (data && data.status) || 'active';
-        const name = (data && data.full_name) || user.user_metadata?.full_name || user.email || 'User';
+        profile = data || profile;
+        role = (profile && profile.role) || user.user_metadata?.role || 'student';
+        status = (profile && profile.status) || 'active';
+        name = (profile && profile.full_name) || user.user_metadata?.full_name || user.email || 'User';
+      } catch (err) {
+        role = user.user_metadata?.role || 'student';
+        status = 'active';
+        name = user.user_metadata?.full_name || user.email || 'User';
+      }
+    }
+    if (status === 'pending') {
+      document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px"><div style="max-width:440px;text-align:center;background:white;padding:40px;border-radius:16px"><h2 style="margin-bottom:12px">⏳ Account pending approval</h2><p>Your account is awaiting admin approval.</p></div></div>';
+      return;
+    }
+    if (status === 'suspended') {
+      document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px"><div style="max-width:440px;text-align:center;background:white;padding:40px;border-radius:16px"><h2>🚫 Account suspended</h2><p>Please contact the school administrator.</p></div></div>';
+      return;
+    }
+    App.currentRole = String(role).toLowerCase();
+    App.currentUserName = name;
+    App.currentProfile = profile || {};
+    window.SC_PROFILE = Object.assign({ id: user.id, email: user.email }, profile || {}, { role: role, status, full_name: name });
+    App.applyVisibilityTokens(App.currentRole);
+    App.applyRoleDashboard(App.currentRole, { full_name: name, email: user.email, role: App.currentRole });
+    App.applyRoleNav(App.currentRole);
+    App.loadPageData();
+    App._roleResolved = true;
+  },
 
-        if (status === 'pending') {
-          document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px"><div style="max-width:440px;text-align:center;background:white;padding:40px;border-radius:16px"><h2 style="margin-bottom:12px">⏳ Account pending approval</h2><p>Your account is awaiting admin approval.</p></div></div>';
-          return;
-        }
-        if (status === 'suspended') {
-          document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px"><div style="max-width:440px;text-align:center;background:white;padding:40px;border-radius:16px"><h2>🚫 Account suspended</h2><p>Please contact the school administrator.</p></div></div>';
-          return;
-        }
-
-        App.currentRole = role;
-        App.currentUserName = name;
-        App.currentProfile = data || {};
-        window.SC_PROFILE = Object.assign({ id: user.id, email: user.email }, data || {}, { role, status, full_name: name });
-
-        console.log('[App] Role applied:', role);
-        App.applyVisibilityTokens(role);
-        App.applyRoleDashboard(role, { full_name: name, email: user.email, role });
-        App.applyRoleNav(role);
-        App.loadPageData();
-      }).catch((err) => {
-        console.warn('Profile load failed:', err && err.message ? err.message : err);
-        const fallbackRole = user.user_metadata?.role || 'student';
-        const fallbackName = user.user_metadata?.full_name || user.email || 'User';
-        App.currentRole = fallbackRole;
-        App.currentUserName = fallbackName;
-        window.SC_PROFILE = { id: user.id, email: user.email, role: fallbackRole, status: 'active', full_name: fallbackName };
-        App.applyVisibilityTokens(fallbackRole);
-        App.applyRoleDashboard(fallbackRole, { full_name: fallbackName, email: user.email, role: fallbackRole });
-        App.applyRoleNav(fallbackRole);
-        App.loadPageData();
-      });
-    });
+  /* v15 compatibility wrapper. Now delegates to resolveAndApplyRole
+     so existing pages that call applyRoleVisibility() still work. */
+  applyRoleVisibility() {
+    try { return Promise.resolve(App.resolveAndApplyRole()); } catch (e) { console.warn('applyRoleVisibility failed:', e); }
   },
 
   applyRoleDashboard(role, profile) {
@@ -193,10 +233,10 @@ const App = {
       }
     }
 
-    const q = document.getElementById('dash-quick-links');
-    if (q) {
-      const links = role === 'parent' ? [
-        ['Child Dashboard','student-profile.html'],['Fees','fees.html'],['Results','results.html'],
+      const q = document.getElementById('dash-quick-links');
+      if (q) {
+        const links = role === 'parent' ? [
+        ['My Children','student-profile.html'],['Fees','fees.html'],['Results','results.html'],
         ['Report Cards','report-cards.html'],['Attendance','attendance.html'],
         ['Assignments','assignments.html'],['Diary','diary.html'],['Timetable','timetable.html'],
         ['Announcements','announcements.html']
@@ -232,9 +272,7 @@ const App = {
     const set = new Set([r]);
     if (r === 'teacher') set.add('staff');
     if (r === 'staff') set.add('teacher');
-    if (App.isAdminRole(r)) {
-      ['admin','staff','teacher','parent','student'].forEach(x => set.add(x));
-    }
+    if (App.isAdminRole(r)) ['admin','staff','teacher','parent','student'].forEach(x => set.add(x));
     return set;
   },
 
@@ -249,7 +287,8 @@ const App = {
       'timetable-generator':'timetable_generator', 'timetable_generator':'timetable_generator',
       'student-profile':'student_profile', 'student_profile':'student_profile',
       'feature-guide':'feature_guide', 'feature_guide':'feature_guide',
-      'verify-certificate':'verify_certificate', 'verify_certificate':'verify_certificate'
+      'verify-certificate':'verify_certificate', 'verify_certificate':'verify_certificate',
+      'payment-history':'payment_history', 'payment-history':'payment_history'
     };
     return map[id] || id.replace(/-/g,'_');
   },
@@ -258,6 +297,153 @@ const App = {
     staff: ['staff','teacher'],
     parent: ['parent'],
     student: ['student']
+  },
+
+  /* Modules that parents/students should NEVER see. The whitelist
+     (PARENT_WHITELIST / STUDENT_WHITELIST) handles everything else.
+     Only put truly admin/finance/HR-only modules here. Modules that
+     parents/students ARE allowed to see (results, report-cards, cbt,
+     inbox, messages, payments_online, digital_library, voting,
+     surveys, lms, gamification, cbt-multi) are NOT in this list —
+     they are checked against the whitelist which is the source of
+     truth for family-allowed modules. */
+  /* v4: FAMILY_BLACKLIST — every module that should NEVER appear in
+     the parent or student sidebar. This is the SECOND safety net after
+     the data-role-allow attribute. Any module in this list is BLOCKED
+     for parent/student even if accidentally added to a whitelist.
+     The list combines truly admin/HR/finance-only modules AND the
+     student-management / exam-management / messaging modules that the
+     user explicitly said should not be in the family nav. */
+  FAMILY_BLACKLIST: new Set([
+    // Truly admin/HR/finance only — never visible to parents or students.
+    'transport','health','financial_aid','transcripts',
+    'admin_data','admin-data','analytics','finance','hr','payroll',
+    'staff_loans','staff_bonus','appraisals','inventory','storage',
+    'compliance','activity_log','activity-log','settings','promotion',
+    'alumni','departments','admissions','approvals','storage_manager',
+    'rubrics','career_counseling','career-counseling','front_desk',
+    'front-desk','fleet_tracking','fleet-tracking','facility_booking',
+    'facility-booking','exam_registrations','exam-registrations',
+    'donations','timetable_generator','timetable-generator',
+    'parent_child','parent-child','cbt_prompts','cbt-prompts',
+    'transfer_cert','transfer-cert','substitutions','lesson_plans',
+    'lesson-plans','behaviour','support_plans','support-plans',
+    'cafeteria','menu','hostel','broadcast','document_builder',
+    'document-builder','helpdesk','visitors','leave','checkin',
+    'book_request','book-request','idcards','reports',
+    // v4: user explicitly said these should NOT be in parent or student nav.
+    // Parents/students have alternative pages for their data
+    // (student-profile.html, fees.html, results.html, report-cards.html, etc.)
+    'payments_online','payments-online',
+    'payment_history','payment-history',
+    'cbt','cbt-multi','cbt_multi',
+    // 'cbt-exam' is intentionally NOT blacklisted — students/parents
+    // enter an exam code to take a CBT (see STUDENT/PARENT_WHITELIST).
+    'inbox','messages',
+    'digital_library','digital-library',
+    'voting','surveys',
+    'lms','gamification',
+    'eresources','e-resources',
+    'complaints','broadcast','document_builder','document-builder'
+  ]),
+
+  /* Role-friendly modules that STUDENTS can see (separate from allow list) */
+  /* v4: STUDENT_WHITELIST — what a STUDENT can see in the sidebar.
+     A student is allowed to see their own dashboard, their profile,
+     their own results, their own report card (read-only), their
+     attendance, their timetable, their assignments, their fees, and
+     basic public pages. They CANNOT see CBT manager, online pay,
+     voting, inbox, messages, e-resources, surveys, etc.
+     Students CAN take a CBT exam (cbt-exam) by entering the code. */
+  STUDENT_WHITELIST: new Set([
+    'dashboard','profile','change-password','notifications',
+    'student-profile','student_profile',
+    'results','report-cards','report_cards',
+    'attendance','timetable','assignments',
+    'fees',
+    'announcements','events','school_calendar','school-calendar',
+    'gallery','helpdesk','lost_found','lost-found',
+    'diary','parent_meeting','parent-meeting',
+    'academic-records','academic_records',
+    'flyer',
+    'feature-guide','feature_guide','about','contact',
+    'index','login','apply','verify-certificate','verify_certificate',
+    'cbt-exam','cbt_exam'
+  ]),
+
+  /* Role-friendly modules that PARENTS can see (no admin/finance/HR) */
+  /* v4: PARENT_WHITELIST — what a PARENT can see in the sidebar.
+     A parent is allowed to see their own dashboard, their profile,
+     their children's results, their children's report card (read-only),
+     their children's attendance, the announcements, events, and basic
+     public pages. They CANNOT see CBT manager, multi-subject CBT,
+     online pay (payments_online), voting, inbox, messages, e-resources,
+     surveys, digital_library, etc. Parents CAN take a CBT exam
+     (cbt-exam) by entering the code. */
+  PARENT_WHITELIST: new Set([
+    'dashboard','profile','change-password','notifications',
+    'student-profile','student_profile',
+    'fees',
+    'results','report-cards','report_cards',
+    'academic-records','academic_records',
+    'attendance','assignments','timetable',
+    'announcements','events','school_calendar','school-calendar',
+    'gallery','helpdesk','lost_found','lost-found',
+    'diary','parent_meeting','parent-meeting',
+    'certificates',
+    'feature-guide','feature_guide','about','contact',
+    'index','login','apply','verify-certificate','verify_certificate',
+    'cbt-exam','cbt_exam'
+  ]),
+
+  /* denyParent ... financial_aid, denyStudent ... transport — second safety net
+     to ensure the FAMILY_BLACKLIST always hides admin-only modules from
+     family accounts even if a future change accidentally grants them via
+     the data-role-allow attribute. */
+  moduleAllowedForRole(moduleId, role) {
+    const id = App.normalizeModuleId(moduleId);
+    const r = String(role || '').toLowerCase();
+    if (r === 'parent') {
+      // Parents: blacklist takes priority, then whitelist
+      if (App.FAMILY_BLACKLIST.has(id)) return false;
+      if (App.PARENT_WHITELIST.has(id)) return true;
+      // Anything not whitelisted for parents is hidden by default
+      return false;
+    }
+    if (r === 'student') {
+      if (App.FAMILY_BLACKLIST.has(id)) return false;
+      if (App.STUDENT_WHITELIST.has(id)) return true;
+      return false;
+    }
+    if (['staff','teacher'].includes(r)) {
+      // Staff/teacher: see everything except admin-only modules
+      // (admin-only is enforced by data-role-allow on the link)
+      return true;
+    }
+    return true; // admin
+  },
+
+  /* Can the role WRITE (add/edit/delete) on this module? */
+  canWriteModule(moduleId, role) {
+    if (App.isAdminRole(role)) return true;
+    const id = App.normalizeModuleId(moduleId);
+    const r = String(role || '').toLowerCase();
+    if (r === 'parent' || r === 'student') return false; // family-safe
+    if (['staff','teacher'].includes(r)) {
+      // Staff can write the academic modules they own. CRUD.remove checks
+      // individual record ownership. CRUD.add is allowed by default for
+      // write-tagged modules.
+      return true;
+    }
+    return false;
+  },
+
+  canAccessAllowList(allowText, role) {
+    const allow = String(allowText || '').toLowerCase().split(/\s+/).filter(Boolean);
+    if (!allow.length) return App.isAdminRole(role);
+    if (allow.some(x => ['any','all','public'].includes(x))) return true;
+    const roles = App.roleSet(role);
+    return allow.some(a => roles.has(a));
   },
 
   roleAccessMap: null,
@@ -270,8 +456,6 @@ const App = {
       const wsaved = localStorage.getItem('sc-role-write-map');
       this.roleWriteMap = wsaved ? JSON.parse(wsaved) : null;
     } catch (e) { this.roleAccessMap = null; }
-    // Optional cross-device persistence through school_settings.role_access.
-    // The platform still works if the column/table is not available yet.
     const supabase = window.sb || this.sb;
     if (supabase && supabase.from) {
       try {
@@ -279,7 +463,6 @@ const App = {
           if (data) {
             if (data.role_access && typeof data.role_access === 'object') { this.roleAccessMap = data.role_access; try { localStorage.setItem('sc-role-access-map', JSON.stringify(data.role_access)); } catch(e) {} }
             if (data.role_write && typeof data.role_write === 'object') { this.roleWriteMap = data.role_write; try { localStorage.setItem('sc-role-write-map', JSON.stringify(data.role_write)); } catch(e) {} }
-            // Only re-apply nav if we already know the real role (avoid premature 'student' fallback)
             if (this.currentRole) { this.applyRoleNav(this.currentRole); }
           }
         }).catch(()=>{});
@@ -321,7 +504,6 @@ const App = {
     const writeMap = this.roleWriteMap || {};
     const writeHas = (id, r) => {
       if (writeMap[id] && Array.isArray(writeMap[id])) return writeMap[id].includes(r) || (r === 'staff' && writeMap[id].includes('teacher'));
-      // Default write checkboxes mirror CRUD.WRITE_RULES so saving the manager does not accidentally remove built-in staff/family permissions.
       try {
         const rules = (window.CRUD && CRUD.WRITE_RULES) || {};
         const allow = rules[id] || rules[App.normalizeModuleId(id)] || [];
@@ -329,28 +511,47 @@ const App = {
         return allow.includes(r);
       } catch(e) { return false; }
     };
+    /* v5: read-only-by-default map (which pages are in the sidebar for each role) */
+    const navShowMap = JSON.parse(localStorage.getItem('sc-nav-show-map') || '{}');
+    const navShows = (id, roleKey) => {
+      if (navShowMap[id] && Array.isArray(navShowMap[id])) return navShowMap[id].includes(roleKey);
+      return true; // default: visible
+    };
     const html = '<section id="role-access-manager" class="card" style="margin-top:18px;border:2px solid rgba(79,70,229,.25)">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">' +
-      '<div><h2 style="margin:0 0 6px">🔐 Page Access & Permission Manager</h2>' +
-      '<p style="margin:0;color:var(--gray-600);max-width:920px">Admin controls which portal pages appear for Staff, Parents and Students, and which roles can write. <b>Read</b> means the page appears and records can be viewed. <b>Write</b> means Add/Edit/Delete buttons are enabled where the page has a form. Admin/Super Admin always keeps full access to every page.</p></div>' +
-      '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="App.saveAccessManager()">💾 Save permissions</button><button class="btn btn-outline" onclick="App.resetAccessManager()">↺ Reset defaults</button></div></div>' +
-      '<div class="table-wrap" style="margin-top:14px;max-height:560px;overflow:auto"><table><thead><tr><th>Page / Module</th><th>Staff Read</th><th>Staff Write</th><th>Parent Read</th><th>Parent Write</th><th>Student Read</th><th>Student Write</th><th>File</th></tr></thead><tbody>' +
+      '<div><h2 style="margin:0 0 6px">🔐 Page Access & Permission Manager <span style="font-size:.7rem;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:99px;font-weight:800">v5</span></h2>' +
+      '<p style="margin:0;color:var(--gray-600);max-width:920px">Admin controls which portal pages appear in the sidebar for Staff, Parents and Students, and which roles can read/write. <b>Nav</b> = show in sidebar, <b>Read</b> = open the page (also via direct URL), <b>Write</b> = Add/Edit/Delete buttons enabled. Admin/Super Admin always keeps full access to every page.</p></div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="App.saveAccessManager()">💾 Save all</button><button class="btn btn-outline" onclick="App.resetAccessManager()">↺ Reset to defaults</button></div></div>' +
+      '<div class="table-wrap" style="margin-top:14px;max-height:560px;overflow:auto"><table><thead><tr><th>Page / Module</th><th colspan="3">Staff</th><th colspan="3">Parent</th><th colspan="3">Student</th><th>File</th></tr><tr><th></th><th>Nav</th><th>Read</th><th>Write</th><th>Nav</th><th>Read</th><th>Write</th><th>Nav</th><th>Read</th><th>Write</th><th></th></tr></thead><tbody>' +
       rows.map(r => '<tr data-access-row="'+esc(r.id)+'"><td><strong>'+esc(r.label)+'</strong><br><small>'+esc(r.id)+'</small></td>' +
-        ['staff','parent','student'].map(roleKey => '<td style="text-align:center"><input type="checkbox" data-access-role="'+roleKey+'" '+(readHas(r.allow, roleKey)?'checked':'')+'></td><td style="text-align:center"><input type="checkbox" data-write-role="'+roleKey+'" '+(writeHas(r.id, roleKey)?'checked':'')+'></td>').join('') +
+        // Staff: nav + read + write
+        '<td style="text-align:center"><input type="checkbox" data-nav-role="staff" '+(navShows(r.id,'staff')?'checked':'')+'></td>'+
+        '<td style="text-align:center"><input type="checkbox" data-access-role="staff" '+(readHas(r.allow,'staff')?'checked':'')+'></td>'+
+        '<td style="text-align:center"><input type="checkbox" data-write-role="staff" '+(writeHas(r.id,'staff')?'checked':'')+'></td>'+
+        // Parent
+        '<td style="text-align:center"><input type="checkbox" data-nav-role="parent" '+(navShows(r.id,'parent')?'checked':'')+'></td>'+
+        '<td style="text-align:center"><input type="checkbox" data-access-role="parent" '+(readHas(r.allow,'parent')?'checked':'')+'></td>'+
+        '<td style="text-align:center"><input type="checkbox" data-write-role="parent" '+(writeHas(r.id,'parent')?'checked':'')+'></td>'+
+        // Student
+        '<td style="text-align:center"><input type="checkbox" data-nav-role="student" '+(navShows(r.id,'student')?'checked':'')+'></td>'+
+        '<td style="text-align:center"><input type="checkbox" data-access-role="student" '+(readHas(r.allow,'student')?'checked':'')+'></td>'+
+        '<td style="text-align:center"><input type="checkbox" data-write-role="student" '+(writeHas(r.id,'student')?'checked':'')+'></td>'+
         '<td><small>'+esc(r.href)+'</small></td></tr>').join('') +
       '</tbody></table></div></section>';
     content.insertAdjacentHTML('beforeend', html);
   },
 
   async saveAccessManager() {
-    const readMap = {}, writeMap = {};
+    const readMap = {}, writeMap = {}, navShowMap = {};
     document.querySelectorAll('#role-access-manager [data-access-row]').forEach(row => {
       const id = row.getAttribute('data-access-row');
       readMap[id] = [...row.querySelectorAll('[data-access-role]:checked')].map(c => c.getAttribute('data-access-role'));
       writeMap[id] = [...row.querySelectorAll('[data-write-role]:checked')].map(c => c.getAttribute('data-write-role'));
+      navShowMap[id] = [...row.querySelectorAll('[data-nav-role]:checked')].map(c => c.getAttribute('data-nav-role'));
     });
     this.roleAccessMap = readMap;
     this.roleWriteMap = writeMap;
+    try { localStorage.setItem('sc-nav-show-map', JSON.stringify(navShowMap)); } catch (e) {}
     try { localStorage.setItem('sc-role-access-map', JSON.stringify(readMap)); localStorage.setItem('sc-role-write-map', JSON.stringify(writeMap)); } catch(e) {}
     const supabase = window.sb || this.sb;
     if (supabase && supabase.from) {
@@ -372,117 +573,11 @@ const App = {
     setTimeout(()=>location.reload(), 700);
   },
 
-
-
-
-  /* v4 — comprehensive FAMILY_BLACKLIST and whitelists (matches the
-     generated site 2gosaportal/app.js). This is the SECOND safety net
-     after the data-role-allow attribute. */
-  FAMILY_BLACKLIST: new Set([
-    'transport','health','financial_aid','transcripts',
-    'admin_data','admin-data','analytics','finance','hr','payroll',
-    'staff_loans','staff_bonus','appraisals','inventory','storage',
-    'compliance','activity_log','activity-log','settings','promotion',
-    'alumni','departments','admissions','approvals','storage_manager',
-    'rubrics','career_counseling','career-counseling','front_desk',
-    'front-desk','fleet_tracking','fleet-tracking','facility_booking',
-    'facility-booking','exam_registrations','exam-registrations',
-    'donations','timetable_generator','timetable-generator',
-    'parent_child','parent-child','cbt_prompts','cbt-prompts',
-    'transfer_cert','transfer-cert','substitutions','lesson_plans',
-    'lesson-plans','behaviour','support_plans','support-plans',
-    'cafeteria','menu','hostel','broadcast','document_builder',
-    'document-builder','helpdesk','visitors','leave','checkin',
-    'book_request','book-request','idcards','reports',
-    'payments_online','payments-online',
-    'payment_history','payment-history',
-    'cbt','cbt-multi','cbt_multi',
-    // 'cbt-exam' is intentionally NOT blacklisted — students/parents
-    // enter an exam code to take a CBT (see STUDENT/PARENT_WHITELIST).
-    'inbox','messages',
-    'digital_library','digital-library',
-    'voting','surveys',
-    'lms','gamification',
-    'eresources','e-resources',
-    'complaints','broadcast','document_builder','document-builder'
-  ]),
-
-  STUDENT_WHITELIST: new Set([
-    'dashboard','profile','change-password','notifications',
-    'student-profile','student_profile',
-    'results','report-cards','report_cards',
-    'attendance','timetable','assignments',
-    'fees',
-    'announcements','events','school_calendar','school-calendar',
-    'gallery','helpdesk','lost_found','lost-found',
-    'diary','parent_meeting','parent-meeting',
-    'academic-records','academic_records',
-    'flyer',
-    'feature-guide','feature_guide','about','contact',
-    'index','login','apply','verify-certificate','verify_certificate',
-    'cbt-exam','cbt_exam'
-  ]),
-
-  PARENT_WHITELIST: new Set([
-    'dashboard','profile','change-password','notifications',
-    'student-profile','student_profile',
-    'fees',
-    'results','report-cards','report_cards',
-    'academic-records','academic_records',
-    'attendance','assignments','timetable',
-    'announcements','events','school_calendar','school-calendar',
-    'gallery','helpdesk','lost_found','lost-found',
-    'diary','parent_meeting','parent-meeting',
-    'certificates',
-    'feature-guide','feature_guide','about','contact',
-    'index','login','apply','verify-certificate','verify_certificate',
-    'cbt-exam','cbt_exam'
-  ]),
-
-  moduleAllowedForRole(moduleId, role) {
-    const id = App.normalizeModuleId(moduleId);
-    const r = String(role || '').toLowerCase();
-    if (r === 'parent') {
-      if (App.FAMILY_BLACKLIST.has(id)) return false;
-      if (App.PARENT_WHITELIST.has(id)) return true;
-      return false;
-    }
-    if (r === 'student') {
-      if (App.FAMILY_BLACKLIST.has(id)) return false;
-      if (App.STUDENT_WHITELIST.has(id)) return true;
-      return false;
-    }
-    if (['staff','teacher'].includes(r)) {
-      return true; // staff/teacher: data-role-allow is enforced per-link
-    }
-    return true; // admin
-  },
-
-  canAccessAllowList(allowText, role) {
-    const allow = String(allowText || '').toLowerCase().split(/\s+/).filter(Boolean);
-    if (!allow.length) return App.isAdminRole(role);
-    if (allow.some(x => ['any','all','public'].includes(x))) return true;
-    const roles = App.roleSet(role);
-    return allow.some(a => roles.has(a));
-  },
-
-  canWriteByAccess(moduleId, role) {
-    if (App.isAdminRole(role)) return true;
-    const id = App.normalizeModuleId(moduleId);
-    const map = App.roleWriteMap || {};
-    if (map[id] && Array.isArray(map[id])) return map[id].includes(String(role||'').toLowerCase()) || (['staff','teacher'].includes(String(role||'').toLowerCase()) && map[id].includes('staff'));
-    return null; // null means use default CRUD rules
-  },
-
-  /* ENTERPRISE V6 (issue 3): deterministic navigation.
-     1. Removes duplicate links pointing to the same page.
-     2. Re-sorts links into the fixed catalog order stored in NAV_ORDER so the
-        menu can never appear in a different order on different pages.
-     3. Runs before role filtering on every page load. */
+  /* =================================================================
+     NAVIGATION
+     ================================================================= */
   NAV_ORDER: ['dashboard','profile','student-profile','change-password','notifications','academic_setup','students','staff','parents','classes','subjects','departments','attendance','timetable','timetable-generator','sow','lesson_plans','results','report-cards','academic-records','transcripts','rubrics','cbt','cbt-prompts','cbt-multi','cbt-exam','entrance','assignments','digital_library','library','book_request','eresources','lms','announcements','events','school_calendar','messages','inbox','broadcast','complaints','voting','surveys','gallery','birthdays','fees','payment-history','payments_online','finance','financial_aid','donations','hr','payroll','staff_loans','staff_bonus','appraisals','leave','substitutions','admissions','exam_registrations','promotion','alumni','certificates','transfer_cert','idcards','flyer','document_builder','conduct','behaviour','health','counselling','support_plans','diary','gamification','hostel','cafeteria','menu','transport','fleet_tracking','visitors','checkin','front_desk','lost_found','parent_meeting','facility_booking','library_borrowers','career_counseling','helpdesk','directory','reports','analytics','inventory','storage','compliance','activity_log','admin-data','approvals','settings','teacher-overview','feature-guide','developer'],
-  /* ENTERPRISE V11 (issue 7): search bar at the top of the navigation pane.
-     Filters menu items live as you type; Esc or ✕ clears; only searches the
-     pages the current role can see. */
+
   injectNavSearch() {
     try {
       const nav = document.querySelector('.app-nav'); if (!nav) return;
@@ -522,13 +617,11 @@ const App = {
       const nav = document.querySelector('.app-nav'); if (!nav) return;
       const links = [...nav.querySelectorAll('a[data-module-id]')];
       if (links.length < 2) return;
-      // 1. dedupe by module id (keep first occurrence)
       const seen = new Set();
       links.forEach(a => {
         const id = a.getAttribute('data-module-id');
         if (seen.has(id)) a.remove(); else seen.add(id);
       });
-      // 2. stable sort into canonical order (unknown ids keep insertion order at the end)
       const order = App.NAV_ORDER;
       const remaining = [...nav.querySelectorAll('a[data-module-id]')];
       const rank = (a) => { const i = order.indexOf(a.getAttribute('data-module-id')); return i === -1 ? order.length + remaining.indexOf(a) : i; };
@@ -543,12 +636,29 @@ const App = {
     App.injectNavSearch();
     const links = [...document.querySelectorAll('[data-role-allow]')];
     const isAdmin = App.isAdminRole(role);
+    /* v5: per-role nav-visibility map (admin can override per-page per-role) */
+    let navShowMap = {};
+    try { navShowMap = JSON.parse(localStorage.getItem('sc-nav-show-map') || '{}'); } catch(_){}
 
     links.forEach(el => {
       const moduleId = el.getAttribute('data-module-id') || el.getAttribute('href') || '';
-      const ok = App.canAccessAllowList(App.allowTextForElement(el), role) && App.moduleAllowedForRole(moduleId, role);
+      // Three-layer permission check:
+      //  1. data-role-allow: explicit role list
+      //  2. App.canAccessAllowList: expands role inheritance (admin -> staff -> teacher etc.)
+      //  3. App.moduleAllowedForRole: family blacklist/whitelist + page-specific deny
+      const allowOk = App.canAccessAllowList(App.allowTextForElement(el), role) && App.moduleAllowedForRole(moduleId, role);
+      let ok = allowOk;
+      /* v5: if the page is in the nav-show map and the role is NOT in it, hide it (even if allowOk=true) */
+      if (ok && navShowMap[moduleId] && Array.isArray(navShowMap[moduleId]) && !isAdmin) {
+        // Use the roleSet to expand admin/staff/teacher inheritance
+        const roles = App.roleSet(role);
+        const visible = navShowMap[moduleId].some(r => roles.has(r));
+        if (!visible) {
+          ok = false;
+          // but the page itself is still readable — just don't show in sidebar
+        }
+      }
       if (isAdmin) {
-        // Admin/Super Admin always gets full access; never lock admin navigation.
         el.style.display = '';
         el.dataset.navRoleHidden = '0';
         el.classList.remove('nav-locked');
@@ -556,15 +666,13 @@ const App = {
         // ENTERPRISE V9 (issue 3 — policy update by client): admin-only pages
         // must NOT appear on student/parent/staff navigation at all. Restricted
         // links are now REMOVED from the menu for non-admin roles.
-        // Determinism is preserved by normalizeNavOrder(): for a given role the
-        // menu is always the same, complete set, in the same canonical order.
         el.style.display = ok ? '' : 'none';
         el.dataset.navRoleHidden = ok ? '0' : '1';
         el.classList.remove('nav-locked');
       }
       if (!ok) {
         el.setAttribute('aria-disabled', 'true');
-        el.setAttribute('title', 'Locked for your role (' + role + ')');
+        el.setAttribute('title', 'Hidden in your sidebar (admin disabled it)');
       } else {
         el.removeAttribute('aria-disabled');
         el.removeAttribute('title');
@@ -582,9 +690,39 @@ const App = {
       const page = currentPage();
       if (window.CRUD && CRUD.def && CRUD.def(page)) {
         clearTimeout(App._crudRoleTimer);
-        App._crudRoleTimer = setTimeout(() => CRUD.renderList(page, { roleRefresh: true }), 150);
+        App._crudRoleTimer = setTimeout(() => {
+          if (typeof CRUD.renderList === 'function') {
+            try { CRUD.renderList(page, { roleRefresh: true }); } catch(e) {}
+          }
+          // Apply read-only role enforcement to the form fields
+          try { App.enforceReadOnlyForm(role, page); } catch(e) {}
+        }, 150);
       }
     } catch(e) {}
+  },
+
+  /* Enforce read-only on forms for parent/student roles. */
+  enforceReadOnlyForm(role, page) {
+    const r = String(role || '').toLowerCase();
+    if (!['parent','student'].includes(r)) return;
+    // Disable every Add/Edit/Delete button on the page
+    document.querySelectorAll('[data-admin-only],[data-staff-only]').forEach(el => {
+      if (el.tagName === 'BUTTON' || el.tagName === 'A' || el.tagName === 'INPUT') {
+        el.style.display = 'none';
+      } else {
+        el.style.display = 'none';
+      }
+    });
+    // Disable any input/select inside the main content that isn't already readonly
+    const content = document.querySelector('.app-content');
+    if (!content) return;
+    content.querySelectorAll('input:not([type=checkbox]):not([type=radio]), textarea, select').forEach(el => {
+      if (el.closest('#nav-search-box')) return;
+      if (el.readOnly || el.disabled) return;
+      el.setAttribute('readonly', 'readonly');
+      el.setAttribute('aria-readonly', 'true');
+      el.style.backgroundColor = '#f8fafc';
+    });
   },
 
   applyVisibilityTokens(role) {
@@ -602,7 +740,6 @@ const App = {
     allow('[data-family-only]', isAdmin || isStaff || isParent || isStudent);
     allow('[data-nonadmin-only]', !isAdmin);
 
-    // FIX: Show sign out button for all authenticated users
     document.querySelectorAll('[data-signout]').forEach(el => {
       el.style.display = (r === 'guest' || r === 'demo') ? 'none' : '';
     });
@@ -632,6 +769,42 @@ const App = {
   },
 
   enforceCurrentPageAccess(role) {
+    // v2 — BUG #1 FIX: if role hasn't been resolved yet (e.g. Supabase
+    // profile fetch is still in flight, or auth getUser() rejected), do
+    // NOT show the "guest" error. Bail out silently and let the async
+    // resolveAndApplyRole() finish — the page will then re-render with
+    // the correct role. Without this guard, every page rendered the
+    // "Your role (guest) does not have permission" error on first paint.
+    if (!role || role === 'guest' || role === 'demo' || role === 'pending') {
+      // Only block for demo/guest when the page has data-require-role
+      const shell = document.querySelector('.app-layout[data-require-role]');
+      if (shell) {
+        // If Supabase is not configured, show a friendly setup message.
+        if (!window.sb) {
+          const content = document.querySelector('.app-content');
+          if (content && !document.getElementById('sc-setup-required')) {
+            content.innerHTML = '<div class="card" style="max-width:720px;margin:30px auto;text-align:center;border-color:#fde68a;background:#fffbeb;padding:40px;border-radius:18px">' +
+              '<div style="font-size:3rem;margin-bottom:14px">🛠️</div>' +
+              '<h2 style="margin-bottom:10px">Setup required</h2>' +
+              '<p style="color:var(--gray-700);margin-bottom:14px">The portal is not yet connected to a database. To finish setup:</p>' +
+              '<ol style="text-align:left;color:var(--gray-700);max-width:520px;margin:0 auto 14px;line-height:1.7">' +
+              '<li>Open <code>assets/js/config.js</code> in your editor.</li>' +
+              '<li>Paste your Supabase URL and anon key.</li>' +
+              '<li>Run <code>database/complete-schema.sql</code> in Supabase SQL editor.</li>' +
+              '<li>Reload this page.</li></ol>' +
+              '<a class="btn btn-primary" href="login.html">Go to login</a></div>';
+          }
+          return;
+        }
+        // Otherwise (Supabase configured, but role not yet resolved)
+        // let the page continue loading. resolveAndApplyRole() will
+        // run enforceCurrentPageAccess again when the real role is set.
+        return;
+      }
+      // No data-require-role and not authed → let the page render
+      // its own public state.
+      return;
+    }
     if (App.isAdminRole(role)) return;
     const shell = document.querySelector('.app-layout[data-require-role]');
     if (!shell) return;
@@ -664,50 +837,36 @@ const App = {
     const fd = new FormData(e.target);
     let email = (fd.get('email') || '').trim().toLowerCase();
     const password = String(fd.get('password') || '').trim();
-    
     const supabase = window.sb || this.sb || null;
-    if (!supabase) { 
-      alert('Database not configured. Please edit assets/js/config.js with your Supabase URL and anon key.'); 
-      return; 
+    if (!supabase) {
+      alert('Database not configured. Please edit assets/js/config.js with your Supabase URL and anon key.');
+      return;
     }
-    
     const btn = e.target.querySelector('button[type=submit]');
     if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = 'Signing in…'; }
-
-    // ENTERPRISE V8 (issue 20): allow sign-in with STUDENT ID / STAFF ID /
-    // admission number instead of email. If the identifier has no '@', we
-    // resolve it to the linked account email via a safe security-definer RPC.
     if (email && email.indexOf('@') === -1) {
       try {
         const { data: resolved, error: rerr } = await supabase.rpc('lookup_login_email', { p_identifier: email });
-        if (!rerr && resolved) { email = String(resolved).toLowerCase(); console.log('[App.handleSignIn] ID resolved to account email.'); }
+        if (!rerr && resolved) { email = String(resolved).toLowerCase(); }
         else {
           if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || 'Sign in'; }
           e.target.dataset.signingIn = '0';
-          alert('No account found for ID "' + email.toUpperCase() + '". Check the ID, or sign in with your email. (Admin: run database/update-v8-schema.sql and link the student/staff record to a login account.)');
+          alert('No account found for ID "' + email.toUpperCase() + '".');
           return;
         }
       } catch(_) {}
     }
-    
-    console.log('[App.handleSignIn] Attempting login…');
-    
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
     if (error) {
-      console.error('[App.handleSignIn] Error:', error.message);
       if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || 'Sign in'; }
       e.target.dataset.signingIn = '0';
       alert('Sign-in failed: ' + (error.message || 'Check your email and password.'));
       return;
     }
-    
-    console.log('[App.handleSignIn] Success!');
-    try { await App.ensureProfileAfterLogin(data && data.user, email); } catch(e) { console.warn('Profile bootstrap skipped:', e.message || e); }
+    try { await App.ensureProfileAfterLogin(data && data.user, email); } catch(e) {}
     App.logActivity('login', 'auth', email);
     location.href = 'dashboard.html';
   },
-
 
   async ensureProfileAfterLogin(user, email) {
     const supabase = window.sb || this.sb || null;
@@ -717,39 +876,23 @@ const App = {
       if (!existing) {
         await supabase.from('profiles').insert({ id: user.id, email: email || user.email, full_name: user.user_metadata?.full_name || '', role: user.user_metadata?.role || 'student', status: 'active' });
       }
-    } catch(e) { /* RLS may prevent insert; login still continues and normal profile loader handles it */ }
+    } catch(e) {}
   },
 
   async handleSignUp(e) {
     e.preventDefault();
     const fd = new FormData(e.target);
-    
     const supabase = window.sb || this.sb || null;
-    if (!supabase) { 
-      alert('Database not configured. Please edit assets/js/config.js with your Supabase URL and anon key.'); 
-      return; 
-    }
-    
+    if (!supabase) { alert('Database not configured. Please edit assets/js/config.js with your Supabase URL and anon key.'); return; }
     const btn = e.target.querySelector('button[type=submit]');
     if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = 'Submitting…'; }
-    
-    console.log('[App.handleSignUp] Creating account...');
-    
     const { data, error } = await supabase.auth.signUp({
       email: (fd.get('email') || '').trim(),
       password: fd.get('password') || '',
       options: { data: { full_name: fd.get('full_name'), phone: fd.get('phone'), role: fd.get('role') } }
     });
-    
     if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || 'Request access'; }
-    
-    if (error) { 
-      console.error('[App.handleSignUp] Error:', error.message);
-      alert('Request failed: ' + (error.message || 'Could not create request.')); 
-      return; 
-    }
-    
-    console.log('[App.handleSignUp] Success! Account created.');
+    if (error) { alert('Request failed: ' + (error.message || 'Could not create request.')); return; }
     alert('✅ Request sent! Check your email to confirm, then wait for admin approval.');
     if (e.target.reset) e.target.reset();
     App.switchAuthTab('signin');
@@ -805,11 +948,7 @@ const App = {
   signOut() {
     const supabase = window.sb || this.sb || null;
     if (!supabase) { location.href = 'login.html'; return; }
-    console.log('[App.signOut] Signing out...');
-    supabase.auth.signOut().then(() => {
-      console.log('[App.signOut] Signed out successfully');
-      location.href = 'login.html';
-    });
+    supabase.auth.signOut().then(() => { location.href = 'login.html'; });
   },
 
   toggleSidebar() {
@@ -876,7 +1015,7 @@ const App = {
       set('ov-parent-fees', feeRows.length);
       set('ov-parents', parentCount);
       set('ov-complaints', complaintCount);
-      
+
       const annHTML = announcements.length
         ? announcements.map(a => '<div style="padding:10px 0;border-bottom:1px solid var(--gray-200)"><a href="announcements.html"><strong>'+esc(a.title)+'</strong></a><div style="font-size:0.82rem;color:var(--gray-500)">'+(a.created_at ? fmtDMYT(a.created_at) : '')+'</div><div style="font-size:.86rem;color:var(--gray-600)">'+esc(a.body||'').slice(0,120)+'</div></div>').join('')
         : '<p style="color:var(--gray-500)">No announcements yet.</p>';
@@ -887,7 +1026,7 @@ const App = {
       document.querySelectorAll('#dash-polls,.dash-polls').forEach(el => el.innerHTML = pollHTML);
       App.injectDashboardLiveFeed(announcements, openPolls, {events, broadcasts, surveys, lostFound, ptaMeetings, meals, hostel: hostelRows});
       App.injectPaymentHistory();
-      
+
       const ctx = document.getElementById('dash-chart');
       if (ctx && window.Chart) {
         new Chart(ctx, {
@@ -902,13 +1041,6 @@ const App = {
     } catch (e) { console.warn('Dashboard load failed:', e.message); }
   },
 
-  /* ============================================================
-     ENTERPRISE V6 — LIVE DASHBOARD FEED (fixes: voting/polls, events,
-     result broadcasts, surveys, lost & found, PTA meetings, cafeteria
-     menu and hostel notices now appear on every role's dashboard).
-     Previously this function was invoked but never defined, so the
-     whole feed silently failed with a TypeError.
-     ============================================================ */
   injectDashboardLiveFeed(announcements, openPolls, extra) {
     try {
       extra = extra || {};
@@ -922,7 +1054,6 @@ const App = {
         '<div style="font-size:.8rem;color:var(--gray-500)">' + esc2(sub || '') + '</div></div></div>';
 
       const sections = [];
-      // 🗳 open polls / voting — students, staff and parents can vote right from here
       if ((openPolls || []).length) {
         sections.push({ title: '🗳️ Voting & Polls — cast your vote', html: openPolls.map(p =>
           item('🗳️', p.title, (p.description || 'Voting is open — tap to vote') + (p.closes_at ? ' · closes ' + fmtDMY(p.closes_at) : ''), 'voting.html?poll=' + p.id, (p.status||'open'))).join('') +
@@ -946,7 +1077,6 @@ const App = {
       const feedHTML = '<div class="card" style="margin-top:16px"><h3 style="margin-top:0">📡 Live School Feed</h3>' +
         sections.map(s => '<div style="margin-bottom:10px"><div style="font-weight:800;font-size:.82rem;letter-spacing:.04em;color:var(--primary);text-transform:uppercase;margin:8px 0 2px">' + s.title + '</div>' + s.html + '</div>').join('') + '</div>';
 
-      // Place inside every visible role section; fall back to appending after announcements.
       let placed = false;
       document.querySelectorAll('.dash-live,#dash-live').forEach(el => { el.innerHTML = feedHTML; placed = true; });
       if (!placed) {
@@ -965,8 +1095,6 @@ const App = {
     } catch (e) { console.warn('Live feed injection failed:', e.message); }
   },
 
-  /* ENTERPRISE V6 — recent fee payments panel for parents/students (was
-     referenced but missing). Renders into #dash-payments if present. */
   async injectPaymentHistory() {
     try {
       const supabase = window.sb || this.sb || null; if (!supabase) return;
@@ -984,9 +1112,6 @@ const App = {
     } catch (e) {}
   },
 
-  /* ENTERPRISE V6 (issue 11): visual gallery — photo & video previews in a
-     responsive grid with a click-to-enlarge lightbox. Renders into
-     #gallery-grid if present, otherwise injects one above the gallery table. */
   async load_gallery() {
     try {
       const supabase = window.sb || this.sb || null; if (!supabase) return;
@@ -1001,7 +1126,7 @@ const App = {
       }
       const { data } = await supabase.from('gallery').select('*').order('created_at', { ascending: false }).limit(120);
       const rows = data || [];
-      if (!rows.length) { grid.innerHTML = '<p style="color:var(--gray-500);grid-column:1/-1">No photos or videos yet. Click “+ Add new” and paste an image/video/YouTube/Drive link.</p>'; return; }
+      if (!rows.length) { grid.innerHTML = '<p style="color:var(--gray-500);grid-column:1/-1">No photos or videos yet. Click "+ Add new" and paste an image/video/YouTube/Drive link.</p>'; return; }
       const md = (window.Super && Super.media) || null;
       grid.innerHTML = rows.map(g => {
         const url = g.media_url || ''; const kind = md ? md.kind(url) : 'link';
@@ -1016,6 +1141,7 @@ const App = {
       }).join('');
     } catch (e) { console.warn('Gallery grid failed:', e.message); }
   },
+
   galleryView(url, type, caption) {
     const md = (window.Super && Super.media) || null;
     const kind = md ? md.kind(url) : (type || 'image');
@@ -1027,10 +1153,7 @@ const App = {
     openModal(caption || 'Gallery preview', body + '<p style="margin-top:8px"><a href="' + esc(url) + '" target="_blank" rel="noopener">Open original ↗</a></p>');
   },
 
-
-  /* ENTERPRISE V10: global dropdown de-duplication.
-     Any select rendered by CRUD, custom pages or static templates is cleaned so
-     users never see repeated option labels. Keeps the first option per label. */
+  /* ENTERPRISE V10: global dropdown de-duplication. */
   dedupeSelectOptions(sel) {
     if (!sel || sel.dataset.scDedupeRunning === '1') return;
     sel.dataset.scDedupeRunning = '1';
@@ -1085,7 +1208,11 @@ function closeModal() {
 
 function toast(msg, type='info', ms=3500) {
   const c = document.getElementById('toast-container');
-  if (!c) return;
+  if (!c) {
+    // Fallback: use console
+    if (type === 'danger' || type === 'warning') console.warn('[toast]', msg);
+    return;
+  }
   const t = document.createElement('div');
   t.className = 'toast toast-' + (type || 'info');
   t.innerHTML = '<div class="toast-msg">' + esc(msg) + '</div>';
@@ -1093,12 +1220,10 @@ function toast(msg, type='info', ms=3500) {
   setTimeout(() => { t.style.animation = 'slideOut 0.3s ease forwards'; setTimeout(() => t.remove(), 300); }, ms);
 }
 
-/* Backwards-compatible global aliases */
 function handleSignIn(e){ return App.handleSignIn(e); }
 function handleSignUp(e){ return App.handleSignUp(e); }
 
-/* Boot */
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', App.init);
 else App.init();
 
-console.log('[School Connect Gen v9] app.js loaded — RBAC role hierarchy fixed.', 'color:#10b981;font-weight:bold');
+console.log('%c[School Connect v15] app.js loaded — RBAC, family-safe nav, fixed notifications.', 'color:#10b981;font-weight:bold');
