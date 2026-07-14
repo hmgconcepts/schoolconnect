@@ -363,20 +363,19 @@ const ACTIVITY_TEMPLATES = {
   general: ['Open Day','Graduation','Award Ceremony','Excursion','Fundraising']
 };
 
-/* ---------- Chatbot knowledge base ---------- */
+/* ---------- Chatbot knowledge base (v9 Comprehensive) ---------- */
 const CHATBOT_KB = [
   { match: ['build','start','how','begin','wizard'], reply: 'Open the **Start Building** button to launch the 6-step wizard. Each step takes about a minute. You can save your progress and come back any time.' },
-  { match: ['deploy','publish','host','github','live'], reply: 'Deployment is 100% free. After downloading your ZIP:\n1. Create a free **GitHub Pages** repo\n2. Upload all unzipped files\n3. Enable Pages in Settings\n4. Add your **Supabase** keys to `assets/js/config.js`\n5. Run `database/schema.sql` in Supabase SQL editor\n\nFull steps in the **DEPLOYMENT-GUIDE.md**.' },
-  { match: ['supabase','database','db'], reply: 'We use **Supabase** (free tier: 50,000 rows/mo, includes auth + RLS + storage). Steps:\n1. supabase.com → New project\n2. SQL editor → paste `database/schema.sql` → Run\n3. Copy your URL + anon key into `assets/js/config.js`' },
-  { match: ['cost','price','free','pay'], reply: 'The platform itself is **free forever**. Free tools used:\n• GitHub Pages (hosting)\n• Supabase (database + auth)\n• Google Drive (unlimited media)\n• Chart.js CDN (charts)\n• WhatsApp + mailto (messaging)\n\nOnly pay if you want us to deploy it for you.' },
-  { match: ['voting','poll','elect','prefect'], reply: 'Yes — the **Voting & Polls** module is built in! Features:\n• Class prefect, head boy/girl elections\n• Anonymous ballots\n• Live results with auto-refresh\n• Vote from phone or desktop\n• Email + push notifications when a poll opens/closes' },
-  { match: ['notification','push','alert'], reply: 'Multi-channel notifications are built in:\n• In-app bell with unread count\n• Browser push (after install)\n• Email (free SMTP via Supabase Auth)\n• WhatsApp via wa.me deep-link\n• SMS via the school\'s gateway\n\nFirst install the app — the **PWA install banner** appears on every page.' },
-  { match: ['install','pwa','app'], reply: 'Yes — School Connect is a **Progressive Web App**. When you first visit, a small banner at the bottom invites you to install it on your phone or desktop. After install, you get offline access, push notifications and a full-screen experience.' },
-  { match: ['feature','module','what'], reply: 'You get **65 modules** covering academics, finance, communication, media, and enterprise. The full list with explanations is in **FEATURES.md**. Pick the modules you want in Step 5 of the wizard.' },
-  { match: ['bug','error','fix','issue'], reply: 'See **DIAGNOSIS.md** for the full bug report. Gen v8 fixes every bug found in v6 and v7, plus adds new enterprise features and SEO/lead-gen. No AI API is used anywhere.' },
-  { match: ['ai','gpt','chatgpt','llm'], reply: 'No AI APIs are used — they are not cost-effective. All logic is deterministic, runs in the browser, and works fully offline. The "assistant" is a rules-based helper.' },
-  { match: ['lead','seo','google','search'], reply: 'Each generated platform is **SEO-optimized** for lead generation:\n• Schema.org JSON-LD structured data\n• Open Graph + Twitter Card tags\n• `robots.txt` + `sitemap.xml`\n• Auto-generated `about.html` with HMG Concepts attribution\n• LinkedIn & Facebook preview images' },
-  { match: ['hmg','ecosystem','brand'], reply: 'HMG Concepts (His Marvellous Grace) — **EdTech · DataTech · FaithTech**. The School Connect footer always links back to **hmgconcepts.pages.dev** for lead generation. The full ecosystem includes School, Church, Business Connect generators.' }
+  { match: ['deploy','publish','host','github','live'], reply: 'Deployment is 100% free. After unzipping:\n1. Create a free **GitHub Pages** repository\n2. Upload all files\n3. Enable Pages in Settings\n4. Add **Supabase** keys to `assets/js/config.js`\n5. Run all SQL files in `database/` in the Supabase SQL editor.\n\nSee **DEPLOYMENT-GUIDE.md** for details.' },
+  { match: ['supabase','database','db','no database'], reply: 'If you see "No database", ensure your Supabase URL and Anon Key are correct in `assets/js/config.js`. Also, make sure you have run the `database/schema.sql` and other relevant SQL files in your Supabase project.' },
+  { match: ['voting','poll','elect','prefect','uuid'], reply: 'The **Voting & Polls** module allows you to run elections. If you get a UUID error, ensure you are using the latest version of `voting.js` (v9) which uses database-generated IDs. Admin can create, close, and monitor results live.' },
+  { match: ['report','result','card','stamp','signature'], reply: 'Report Cards (v9) now support **Affective** and **Psychomotor** domains, plus automated **School Stamp** and **Principal Signature**. You can fill these in from the Report Cards page using the new dedicated forms.' },
+  { match: ['teacher','other','edit','access'], reply: 'School Connect v9 implements **Teacher Isolation**. Subject teachers can only edit or delete records they personally created. Administrators retain full oversight.' },
+  { match: ['parent','student','child','own'], reply: 'Parents and Students see only data relevant to them. Parents see linked children\'s results, fees, and attendance. Students see their own personal academic records.' },
+  { match: ['cost','price','free','pay'], reply: 'The platform is **free forever**. We use free hosting (GitHub) and free backend (Supabase). No monthly subscriptions. Human deployment assistance is available for a one-time fee.' },
+  { match: ['feature','module','what'], reply: 'You get up to **89 modules** covering every aspect of school management: Academics, CBT, Finance, HR, Payroll, Communication, and more. See **FEATURES.md**.' },
+  { match: ['seo','google','lead','hmg'], reply: 'Each site is SEO-optimized with automated sitemaps and robots.txt. Footers link to the **HMG Concepts Ecosystem** to help your school grow and generate leads.' },
+  { match: ['exam','registration','external'], reply: 'The **Exam Registrations** module (v9) provides detailed, exam-specific forms for WAEC, NECO, JAMB, IGCSE, and more. Collect NIN, subjects, and course choices efficiently.' }
 ];
 
 /* Export to window */

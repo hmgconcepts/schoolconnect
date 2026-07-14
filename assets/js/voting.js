@@ -42,8 +42,8 @@ const Voting = {
   },
 
   onVoteInserted(row) {
-    if (typeof VotingUI !== 'undefined' && VotingUI.refreshResults) {
-      VotingUI.refreshResults(row.poll_id);
+    if (typeof VT !== 'undefined' && VT.refreshResults) {
+      VT.refreshResults(row.poll_id);
     }
   },
 
@@ -51,23 +51,22 @@ const Voting = {
   async createPoll({ title, description, candidates, type, opens_at, closes_at, allow_multiple, anonymous, audience }) {
     const supabase = this.sb || window.sb || null;
     const payload = {
-      id: 'poll-' + Math.random().toString(36).slice(2,8),
       title: (title || '').trim(),
       description: (description || '').trim(),
-      type: type || 'single_choice',         // single_choice | multiple_choice | yes_no | ranked
+      type: type || 'single_choice',
       candidates: Array.isArray(candidates) ? candidates : JSON.parse(candidates || '[]'),
       opens_at: opens_at || new Date().toISOString(),
       closes_at: closes_at || null,
       allow_multiple: !!allow_multiple,
       anonymous: !!anonymous,
-      audience: audience || 'all',           // all | students | staff | parents | custom_class
+      audience: audience || 'all',
       status: 'open',
       created_at: new Date().toISOString()
     };
 
     if (!supabase) {
-      // Demo / simulated mode fallback!
       try {
+        payload.id = 'demo-' + Math.random().toString(36).slice(2,8);
         const demoPolls = JSON.parse(localStorage.getItem('sc-demo-polls') || '[]');
         demoPolls.unshift(payload);
         localStorage.setItem('sc-demo-polls', JSON.stringify(demoPolls));
@@ -75,10 +74,17 @@ const Voting = {
       } catch(e) { return { error: 'Simulated storage failed' }; }
     }
 
+    // Removed manual ID generation to prevent UUID syntax error
     const { data, error } = await supabase.from('polls').insert(payload).select().single();
     if (error) return { error: error.message };
     await this.broadcastPollOpened(data);
     return { data };
+  },
+
+  async updatePoll(pollId, patch) {
+    const supabase = this.sb || window.sb || null;
+    if (!supabase) return { error: 'No database' };
+    return await supabase.from('polls').update(patch).eq('id', pollId).select().single();
   },
 
   /* Close a poll (admin only) */
@@ -249,13 +255,14 @@ const Voting = {
       const t = e.target.closest('[data-vote-action]');
       if (!t) return;
       const action = t.dataset.voteAction;
-      if (action === 'create') VotingUI.openCreatePollModal();
-      if (action === 'cast') VotingUI.castVote(t.dataset.poll, t.dataset.candidate);
-      if (action === 'close') VotingUI.closePoll(t.dataset.poll);
-      if (action === 'refresh') VotingUI.refreshResults(t.dataset.poll);
+      if (typeof VT === 'undefined') return;
+      if (action === 'create') VT.create();
+      if (action === 'cast') VT.vote(t.dataset.poll);
+      if (action === 'close') VT.toggleClose(t.dataset.poll);
+      if (action === 'refresh') VT.refresh();
     });
   }
 };
 
 window.Voting = Voting;
-if (typeof window.VotingUI !== 'undefined') window.VotingUI.init();
+if (typeof window.VT !== 'undefined' && VT.refresh) VT.refresh();

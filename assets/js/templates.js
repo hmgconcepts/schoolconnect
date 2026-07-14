@@ -38,7 +38,7 @@ const T = {
 ${fontLink}
 <meta property="og:title" content="${T.esc(title)} • ${T.esc(config.schoolName)}">
 <meta property="og:description" content="${T.esc(config.schoolName)} — Free school management by HMG Concepts">
-<meta property="og:image" content="assets/img/logo.png">
+<meta property="og:image" content="assets/img/logo.${logoExt}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="assets/css/style.css">
@@ -383,6 +383,7 @@ ${T.setupRequiredBanner()}
       'report_cards':'🧾', 'admin-data':'🗄️', flyer:'📰', approvals:'✅', 'timetable-generator':'🗓️', checkin:'📲', 'checkin-staff':'⏰', 'checkin_staff':'⏰', diary:'📔', surveys:'🗒️', menu:'🍽️', settings:'⚙️',
       digital_library:'📚', 'cbt-prompts':'🧩', entrance:'🎯', storage:'🗄️', developer:'👨‍💻',
       payroll:'🧾', staff_loans:'🏦', staff_bonus:'🎁', appraisals:'⭐', 'student-profile':'👤', academic_records:'📄',
+      affective_traits:'⭐', psychomotor_traits:'🏃', report_comments:'💬',
       rubrics:'📐', transcripts:'🎓', transfer_cert:'📄', counselling:'💬'
     };
     return map[id] || '◦';
@@ -410,6 +411,7 @@ ${T.setupRequiredBanner()}
       activity_log:'Activity Log', lesson_plans:'Lesson Plans', behaviour:'Behaviour',
       support_plans:'Support Plans', donations:'Donations', substitutions:'Substitutions',
       helpdesk:'Help Desk', payments_online:'Online Pay', 'report_cards':'Report Cards',
+      affective_traits:'Affective Domain', psychomotor_traits:'Psychomotor Domain', report_comments:'Report Comments',
       'admin-data':'Admin Data', approvals:'Approvals', flyer:'Flyer', checkin:'QR Check-in', 'checkin-staff':'Staff Check-In', 'checkin_staff':'Staff Check-In', diary:'Diary',
       surveys:'Surveys', menu:'Menu', academic_records:'Records'
     };
@@ -428,10 +430,7 @@ ${T.setupRequiredBanner()}
     const selected = Array.isArray(config.modules) ? config.modules.slice() : [];
     // Dedicated pages — always available regardless of module selection
     const dedicatedPages = [
-      // Public pages (about/contact/apply/verify) are still generated, but are not
-      // placed inside authenticated role dashboards to keep staff/parent/student
-      // navigation focused.
-      'student-profile', 'profile', 'change-password', 'cbt-exam', 'cbt-multi', 'teacher-overview', 'feature-guide', 'notifications', 'parents'
+      'student-profile', 'profile', 'change-password', 'cbt-exam', 'cbt-multi', 'teacher-overview', 'feature-guide', 'notifications', 'parents', 'affective_traits', 'psychomotor_traits', 'report_comments'
     ];
     // Combine and dedupe — avoid 'class' vs 'classes' collisions
     const known = [...new Set([...base, ...catalogIds, ...dedicatedPages])];

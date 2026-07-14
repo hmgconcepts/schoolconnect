@@ -284,25 +284,58 @@ const CRUD = {
     ]},
 
     /* ENTERPRISE FINAL V2 (#22): external examination registrations —
-       SSCE (WAEC/NECO), UTME/JAMB, IGCSE, Common Entrance, BECE, others.
-       Stored in module_records via the generic engine? No — dedicated def so
-       exports/extraction work richly; table module_records keeps it schema-safe. */
-    exam_registrations: { table:'module_records', generic:true, module:'exam_registrations', title:'External Exam Registration', help:'Register candidates for SSCE (WAEC/NECO), UTME/JAMB, IGCSE, Common Entrance, BECE and more. Track payment and submission status, then export all details as CSV/PDF for the exam body portal.', cols:[
-      {key:'data.exam_type',label:'Examination',type:'select',options:['WAEC SSCE','NECO SSCE','UTME (JAMB)','IGCSE (Cambridge)','Common Entrance (NCEE)','BECE (Junior WAEC)','GCE (private)','TOEFL/IELTS','Other'],required:true},
-      {key:'title',label:'Candidate full name',type:'text',required:true},
-      {key:'data.student',label:'Link to student record',type:'ref',refTable:'students',refValue:'full_name',refStore:'value',searchable:true},
-      {key:'data.class',label:'Present class',type:'ref',refTable:'classes',refValue:'name'},
-      {key:'data.exam_year',label:'Exam year',type:'number'},
-      {key:'data.exam_number',label:'Exam/Registration number (when issued)',type:'text'},
-      {key:'data.subjects',label:'Subjects (comma-separated, e.g. English, Maths, Physics…)',type:'textarea'},
-      {key:'data.jamb_courses',label:'UTME: course & institutions (1st/2nd choice)',type:'textarea'},
-      {key:'data.centre',label:'Exam centre (when assigned)',type:'text'},
-      {key:'amount',label:'Registration fee paid',type:'number'},
-      {key:'data.fee_balance',label:'Fee balance',type:'number'},
-      {key:'ref_date',label:'Registration date',type:'date'},
-      {key:'data.passport_link',label:'Passport photo (Drive link)',type:'text'},
-      {key:'status',label:'Status',type:'select',options:['collecting-details','paid','submitted-to-body','number-issued','completed']},
-      {key:'body',label:'Notes',type:'textarea'}
+       SSCE (WAEC/NECO), UTME/JAMB, IGCSE, Common Entrance, BECE, others. */
+    exam_registrations: { table:'module_records', generic:true, module:'exam_registrations', title:'External Exam Registration', help:'Register candidates for SSCE (WAEC/NECO), UTME/JAMB, IGCSE, Common Entrance, BECE and more.', cols:[
+      {key:'data.exam_type',label:'Examination',type:'select',options:['WAEC SSCE','NECO SSCE','UTME (JAMB)','IGCSE (Cambridge)','Common Entrance (NCEE)','BECE (Junior WAEC)','GCE','NABTEB','Other'],required:true},
+      {key:'title',label:'Candidate Full Name',type:'text',required:true},
+      {key:'data.student_id',label:'Link to student record',type:'ref',refTable:'students',refValue:'full_name',refStore:'id',searchable:true,autofill:{'data.dob':'date_of_birth','data.gender':'gender'}},
+      {key:'data.dob',label:'Date of Birth',type:'date'},
+      {key:'data.gender',label:'Gender',type:'select',options:['male','female']},
+      {key:'data.nin',label:'NIN (National Identity Number)',type:'text'},
+      {key:'data.exam_year',label:'Exam Year',type:'number',default:new Date().getFullYear()},
+      {key:'data.subjects',label:'Subjects (comma-separated)',type:'textarea',help:'e.g. English, Mathematics, Physics...'},
+      {key:'data.jamb_profile_code',label:'JAMB Profile Code / Number',type:'text'},
+      {key:'data.course_choice_1',label:'1st Choice Course (UTME)',type:'text'},
+      {key:'data.institution_1',label:'1st Choice Institution',type:'text'},
+      {key:'data.course_choice_2',label:'2nd Choice Course (UTME)',type:'text'},
+      {key:'data.institution_2',label:'2nd Choice Institution',type:'text'},
+      {key:'data.centre',label:'Exam Centre',type:'text'},
+      {key:'data.exam_no',label:'Exam/Reg Number',type:'text'},
+      {key:'amount',label:'Fee Paid',type:'number'},
+      {key:'status',label:'Status',type:'select',options:['collecting-details','paid','processing','registered','completed']}
+    ]},
+
+    /* AFFECTIVE & PSYCHOMOTOR DOMAINS (v9) */
+    affective_traits: { table:'affective_traits', title:'Affective Domain', cols:[
+      {key:'student_id',label:'Student',type:'ref',refTable:'students',refValue:'full_name',refStore:'id',groupBy:'class',searchable:true,required:true},
+      {key:'term',label:'Term',type:'lookup',lookupKind:'term',required:true},
+      {key:'session',label:'Session',type:'lookup',lookupKind:'session',required:true},
+      {key:'data.punctuality',label:'Punctuality',type:'select',options:['5 - Excellent','4 - Very Good','3 - Good','2 - Fair','1 - Poor']},
+      {key:'data.neatness',label:'Neatness',type:'select',options:['5 - Excellent','4 - Very Good','3 - Good','2 - Fair','1 - Poor']},
+      {key:'data.politeness',label:'Politeness',type:'select',options:['5 - Excellent','4 - Very Good','3 - Good','2 - Fair','1 - Poor']},
+      {key:'data.honesty',label:'Honesty',type:'select',options:['5 - Excellent','4 - Very Good','3 - Good','2 - Fair','1 - Poor']},
+      {key:'data.leadership',label:'Leadership',type:'select',options:['5 - Excellent','4 - Very Good','3 - Good','2 - Fair','1 - Poor']},
+      {key:'data.cooperation',label:'Cooperation',type:'select',options:['5 - Excellent','4 - Very Good','3 - Good','2 - Fair','1 - Poor']},
+      {key:'data.attentiveness',label:'Attentiveness',type:'select',options:['5 - Excellent','4 - Very Good','3 - Good','2 - Fair','1 - Poor']}
+    ]},
+    psychomotor_traits: { table:'psychomotor_traits', title:'Psychomotor Domain', cols:[
+      {key:'student_id',label:'Student',type:'ref',refTable:'students',refValue:'full_name',refStore:'id',groupBy:'class',searchable:true,required:true},
+      {key:'term',label:'Term',type:'lookup',lookupKind:'term',required:true},
+      {key:'session',label:'Session',type:'lookup',lookupKind:'session',required:true},
+      {key:'data.handwriting',label:'Handwriting',type:'select',options:['5 - Excellent','4 - Very Good','3 - Good','2 - Fair','1 - Poor']},
+      {key:'data.verbal_fluency',label:'Verbal Fluency',type:'select',options:['5 - Excellent','4 - Very Good','3 - Good','2 - Fair','1 - Poor']},
+      {key:'data.sports',label:'Games & Sports',type:'select',options:['5 - Excellent','4 - Very Good','3 - Good','2 - Fair','1 - Poor']},
+      {key:'data.crafts',label:'Crafts / Handiwork',type:'select',options:['5 - Excellent','4 - Very Good','3 - Good','2 - Fair','1 - Poor']},
+      {key:'data.drawing',label:'Drawing / Painting',type:'select',options:['5 - Excellent','4 - Very Good','3 - Good','2 - Fair','1 - Poor']},
+      {key:'data.music',label:'Music / Singing',type:'select',options:['5 - Excellent','4 - Very Good','3 - Good','2 - Fair','1 - Poor']}
+    ]},
+    report_comments: { table:'report_comments', title:'Report Card Comments', cols:[
+      {key:'student_id',label:'Student',type:'ref',refTable:'students',refValue:'full_name',refStore:'id',groupBy:'class',searchable:true,required:true},
+      {key:'term',label:'Term',type:'lookup',lookupKind:'term',required:true},
+      {key:'session',label:'Session',type:'lookup',lookupKind:'session',required:true},
+      {key:'class_teacher_comment',label:'Class Teacher\'s Comment',type:'textarea'},
+      {key:'principal_comment',label:'Principal\'s Comment',type:'textarea'},
+      {key:'next_term_begins',label:'Next Term Begins',type:'date'}
     ]},
     hr: { table:'payroll', title:'Salary / Payslip', alias:'payroll', cols:[
       {key:'staff_name',label:'Staff (pick from list)',type:'ref',refTable:'staff',refValue:'full_name',refExtra:['role'],refStore:'value',searchable:true,required:true},
@@ -1533,6 +1566,59 @@ const CRUD = {
     if (window.App && App.logActivity) App.logActivity('attendance-from-checkin', 'attendance', rows.length + ' present');
     toast('✅ Marked ' + rows.length + ' student(s) PRESENT from QR check-ins.', 'success', 6000);
     this.renderList('attendance');
+  },
+
+  /* ============================================================
+     ENTERPRISE V10: BULK TRAITS FILL
+     Easy interface to fill Affective/Psychomotor domains for a 
+     whole class at once.
+     ============================================================ */
+  async bulkFillTraits(kind) {
+    if (!this.sb) { toast('Database not configured.', 'warning'); return; }
+    const { data: classes } = await this.sb.from('classes').select('name').order('name');
+    const opts = (classes || []).map(c => '<option>' + esc(c.name) + '</option>').join('');
+    const title = kind === 'affective' ? '⭐ Bulk Fill Affective Domain' : '🏃 Bulk Fill Psychomotor Domain';
+    openModal(title,
+      '<div class="grid grid-2"><div class="form-group"><label>Class</label><select id="bf-class" class="form-select" onchange="CRUD._bfLoad(\''+kind+'\')"><option value="">— select —</option>' + opts + '</select></div>' +
+      '<div class="form-group"><label>Term</label><select id="bf-term" class="form-select"><option>First Term</option><option>Second Term</option><option>Third Term</option></select></div></div>' +
+      '<div id="bf-list" style="max-height:400px;overflow:auto;margin-top:10px"><p style="color:var(--gray-500)">Pick a class to load students...</p></div>',
+      '<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="CRUD._bfSave(\''+kind+'\')">Save All</button>');
+  },
+
+  async _bfLoad(kind) {
+    const cls = document.getElementById('bf-class').value;
+    const box = document.getElementById('bf-list');
+    if (!cls) return;
+    const { data: studs } = await this.sb.from('students').select('id,full_name').eq('class', cls).order('full_name');
+    if (!studs || !studs.length) { box.innerHTML = '<p>No students found.</p>'; return; }
+    
+    const traits = kind === 'affective' 
+      ? ['Punctuality','Neatness','Politeness','Honesty','Leadership','Cooperation','Attentiveness']
+      : ['Handwriting','Verbal Fluency','Sports','Crafts','Drawing','Music'];
+
+    let html = '<table class="form-table"><thead><tr><th>Student</th>' + traits.map(t => '<th>'+t+'</th>').join('') + '</tr></thead><tbody>';
+    studs.forEach(s => {
+      html += '<tr data-student-id="'+s.id+'"><td><b>'+esc(s.full_name)+'</b></td>' + traits.map(t => '<td><select class="form-select bf-val" data-trait="'+t+'"><option value="5">5</option><option value="4">4</option><option value="3" selected>3</option><option value="2">2</option><option value="1">1</option></select></td>').join('') + '</tr>';
+    });
+    html += '</tbody></table>';
+    box.innerHTML = html;
+  },
+
+  async _bfSave(kind) {
+    const cls = document.getElementById('bf-class').value;
+    const term = document.getElementById('bf-term').value;
+    const table = kind === 'affective' ? 'affective_traits' : 'psychomotor_traits';
+    const rows = [];
+    document.querySelectorAll('#bf-list tr[data-student-id]').forEach(tr => {
+      const student_id = tr.dataset.studentId;
+      const ratings = {};
+      tr.querySelectorAll('.bf-val').forEach(sel => { ratings[sel.dataset.trait] = sel.value; });
+      rows.push({ student_id, term, session: '2025/2026', ratings, teacher_id: window.SC_PROFILE?.id });
+    });
+    const { error } = await this.sb.from(table).upsert(rows, { onConflict: 'student_id,term,session' });
+    if (error) { toast(error.message, 'danger'); return; }
+    toast('✅ Saved traits for ' + rows.length + ' students.', 'success');
+    closeModal();
   }
 };
 

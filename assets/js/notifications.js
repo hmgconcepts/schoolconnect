@@ -331,11 +331,13 @@ const Notifications = {
 
   async broadcast({ title, body, url, tag }) {
     if (this.permission !== 'granted') return;
+    const logoExt = (window.SCHOOL && window.SCHOOL.logoExt) || 'svg';
+    const logo = 'assets/img/logo.' + logoExt;
     try {
       if (this.sw && this.sw.showNotification) {
-        await this.sw.showNotification(title, { body, icon: 'assets/img/logo.svg', badge: 'assets/img/logo.svg', data: { url: url || '/' }, tag: tag || ('sc-' + Date.now()), requireInteraction: false, vibrate: [200, 100, 200] });
+        await this.sw.showNotification(title, { body, icon: logo, badge: logo, data: { url: url || '/' }, tag: tag || ('sc-' + Date.now()), requireInteraction: false, vibrate: [200, 100, 200] });
       } else if ('Notification' in window) {
-        const n = new Notification(title, { body, icon: 'assets/img/logo.svg', tag });
+        const n = new Notification(title, { body, icon: logo, tag });
         n.onclick = () => { if (url) location.href = url; n.close(); };
       }
     } catch (e) {}
