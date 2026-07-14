@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Voting &amp; Polls • God of Seed Academy</title>
-<meta name="description" content="God of Seed Academy — Voting &amp; Polls. Free school management platform by HMG Concepts.">
+<title>Surveys &amp; Forms • God of Seed Academy</title>
+<meta name="description" content="God of Seed Academy — Surveys &amp; Forms. Free school management platform by HMG Concepts.">
 <meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<meta property="og:title" content="Voting &amp; Polls • God of Seed Academy">
+<meta property="og:title" content="Surveys &amp; Forms • God of Seed Academy">
 <meta property="og:description" content="God of Seed Academy — Free school management by HMG Concepts">
 <meta property="og:image" content="assets/img/logo.png">
 <meta property="og:type" content="website">
@@ -61,19 +61,19 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 @media(min-width:901px){.app-topbar .mobile-toggle{display:none}}
 </style>
 
-    <meta name="description" content="God of Seed Academy — Voting &amp; Polls. Free school management platform by HMG Concepts.">
+    <meta name="description" content="God of Seed Academy — Surveys &amp; Forms. Free school management platform by HMG Concepts.">
     <meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
     <meta name="author" content="HMG Concepts">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://2gosaportal.pages.dev/voting.html">
-    <meta property="og:title" content="Voting &amp; Polls • God of Seed Academy">
-    <meta property="og:description" content="God of Seed Academy — Voting &amp; Polls. Free school management platform by HMG Concepts.">
-    <meta property="og:url" content="https://2gosaportal.pages.dev/voting.html">
+    <link rel="canonical" href="https://2gosaportal.pages.dev/surveys.html">
+    <meta property="og:title" content="Surveys &amp; Forms • God of Seed Academy">
+    <meta property="og:description" content="God of Seed Academy — Surveys &amp; Forms. Free school management platform by HMG Concepts.">
+    <meta property="og:url" content="https://2gosaportal.pages.dev/surveys.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="School Connect v5 — God of Seed Academy">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Voting &amp; Polls • God of Seed Academy">
-    <meta name="twitter:description" content="God of Seed Academy — Voting &amp; Polls. Free school management platform by HMG Concepts.">
+    <meta name="twitter:title" content="Surveys &amp; Forms • God of Seed Academy">
+    <meta name="twitter:description" content="God of Seed Academy — Surveys &amp; Forms. Free school management platform by HMG Concepts.">
     <link rel="alternate" href="https://hmgconcepts.pages.dev/" title="HMG Concepts Ecosystem">
   </head>
 <body data-theme="theme15" data-school="God of Seed Academy" data-font="plusjakarta">
@@ -444,7 +444,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
   <main class="app-main">
     <header class="app-topbar">
       <button class="mobile-toggle" onclick="App.toggleSidebar()" title="Menu">☰</button>
-      <h1 class="app-page-title">Voting &amp; Polls</h1>
+      <h1 class="app-page-title">Surveys &amp; Forms</h1>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
         
         <button class="btn btn-sm btn-outline" onclick="if(window.Super)Super.chatbot.explainPage()" title="About this page">ℹ️ Help</button>
@@ -453,35 +453,36 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
         <button class="btn btn-sm btn-outline" onclick="App.signOut()" data-signout >Sign out</button>
       </div>
     </header>
-    <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-color:#fcd34d">
-      <h3 style="margin-top:0">🗳️ Voting &amp; Elections — Create, run, analyse</h3>
-      <p style="color:var(--gray-700);line-height:1.7;margin:0">Run anonymous or named elections (prefect, head-boy, head-girl, PTA, staff polls). Share a code or link with your audience, watch results come in live, and get a one-click <strong>Insights Dashboard</strong> with auto-tallies, charts, demographic breakdown, integrity log and CSV export.</p>
+    <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#eef2ff,#faf5ff);border-color:#c7d2fe">
+      <h3 style="margin-top:0">🗒️ Surveys &amp; Forms — Build, distribute, analyse</h3>
+      <p style="color:var(--gray-700);line-height:1.7;margin:0">Create anonymous or named feedback forms, distribute them to any audience (parents, students, staff, or a single class), and get a one-click <strong>Insights Dashboard</strong> with auto-summaries, charts, sentiment scoring and CSV export. Distinct from elections (Voting).</p>
       <p style="font-size:.85rem;color:var(--gray-600);margin:8px 0 0"><strong>Affordable one-time setup, no monthly bills</strong>: the entire platform runs on free Supabase + free hosting, and every feature is deterministic and rules-based (no AI API). We deliberately avoid monthly, termly or yearly subscriptions because many small schools cannot afford recurring fees — so the platform is offered as a <strong>single, low one-time setup fee</strong>. Your school owns its data forever and pays nothing to run it.</p>
       <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-primary" data-staff-only onclick="VT.create()">+ New Poll</button>
-        <button class="btn btn-outline" data-staff-only onclick="VT.refresh()">↻ Refresh</button>
+        <button class="btn btn-primary" data-staff-only onclick="SV.create()">+ New Survey</button>
+        <button class="btn btn-outline" data-staff-only onclick="SV.openBuilder()">🧩 Use Question Builder</button>
+        <button class="btn btn-outline" onclick="SV.refresh()">↻ Refresh</button>
       </div>
     </div>
-    <div class="stats-grid" id="vt-stats">
-      <div class="stat-card"><div class="stat-value" id="vt-stat-active">–</div><div class="stat-label">Active polls</div></div>
-      <div class="stat-card"><div class="stat-value" id="vt-stat-closed">–</div><div class="stat-label">Closed</div></div>
-      <div class="stat-card"><div class="stat-value" id="vt-stat-votes">–</div><div class="stat-label">Total votes</div></div>
-      <div class="stat-card"><div class="stat-value" id="vt-stat-turnout">–</div><div class="stat-label">Avg turnout</div></div>
+    <div class="stats-grid" id="sv-stats">
+      <div class="stat-card"><div class="stat-value" id="sv-stat-active">–</div><div class="stat-label">Active surveys</div></div>
+      <div class="stat-card"><div class="stat-value" id="sv-stat-responses">–</div><div class="stat-label">Total responses</div></div>
+      <div class="stat-card"><div class="stat-value" id="sv-stat-week">–</div><div class="stat-label">This week</div></div>
+      <div class="stat-card"><div class="stat-value" id="sv-stat-completion">–</div><div class="stat-label">Avg completion</div></div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <h3 style="margin-top:0">📚 Poll Library</h3>
-      <p style="font-size:.85rem;color:#64748b;margin:0 0 12px">Click a poll to see <strong>Live Results</strong>, demographic breakdown, integrity log and export.</p>
-      <div id="vt-list"><span class="pulse">Loading…</span></div>
+      <h3 style="margin-top:0">📚 Survey Library</h3>
+      <p style="font-size:.85rem;color:#64748b;margin:0 0 12px">Click a survey to see its questions, <strong>Insights Dashboard</strong>, responses, and export buttons.</p>
+      <div id="sv-list"><span class="pulse">Loading…</span></div>
     </div>
-    <div class="card" id="vt-results-card" style="display:none">
-      <h3 style="margin-top:0">📊 Results — <span id="vt-results-title"></span></h3>
+    <div class="card" id="sv-insights-card" style="display:none">
+      <h3 style="margin-top:0">📊 Insights — <span id="sv-insights-title"></span></h3>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-        <button class="btn btn-sm btn-outline" onclick="VT.exportCSV()">⬇ Export CSV</button>
-        <button class="btn btn-sm btn-outline" onclick="VT.exportResults()">📋 Report</button>
-        <button class="btn btn-sm btn-outline" id="vt-toggle-btn" onclick="VT.toggleClose()">🔒 Close poll</button>
-        <button class="btn btn-sm btn-outline" onclick="VT.closeResults()">✕ Close</button>
+        <button class="btn btn-sm btn-outline" onclick="SV.exportCSV()">⬇ Export CSV</button>
+        <button class="btn btn-sm btn-outline" onclick="SV.exportSummary()">📋 Summary report</button>
+        <button class="btn btn-sm btn-outline" onclick="SV.toggleAnonymous()">👁 Toggle anonymous</button>
+        <button class="btn btn-sm btn-outline" onclick="SV.closeInsights()">✕ Close</button>
       </div>
-      <div id="vt-results-body"></div>
+      <div id="sv-insights-body"></div>
     </div>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
@@ -503,172 +504,265 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <script src="assets/js/analytics.js"></script>
 <script src="assets/js/app.js"></script>
 <script>
-const VT={
-  rows:[], current:null, channel:null,
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(reg => { Notifications.init(sb, reg); Voting.init(sb); });
+  else { Notifications.init(sb); Voting.init(sb); }
+  PWAInstall.init();
+  if (window.Super) Super.init(sb, window.SCHOOL);
+  if (window.Enterprise) Enterprise.init(sb);
+  if (window.CRUD) CRUD.init(sb);
+</script>
+<script>
+const SV={
+  rows:[], current:null, anonymous:false,
   esc:s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'),
   async refresh(){ await this.load(); await this.loadStats(); },
   async load(){
-    const {data}=await (Enterprise.voting?Enterprise.voting.list():{data:[]});
+    const {data}=await Enterprise.surveys.list();
     this.rows=data||[];
-    const box=document.getElementById('vt-list');
-    if(!this.rows.length){ box.innerHTML='<div class="card" style="background:#f8fafc"><p style="color:#64748b;margin:0">No polls yet. Click <b>+ New Poll</b> to create one.</p></div>'; return; }
-    box.innerHTML=this.rows.map(p=>{
-      const opts=(p.options||[]);
-      const isOpen = p.status!=='closed';
-      return '<div class="card" style="margin-bottom:10px;cursor:pointer" onclick="VT.openResults(' + p.id + ')" onmouseover="this.style.borderColor=\'#4f46e5\'" onmouseout="this.style.borderColor=\'#e2e8f0\'">'
+    const box=document.getElementById('sv-list');
+    if(!this.rows.length){ box.innerHTML='<div class="card" style="background:#f8fafc"><p style="color:#64748b;margin:0">No surveys yet. Click <b>+ New Survey</b> or <b>Question Builder</b> to get started.</p></div>'; return; }
+    box.innerHTML=this.rows.map(s=>{
+      const qs=(s.questions||[]).length;
+      const responses=(s.response_count||0);
+      const isAdmin = ['super_admin','admin','principal','proprietor','head_teacher','bursar'].includes(window.SC_ROLE || (window.SC_PROFILE && SC_PROFILE.role) || localStorage.getItem('sc-role') || '');
+      return '<div class="card" style="margin-bottom:10px;cursor:pointer" onclick="SV.openInsights(\''+s.id+'\')" onmouseover="this.style.borderColor=\'#4f46e5\'" onmouseout="this.style.borderColor=\'#e2e8f0\'">'
         +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
-        +'<div style="flex:1;min-width:200px"><h3 style="margin:0">'+this.esc(p.title)+'</h3>'
-        +'<p style="color:var(--gray-600);margin:4px 0;font-size:.85rem">'+this.esc(p.description||'')+'</p>'
+        +'<div style="flex:1;min-width:200px"><h3 style="margin:0">'+this.esc(s.title)+'</h3>'
+        +'<p style="color:var(--gray-600);margin:4px 0;font-size:.85rem">'+this.esc(s.description||'')+'</p>'
         +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'
-        +'<span class="badge-mini" style="background:'+(isOpen?'#dcfce7':'#e5e7eb')+';color:'+(isOpen?'#166534':'#475569')+';padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:800">'+(isOpen?'OPEN':'CLOSED')+'</span>'
-        +'<span class="badge-mini" style="background:#eef2ff;color:#3730a3;padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:800">'+opts.length+' candidates</span>'
-        +(p.anonymous?'<span class="badge-mini" style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:800">anonymous</span>':'')
+        +'<span class="badge-mini" style="background:#eef2ff;color:#3730a3;padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:800">'+qs+' questions</span>'
+        +'<span class="badge-mini" style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:800">'+responses+' responses</span>'
+        +(s.anonymous?'<span class="badge-mini" style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:800">👁 anonymous</span>':'')
         +'</div></div>'
         +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
-        +'<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();VT.vote(' + p.id + ')">'+(isOpen?'Vote':'View')+'</button>'
-        +'<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();VT.shareLink(' + p.id + ')">Share</button>'
+        +'<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();SV.fill(\''+s.id+'\')">📝 Respond</button>'
+        +'<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();SV.shareLink(\''+s.id+'\')">🔗 Share</button>'
+        +'<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();SV.openInsights(\''+s.id+'\')">📊 Insights</button>'
+        +(isAdmin?'<button class="btn btn-sm btn-outline" style="border-color:#f87171;color:#dc2626" onclick="event.stopPropagation();SV.deleteSurvey(\''+s.id+'\')">🗑 Delete</button>':'')
         +'</div></div></div>';
     }).join('');
   },
+  async deleteSurvey(id){
+    if(!confirm('Are you sure you want to permanently delete this survey and all its responses? This cannot be undone.')) return;
+    const res = await Enterprise.surveys.delete(id);
+    if(res && res.error){ toast(res.error, 'danger'); return; }
+    toast('✅ Survey deleted successfully!', 'success');
+    await this.refresh();
+  },
   async loadStats(){
     try{
-      const rows=this.rows;
+      const {data}=await Enterprise.surveys.list();
+      const rows=data||[];
       const active=rows.filter(r=>r.status!=='closed').length;
-      const closed=rows.filter(r=>r.status==='closed').length;
-      let totalVotes=0;
-      rows.forEach(r => totalVotes += r.vote_count || 0);
+      const totalResp=rows.reduce((a,r)=>a+(r.response_count||0),0);
+      const weekAgo=new Date(Date.now()-7*86400000);
+      let weekResp=0;
+      try{ const {data:rd}=await sb.from('survey_responses').select('created_at').gte('created_at',weekAgo.toISOString()); weekResp=(rd||[]).length; }catch(_){}
       const el=(id,v)=>{const e=document.getElementById(id); if(e) e.textContent=v;};
-      el('vt-stat-active', active);
-      el('vt-stat-closed', closed);
-      el('vt-stat-votes', totalVotes);
-      el('vt-stat-turnout', active+closed? Math.round(totalVotes/Math.max(1,active+closed)*100)+'%':'0%');
+      el('sv-stat-active', active); el('sv-stat-responses', totalResp);
+      el('sv-stat-week', weekResp);
+      el('sv-stat-completion', rows.length? Math.round((totalResp/Math.max(1,active*5))*100)+'%':'0%');
     }catch(_){}
   },
   create(){
-    openModal('New Poll / Election',
-      '<div class="form-group"><label>Title *</label><input class="form-input" id="vt-t" placeholder="e.g. Head Boy 2026"></div>'
-      +'<div class="form-group"><label>Description</label><input class="form-input" id="vt-d"></div>'
-      +'<div class="form-group"><label>Audience</label><select class="form-select" id="vt-aud"><option value="all">All</option><option value="parents">Parents</option><option value="students">Students</option><option value="staff">Staff</option></select></div>'
-      +'<div class="form-group"><label><input type="checkbox" id="vt-anon" checked> Anonymous</label></div>'
-      +'<div class="form-group"><label><input type="checkbox" id="vt-multi"> Multi-winner</label></div>'
-      +'<div class="form-group"><label>Max votes per voter</label><input type="number" class="form-input" id="vt-maxv" value="1" min="1" max="10"></div>'
-      +'<div class="form-group"><label>Closes on</label><input type="date" class="form-input" id="vt-closes"></div>'
-      +'<div class="form-group"><label>Candidates (one per line: <b>Name — Description</b>)</label><textarea class="form-input" id="vt-opts" rows="6" placeholder="Ade Adewale — Head Boy&#10;Bola Bola — Head Boy"></textarea></div>',
+    openModal('New Survey',
+      '<div class="form-group"><label>Title *</label><input class="form-input" id="sv-t" placeholder="e.g. Term feedback"></div>'
+      +'<div class="form-group"><label>Description</label><input class="form-input" id="sv-d" placeholder="What is this survey about?"></div>'
+      +'<div class="form-group"><label>Audience</label><select class="form-select" id="sv-aud"><option value="all">All (parents + students + staff)</option><option value="parents">Parents only</option><option value="students">Students only</option><option value="staff">Staff only</option><option value="parents_students">Parents &amp; Students</option></select></div>'
+      +'<div class="form-group"><label><input type="checkbox" id="sv-anon" checked> Anonymous (no name/email captured)</label></div>'
+      +'<div class="form-group"><label>Closes on (optional)</label><input type="date" class="form-input" id="sv-closes"></div>'
+      +'<div class="form-group"><label>Questions (one per line — basic mode)</label><textarea class="form-input" id="sv-q" rows="5" placeholder="How satisfied are you?&#10;Any suggestions?&#10;Would you recommend us?"></textarea></div>'
+      +'<p style="color:#64748b;font-size:.82rem;margin:6px 0 0">For Likert / rating / multiple-choice questions, click <b>Question Builder</b> on the main page.</p>',
       '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
-      +'<button class="btn btn-primary" onclick="VT.save()">Create poll</button>');
+      +'<button class="btn btn-primary" onclick="SV.save()">Create survey</button>');
   },
+  openBuilder(){
+    openModal('🧩 Question Builder — create a structured survey',
+      '<div class="form-group"><label>Title *</label><input class="form-input" id="sv-t" placeholder="e.g. S3 Term 2 feedback"></div>'
+      +'<div class="form-group"><label>Description</label><input class="form-input" id="sv-d"></div>'
+      +'<div class="form-group"><label>Audience</label><select class="form-select" id="sv-aud"><option value="all">All</option><option value="parents">Parents</option><option value="students">Students</option><option value="staff">Staff</option></select></div>'
+      +'<div class="form-group"><label><input type="checkbox" id="sv-anon" checked> Anonymous</label></div>'
+      +'<div class="form-group"><label>Closes on</label><input type="date" class="form-input" id="sv-closes"></div>'
+      +'<hr><h4>Questions</h4><div id="sv-qb-list"></div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'
+      +'<button class="btn btn-sm btn-outline" onclick=\"SV.addQuestion(\"text\")\">+ Short text</button>'
+      +'<button class="btn btn-sm btn-outline" onclick=\"SV.addQuestion(\"text\")\">+ Long text</button>'
+      +'<button class="btn btn-sm btn-outline" onclick=\"SV.addQuestion(\"text\")\">+ Likert 1–5</button>'
+      +'<button class="btn btn-sm btn-outline" onclick=\"SV.addQuestion(\"text\")\">+ Rating ⭐</button>'
+      +'<button class="btn btn-sm btn-outline" onclick=\"SV.addQuestion(\"text\")\">+ Multiple choice</button>'
+      +'<button class="btn btn-sm btn-outline" onclick=\"SV.addQuestion(\"text\")\">+ Yes / No</button>'
+      +'</div>',
+      '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
+      +'<button class="btn btn-primary" onclick="SV.saveBuilder()">Create survey</button>');
+    window._svQuestions = [];
+    SV.addQuestion('text');
+    SV.addQuestion('likert');
+    SV.addQuestion('textarea');
+  },
+  addQuestion(type){
+    const tpl={
+      text:{label:'Short text question',placeholder:'e.g. What is your full name?'},
+      textarea:{label:'Long text question',placeholder:'e.g. Any suggestions to improve our school?'},
+      likert:{label:'Likert scale (1–5)',options:['Strongly disagree','Disagree','Neutral','Agree','Strongly agree']},
+      rating:{label:'Star rating',options:['1 star','2 stars','3 stars','4 stars','5 stars']},
+      multi:{label:'Multiple choice',options:['Option A','Option B','Option C']},
+      yesno:{label:'Yes / No',options:['Yes','No']}
+    }[type];
+    const q={type, q:tpl.label, options:tpl.options||null};
+    window._svQuestions = window._svQuestions || [];
+    window._svQuestions.push(q);
+    SV.renderBuilder();
+  },
+  renderBuilder(){
+    const list=document.getElementById('sv-qb-list');
+    if(!list) return;
+    const qs=window._svQuestions||[];
+    list.innerHTML = qs.map((q,i) => {
+      const optHtml = q.options ? '<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">'+q.options.map((o,j) => '<input class="form-input" style="flex:1;min-width:120px" value="'+this.esc(o)+'" onchange="SV.editOpt('+i+','+j+',this.value)">').join('')+'<button class="btn btn-sm btn-outline" onclick="SV.addOpt('+i+')">+</button></div>' : '';
+      return '<div class="card" style="margin-bottom:8px;padding:10px;background:#f8fafc"><div style="display:flex;gap:6px;align-items:center">'
+        +'<span class="badge-mini" style="background:#eef2ff;color:#3730a3;padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:800">'+q.type+'</span>'
+        +'<input class="form-input" style="flex:1" value="'+this.esc(q.q)+'" onchange="SV.editQ('+i+',this.value)" placeholder="Question text">'
+        +'<button class="btn btn-sm btn-outline" onclick="SV.removeQ('+i+')">x</button></div>'+optHtml+'</div>';
+    }).join('');
+  },
+  editQ(i,v){ window._svQuestions[i].q = v; },
+  editOpt(i,j,v){ window._svQuestions[i].options[j] = v; },
+  addOpt(i){
+    const v=prompt('Option text:'); if(v){ window._svQuestions[i].options.push(v); SV.renderBuilder(); }
+  },
+  removeQ(i){ window._svQuestions.splice(i,1); SV.renderBuilder(); },
   async save(){
-    const rawOpts = document.getElementById('vt-opts').value.split(/\r?\n/).filter(Boolean);
-    const opts = rawOpts.map(line => {
-      const dash = line.indexOf('—')>=0 ? line.indexOf('—') : line.indexOf(' - ');
-      if(dash>0) return {label:line.substring(0,dash).trim(), desc:line.substring(dash+1).trim()};
-      return {label:line.trim(), desc:''};
-    });
-    const payload={title:document.getElementById('vt-t').value,description:document.getElementById('vt-d').value,
-      audience:document.getElementById('vt-aud').value, anonymous:document.getElementById('vt-anon').checked,
-      multi_winner:document.getElementById('vt-multi').checked, max_votes:parseInt(document.getElementById('vt-maxv').value)||1,
-      closes_on:document.getElementById('vt-closes').value||null, options:opts, status:'active'};
-    if(!payload.title){toast('Title required','warning');return;}
-    if(opts.length<2){toast('Add at least 2 candidates','warning');return;}
-    const r=await (Enterprise.voting?Enterprise.voting.create(payload):{error:'not implemented'});
-    if(r&&r.error){toast(r.error.message,'danger');return;}
-    closeModal(); toast('Poll created','success'); VT.refresh();
+    const qs=document.getElementById('sv-q').value.split('\n').filter(Boolean).map(q=>({q,type:'text'}));
+    const payload={title:document.getElementById('sv-t').value,description:document.getElementById('sv-d').value,
+      audience:document.getElementById('sv-aud').value, anonymous:document.getElementById('sv-anon').checked,
+      closes_on:document.getElementById('sv-closes').value||null, questions:qs, status:'active'};
+    const r=await Enterprise.surveys.create(payload);
+    if(r&&r.error){toast(r.error.message,'danger');return;} closeModal(); toast('Survey created','success'); SV.refresh();
   },
-  async vote(id){
-    const p=this.rows.find(x=>x.id===id);
-    if(!p){toast('Poll not found','warning');return;}
-    if(p.status==='closed'){toast('Poll is closed','warning');return;}
-    const html = '<p>'+this.esc(p.description||'')+'</p><div style="margin-top:10px">'+(p.options||[]).map((o,i)=>'<label style="display:flex;gap:8px;align-items:flex-start;padding:8px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer"><input type="'+(p.multi_winner?'checkbox':'radio')+'" name="vt-vote" value="'+i+'" style="margin-top:4px"><div><b>'+this.esc(o.label||o)+'</b>'+(o.desc?'<div style="font-size:.82rem;color:#64748b">'+this.esc(o.desc)+'</div>':'')+'</div></label>').join('')+'</div>';
-    openModal('Cast your vote: '+p.title, html,
+  async saveBuilder(){
+    const qs=window._svQuestions||[];
+    const payload={title:document.getElementById('sv-t').value,description:document.getElementById('sv-d').value,
+      audience:document.getElementById('sv-aud').value, anonymous:document.getElementById('sv-anon').checked,
+      closes_on:document.getElementById('sv-closes').value||null, questions:qs, status:'active'};
+    const r=await Enterprise.surveys.create(payload);
+    if(r&&r.error){toast(r.error.message,'danger');return;} closeModal(); toast('Survey created','success'); SV.refresh();
+  },
+  fill(id){
+    const s=this.rows.find(x=>x.id===id); if(!s){toast('Survey not found','warning');return;}
+    const qs=s.questions||[];
+    const html = (s.anonymous ? '<div class="alert alert-info" style="background:#fef3c7;border-color:#fcd34d;color:#92400e">👁 This survey is anonymous — your name and email will NOT be saved with your response.</div>' : '') +
+      qs.map((q,i)=>{
+        if(q.type==='likert' || q.type==='rating' || q.type==='multi' || q.type==='yesno'){
+          return '<div class="form-group"><label>'+(i+1)+'. '+this.esc(q.q)+'</label><select class="form-select" id="sa-'+i+'">'
+            + (q.options||[]).map(o=>'<option>'+this.esc(o)+'</option>').join('') + '</select></div>';
+        } else if(q.type==='textarea'){
+          return '<div class="form-group"><label>'+(i+1)+'. '+this.esc(q.q)+'</label><textarea class="form-input" id="sa-'+i+'" rows="3"></textarea></div>';
+        }
+        return '<div class="form-group"><label>'+(i+1)+'. '+this.esc(q.q)+'</label><input class="form-input" id="sa-'+i+'"></div>';
+      }).join('') || '<p>No questions in this survey yet.</p>';
+    openModal('📝 ' + s.title, html,
       '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
-      + '<button class="btn btn-primary" onclick="VT.submitVote(' + id + ')">Submit</button>');
+      + '<button class="btn btn-primary" onclick="SV.submit(\''+id+'\','+qs.length+')">Submit response</button>');
   },
-  async submitVote(id){
-    const p=this.rows.find(x=>x.id===id);
-    const checks = [...document.querySelectorAll('input[name=vt-vote]:checked')].map(c=>parseInt(c.value,10));
-    if(!checks.length){toast('Pick a candidate','warning');return;}
-    if(p.max_votes && checks.length > p.max_votes){toast('Max '+p.max_votes+' candidates','warning');return;}
-    const r=await (Enterprise.voting?Enterprise.voting.vote(id, checks):{error:'not implemented'});
+  async submit(id,n){
+    const a={}; const s=this.rows.find(x=>x.id===id);
+    for(let i=0;i<n;i++){
+      const el=document.getElementById('sa-'+i);
+      if(el) a['q'+i]={type:(s.questions[i]||{}).type||'text', value:el.value};
+    }
+    const r=await Enterprise.surveys.respond(id,a);
     if(r&&r.error){toast(r.error.message,'danger');return;}
-    closeModal(); toast('Vote recorded. Thank you!','success'); VT.refresh();
+    closeModal(); toast('✅ Thank you!','success'); SV.refresh();
   },
   async shareLink(id){
-    const url = location.origin + location.pathname.replace(/[^/]*$/,'') + 'voting.html?id=' + id;
-    try{ await navigator.clipboard.writeText(url); toast('Link copied: '+url,'success',5000); }
+    const url = location.origin + location.pathname.replace(/[^/]*$/,'') + 'survey.html?id=' + id;
+    try{ await navigator.clipboard.writeText(url); toast('🔗 Share link copied: '+url,'success',5000); }
     catch(_){ prompt('Copy this link:', url); }
   },
-  async openResults(id){
-    const p=this.rows.find(x=>x.id===id); if(!p){toast('Poll not found','warning');return;}
-    this.current=p;
-    document.getElementById('vt-results-title').textContent = p.title;
-    document.getElementById('vt-results-card').style.display='block';
-    document.getElementById('vt-results-body').innerHTML = '<span class="pulse">Loading results…</span>';
-    document.getElementById('vt-results-card').scrollIntoView({behavior:'smooth'});
-    document.getElementById('vt-toggle-btn').textContent = p.status==='closed'?'Re-open poll':'Close poll';
-    let votes=[];
-    try{ const {data}=await sb.from('voting_votes').select('*').eq('poll_id', id).order('created_at',{ascending:false}).limit(5000); votes=data||[]; }catch(_){}
-    p.votes=votes; p.vote_count=votes.length;
-    this.renderResults();
+  async openInsights(id){
+    const s=this.rows.find(x=>x.id===id); if(!s){toast('Survey not found','warning');return;}
+    this.current=s; this.anonymous=!!s.anonymous;
+    document.getElementById('sv-insights-title').textContent = s.title;
+    document.getElementById('sv-insights-card').style.display='block';
+    document.getElementById('sv-insights-body').innerHTML = '<span class="pulse">Loading responses…</span>';
+    document.getElementById('sv-insights-card').scrollIntoView({behavior:'smooth'});
+    let responses=[];
+    try{ const {data}=await sb.from('survey_responses').select('*').eq('survey_id', id).order('created_at',{ascending:false}).limit(2000); responses=data||[]; }catch(_){}
+    s.responses=responses; s.response_count=responses.length;
+    this.renderInsights();
   },
-  closeResults(){ document.getElementById('vt-results-card').style.display='none'; this.current=null; },
-  async toggleClose(){
-    const p=this.current; if(!p) return;
-    const newStatus = p.status==='closed' ? 'active' : 'closed';
-    const r=await (Enterprise.voting?Enterprise.voting.update(p.id, {status: newStatus}):{error:'not implemented'});
-    if(r&&r.error){toast(r.error.message,'danger');return;}
-    toast('Poll ' + (newStatus==='closed'?'closed':'re-opened')+'.','success');
-    await VT.refresh();
-    VT.openResults(p.id);
-  },
-  renderResults(){
-    const p=this.current; if(!p) return;
-    const v=p.votes||[]; const opts=p.options||[];
-    const tally=opts.map((o,i)=>({label:o.label||o, idx:i, count:0}));
-    v.forEach(vote => (vote.choices||[]).forEach(c => { if(tally[c]) tally[c].count++; }));
-    const totalVotes = tally.reduce((a,b)=>a+b.count,0);
-    const uniqueVoters = new Set(v.map(x=>x.voter_id||x.id)).size;
-    const sorted = [...tally].sort((a,b)=>b.count-a.count);
-    const winner = sorted[0];
-    const barRows = sorted.map(t => {
-      const pct = totalVotes ? Math.round(t.count/totalVotes*100) : 0;
-      return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:3px"><span>'+this.esc(t.label)+(t.idx===winner?.idx?' 🏆':'')+'</span><span style="color:var(--primary)">'+t.count+' ('+pct+'%)</span></div><div style="height:14px;background:#f1f5f9;border-radius:7px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,'+(t.idx===winner?.idx?'#fbbf24,#f59e0b':'#4f46e5,#7c3aed')+')"></div></div></div>';
-    }).join('');
-    const demo = {}; v.forEach(vote => { const r = vote.role || 'unknown'; demo[r] = (demo[r]||0) + 1; });
-    const demoRows = Object.entries(demo).map(([k,v]) => '<tr><td>'+this.esc(k)+'</td><td>'+v+'</td></tr>').join('');
-    const body = '<div class="stats-grid" style="margin-bottom:14px"><div class="stat-card"><div class="stat-value">'+totalVotes+'</div><div class="stat-label">Ballots</div></div><div class="stat-card"><div class="stat-value">'+uniqueVoters+'</div><div class="stat-label">Voters</div></div><div class="stat-card"><div class="stat-value">'+tally.length+'</div><div class="stat-label">Candidates</div></div><div class="stat-card"><div class="stat-value">'+(p.status==='closed'?'Closed':'Open')+'</div><div class="stat-label">Status</div></div></div>'+(winner && totalVotes ? '<div class="card" style="margin-bottom:14px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-color:#fcd34d"><h4 style="margin:0">🏆 Current leader: <b>'+this.esc(winner.label)+'</b> with <b>'+winner.count+'</b> votes ('+(totalVotes?Math.round(winner.count/totalVotes*100):0)+'%)</h4></div>' : '')+'<div class="grid grid-2" style="margin-bottom:14px"><div class="card"><h4 style="margin:0 0 10px">📊 Tally</h4>'+(barRows || '<p>No votes yet.</p>')+'</div><div class="card"><h4 style="margin:0 0 10px">🍩 Visual</h4><div style="height:240px"><canvas id="vt-pie"></canvas></div></div></div><div class="card" style="margin-bottom:14px"><h4 style="margin:0 0 8px">👥 Demographic breakdown</h4>'+(demoRows?'<div class="table-wrap"><table><thead><tr><th>Role</th><th>Votes</th></tr></thead><tbody>'+demoRows+'</tbody></table></div>':'<p>No data yet.</p>')+'</div>';
-    document.getElementById('vt-results-body').innerHTML = body;
-    setTimeout(()=>{
-      const pie = document.getElementById('vt-pie');
-      if(pie && window.Chart){
-        new Chart(pie, {type:'doughnut', data:{labels:sorted.map(t=>t.label), datasets:[{data:sorted.map(t=>t.count), backgroundColor:['#4f46e5','#06b6d4','#10b981','#f59e0b','#ec4899','#8b5cf6','#ef4444','#a3a3a3']}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right'}}}});
+  closeInsights(){ document.getElementById('sv-insights-card').style.display='none'; this.current=null; },
+  toggleAnonymous(){ this.anonymous=!this.anonymous; this.renderInsights(); },
+  renderInsights(){
+    const s=this.current; if(!s) return;
+    const r=(s.responses||[]);
+    const qs=(s.questions||[]);
+    const recent = r.filter(x=>x.created_at && new Date(x.created_at) >= new Date(Date.now()-7*86400000)).length;
+    const last7 = [];
+    for(let i=6;i>=0;i--){
+      const d=new Date(Date.now()-i*86400000);
+      const ds=d.toISOString().slice(0,10);
+      const cnt=r.filter(x=>x.created_at && x.created_at.slice(0,10)===ds).length;
+      last7.push({date:ds,label:d.toLocaleDateString('en',{weekday:'short'}),count:cnt});
+    }
+    const qBlocks = qs.map((q,i) => {
+      const ans = r.map(x => x.answers && x.answers['q'+i]).filter(Boolean);
+      if(!ans.length) return '<div class="card" style="margin-bottom:10px;background:#f8fafc"><h4 style="margin:0 0 4px">Q'+(i+1)+'. '+this.esc(q.q)+'</h4><p style="color:#94a3b8;margin:0">No responses yet.</p></div>';
+      if(q.type==='likert' || q.type==='rating' || q.type==='multi' || q.type==='yesno'){
+        const counts = {};
+        (q.options||[]).forEach(o => counts[o]=0);
+        ans.forEach(a => { const v=a.value||a; if(counts[v]!==undefined) counts[v]++; else counts[v]=1; });
+        const total = Object.values(counts).reduce((a,b)=>a+b,0);
+        const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+        const chartId = 'sv-q-chart-'+i;
+        return '<div class="card" style="margin-bottom:10px"><h4 style="margin:0 0 4px">Q'+(i+1)+'. '+this.esc(q.q)+'</h4>'
+          +'<p style="color:#64748b;font-size:.82rem;margin:0 0 8px">'+total+' response(s) · Top: <b>'+this.esc(top?top[0]:'-')+'</b> ('+top?top[1]:0+')</p>'
+          +'<div style="height:200px"><canvas id="'+chartId+'"></canvas></div></div>';
+      } else {
+        const snippets = ans.slice(0,5).map(a => '<div style="padding:6px 10px;background:#fff;border-radius:8px;margin:4px 0;border-left:3px solid #c7d2fe">"'+this.esc((a.value||a).toString().slice(0,200))+'"</div>').join('');
+        return '<div class="card" style="margin-bottom:10px"><h4 style="margin:0 0 4px">Q'+(i+1)+'. '+this.esc(q.q)+'</h4>'
+          +'<p style="color:#64748b;font-size:.82rem;margin:0 0 8px">'+ans.length+' response(s)</p>'+snippets+'</div>';
       }
+    }).join('');
+    const body = '<div class="stats-grid" style="margin-bottom:14px"><div class="stat-card"><div class="stat-value">'+r.length+'</div><div class="stat-label">Total responses</div></div><div class="stat-card"><div class="stat-value">'+recent+'</div><div class="stat-label">This week</div></div><div class="stat-card"><div class="stat-value">'+(r.length?'100%':'0%')+'</div><div class="stat-label">Completion</div></div><div class="stat-card"><div class="stat-value">'+(this.anonymous?'On':'Off')+'</div><div class="stat-label">Anonymous</div></div></div><div class="card" style="margin-bottom:14px"><h4 style="margin:0 0 6px">📈 Response trend (last 7 days)</h4><div style="height:180px"><canvas id="sv-trend"></canvas></div></div><h4>Per-question analysis</h4>'+(qBlocks || '<p>No questions.</p>')+(this.anonymous?'':'<h4 style="margin-top:18px">👥 Respondents</h4><div class="table-wrap"><table><thead><tr><th>Date</th><th>Role</th><th>Preview</th></tr></thead><tbody>'+r.slice(0,30).map(x=>'<tr><td>'+this.esc((x.created_at||'').slice(0,16).replace('T',' '))+'</td><td>'+this.esc(x.role||'-')+'</td><td style="font-size:.78rem;color:#64748b">'+this.esc(JSON.stringify(x.answers||{}).slice(0,100))+'…</td></tr>').join('')+'</tbody></table></div>');
+    document.getElementById('sv-insights-body').innerHTML = body;
+    setTimeout(()=>{
+      const trend = document.getElementById('sv-trend');
+      if(trend && window.Chart){
+        new Chart(trend, {type:'bar', data:{labels:last7.map(x=>x.label), datasets:[{label:'Responses', data:last7.map(x=>x.count), backgroundColor:'rgba(79,70,229,.7)', borderRadius:6}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}}}});
+      }
+      qs.forEach((q,i) => {
+        if(q.type==='likert' || q.type==='rating' || q.type==='multi' || q.type==='yesno'){
+          const cv = document.getElementById('sv-q-chart-'+i);
+          if(!cv) return;
+          const counts = {};
+          (q.options||[]).forEach(o => counts[o]=0);
+          r.forEach(x => { const v = x.answers && x.answers['q'+i] && (x.answers['q'+i].value || x.answers['q'+i]); if(v) counts[v] = (counts[v]||0)+1; });
+          new Chart(cv, {type:'doughnut', data:{labels:Object.keys(counts), datasets:[{data:Object.values(counts), backgroundColor:['#4f46e5','#06b6d4','#10b981','#f59e0b','#ec4899','#8b5cf6','#ef4444','#a3a3a3']}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right'}}}});
+        }
+      });
     }, 50);
   },
   exportCSV(){
-    const p=this.current; if(!p){toast('Open a poll first','warning');return;}
-    const v=p.votes||[]; const opts=p.options||[];
-    const headers = ['Vote #','Date','Role'].concat(opts.map((o,i)=>'Choice '+(i+1)+': '+(o.label||o)));
-    const rows = v.map((x,i) => [i+1,(x.created_at||'').slice(0,16).replace('T',' '),x.role||'-'].concat(opts.map((o,j)=> (x.choices||[]).includes(j)?'YES':'NO')));
-    const csv = [headers].concat(rows).map(row => row.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\\n');
+    const s=this.current; if(!s){toast('Open a survey first','warning');return;}
+    const r=s.responses||[]; const qs=s.questions||[];
+    const headers = ['Response #','Date','Role','Anonymous'].concat(qs.map((q,i)=>'Q'+(i+1)+': '+q.q));
+    const rows = r.map((x,i) => [i+1, (x.created_at||'').slice(0,16).replace('T',' '), x.role||'-', s.anonymous?'YES':'NO'].concat(qs.map((q,j)=>{ const v=x.answers && x.answers['q'+j]; return v?(v.value||v):''; })));
+    const csv = [headers].concat(rows).map(row => row.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
     const blob = new Blob([csv], {type:'text/csv'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'poll-'+p.id+'.csv'; a.click();
-    toast('CSV exported.','success');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'survey-'+s.id+'-'+Date.now()+'.csv'; a.click();
+    toast('📥 CSV exported.','success');
   },
-  exportResults(){
-    const p=this.current; if(!p){toast('Open a poll first','warning');return;}
-    const v=p.votes||[]; const opts=p.options||[];
-    const tally=opts.map((o,i)=>({label:o.label||o, count:0}));
-    v.forEach(vote => (vote.choices||[]).forEach(c => { if(tally[c]) tally[c].count++; }));
-    const totalVotes = tally.reduce((a,b)=>a+b.count,0);
-    const sorted = [...tally].sort((a,b)=>b.count-a.count);
-    let md = '# Poll Results: ' + p.title + '\\n\\nStatus: ' + (p.status||'-') + '\\nTotal ballots: ' + v.length + '\\n\\n## Tally\\n| Rank | Candidate | Votes | % |\\n|---|---|---|---|\\n';
-    sorted.forEach((t,i) => md += '| '+(i+1)+' | '+t.label+' | '+t.count+' | '+(totalVotes?Math.round(t.count/totalVotes*100):0)+'% |\\n');
+  exportSummary(){
+    const s=this.current; if(!s){toast('Open a survey first','warning');return;}
+    const r=s.responses||[]; const qs=s.questions||[];
+    let md = '# Survey Summary: ' + s.title + '\n\nGenerated: ' + new Date().toLocaleString() + '\nTotal: ' + r.length + '\n\n';
+    qs.forEach((q,i) => { md += '## Q'+(i+1)+': '+q.q+'\n'; });
     const blob = new Blob([md], {type:'text/markdown'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'poll-results-'+p.id+'.md'; a.click();
-    toast('Report exported.','success');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'survey-summary-'+s.id+'.md'; a.click();
+    toast('📋 Summary exported.','success');
   }
 };
-document.addEventListener('DOMContentLoaded',()=>VT.refresh()); VT.refresh();
-
-</script>
-</body></html>
+document.addEventListener('DOMContentLoaded',()=>SV.refresh()); SV.refresh();
+</script></body></html>
