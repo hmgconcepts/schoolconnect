@@ -12,11 +12,25 @@ do $$ begin
   alter table public.polls add column if not exists created_by uuid references public.profiles(id) on delete set null;
 exception when undefined_table then null; end $$;
 
+-- V13 voting repair: poll_results depends on candidate_id, so drop/recreate the view around the type conversion.
 do $$ begin
-  -- Convert candidate_id to text even if an older schema created it as uuid.
+  drop view if exists public.poll_results cascade;
   alter table public.poll_votes alter column candidate_id type text using candidate_id::text;
 exception when undefined_table then null; end $$;
-
+drop view if exists public.poll_results cascade;
+create or replace view public.poll_results as
+select p.id as poll_id, p.title,
+       coalesce(sum(v.c), 0) as total_votes,
+       coalesce(jsonb_agg(jsonb_build_object('candidate', v.candidate_id, 'votes', v.c))
+                filter (where v.candidate_id is not null), '[]'::jsonb) as breakdown
+from public.polls p
+left join lateral (
+  select candidate_id, count(*) as c
+  from public.poll_votes
+  where poll_id = p.id
+  group by candidate_id
+) v on true
+group by p.id, p.title;
 do $$ begin
   alter table public.poll_votes add column if not exists voter_id uuid references public.profiles(id) on delete cascade;
   alter table public.poll_votes add column if not exists voted_at timestamptz default now();

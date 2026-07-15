@@ -66,6 +66,20 @@ end; $$;
 grant execute on function public.sc_current_role() to anon, authenticated;
 
 -- 8. v3 — exam-specific fields for the exam_registrations table
+-- V13 safety: create exam_registrations before ALTER references it.
+create table if not exists public.exam_registrations (
+  id uuid primary key default gen_random_uuid(),
+  school_id uuid,
+  student_id uuid,
+  student_name text,
+  admission_no text,
+  class text,
+  exam_type text,
+  exam_year int,
+  status text default 'pending',
+  payload jsonb default '{}'::jsonb,
+  created_at timestamptz default now()
+);
 alter table public.exam_registrations add column if not exists jamb_reg_no text;
 alter table public.exam_registrations add column if not exists jamb_profile_code text;
 alter table public.exam_registrations add column if not exists jamb_course text;
