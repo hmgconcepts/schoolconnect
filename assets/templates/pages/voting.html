@@ -321,7 +321,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
         </a><a href="counselling.html" data-module-id="counselling" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
           <span class="app-nav-icon">💬</span>
           <span>Counselling &amp; Wellbeing</span>
-        </a><a href="voting.html" data-module-id="voting" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
+        </a><a href="voting.html" data-module-id="voting" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="">
           <span class="app-nav-icon">🗳️</span>
           <span>Voting</span>
         </a><a href="health.html" data-module-id="health" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
@@ -569,13 +569,38 @@ const VT={
     });
     const payload={title:document.getElementById('vt-t').value,description:document.getElementById('vt-d').value,
       audience:document.getElementById('vt-aud').value, anonymous:document.getElementById('vt-anon').checked,
-      multi_winner:document.getElementById('vt-multi').checked, max_votes:parseInt(document.getElementById('vt-maxv').value)||1,
+      allow_multiple:document.getElementById('vt-multi').checked, multi_winner:document.getElementById('vt-multi').checked, max_votes:parseInt(document.getElementById('vt-maxv').value)||1,
       closes_on:document.getElementById('vt-closes').value||null, options:opts, status:'open'};
     if(!payload.title){toast('Title required','warning');return;}
     if(opts.length<2){toast('Add at least 2 candidates','warning');return;}
     const r=await (Enterprise.voting?Enterprise.voting.create(payload):{error:'not implemented'});
     if(r&&r.error){toast(r.error.message || r.error,'danger');return;}
     closeModal(); toast('Poll created','success'); VT.refresh();
+  },
+  async editPoll(id){
+    const p=this.rows.find(x=>x.id===id); if(!p){toast('Poll not found','warning');return;}
+    if(!this.canManagePoll(p)){toast('You can only edit polls you are allowed to manage.','warning');return;}
+    let opts=[]; try{opts=p.candidates ? (typeof p.candidates==='string'?JSON.parse(p.candidates):p.candidates):[];}catch(_){opts=[];}
+    const lines=opts.map(o=>(o.label||o.name||'')+(o.desc||o.info?' — '+(o.desc||o.info):'')).join('\n');
+    openModal('Edit Poll / Election',
+      '<div class="form-group"><label>Title *</label><input class="form-input" id="vt-et" value="'+this.esc(p.title||'')+'"></div>'+
+      '<div class="form-group"><label>Description</label><input class="form-input" id="vt-ed" value="'+this.esc(p.description||'')+'"></div>'+
+      '<div class="form-group"><label>Audience</label><select class="form-select" id="vt-eaud"><option value="all">All</option><option value="parents">Parents</option><option value="students">Students</option><option value="staff">Staff</option></select></div>'+
+      '<div class="form-group"><label><input type="checkbox" id="vt-eanon" '+(p.anonymous?'checked':'')+'> Anonymous</label></div>'+
+      '<div class="form-group"><label><input type="checkbox" id="vt-emulti" '+(p.allow_multiple||p.multi_winner?'checked':'')+'> Allow multiple choices</label></div>'+
+      '<div class="form-group"><label>Max votes per voter</label><input type="number" class="form-input" id="vt-emaxv" value="'+(p.max_votes||1)+'" min="1" max="10"></div>'+
+      '<div class="form-group"><label>Status</label><select class="form-select" id="vt-est"><option value="open">Open</option><option value="closed">Closed</option><option value="draft">Draft</option></select></div>'+
+      '<div class="form-group"><label>Candidates (one per line: Name — Description)</label><textarea class="form-input" id="vt-eopts" rows="6">'+this.esc(lines)+'</textarea></div>',
+      '<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="VT.saveEdit(\''+id+'\')">Save changes</button>');
+    setTimeout(()=>{ const a=document.getElementById('vt-eaud'); if(a)a.value=p.audience||'all'; const st=document.getElementById('vt-est'); if(st)st.value=p.status||'open'; },50);
+  },
+  async saveEdit(id){
+    const rawOpts = document.getElementById('vt-eopts').value.split(/\r?\n/).filter(Boolean);
+    const opts = rawOpts.map((line, i) => { const dash=line.indexOf('—')>=0?line.indexOf('—'):line.indexOf(' - '); return dash>0 ? {id:'c'+(i+1), label:line.substring(0,dash).trim(), desc:line.substring(dash+1).trim()} : {id:'c'+(i+1), label:line.trim(), desc:''}; });
+    const patch={ title:document.getElementById('vt-et').value.trim(), description:document.getElementById('vt-ed').value.trim(), audience:document.getElementById('vt-eaud').value, anonymous:document.getElementById('vt-eanon').checked, allow_multiple:document.getElementById('vt-emulti').checked, max_votes:parseInt(document.getElementById('vt-emaxv').value)||1, status:document.getElementById('vt-est').value, candidates:opts };
+    if(!patch.title){toast('Title required','warning');return;} if(opts.length<2){toast('Add at least 2 candidates','warning');return;}
+    const r=await (window.Voting ? Voting.updatePoll(id, patch) : {error:'not implemented'}); if(r&&r.error){toast(r.error.message||r.error,'danger');return;}
+    closeModal(); toast('Poll updated.','success'); VT.refresh();
   },
   async vote(id){
     const p=this.rows.find(x=>x.id===id);
