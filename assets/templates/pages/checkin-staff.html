@@ -137,18 +137,22 @@ const CK = {
 
   async verifyGeofence() {
     return new Promise((resolve) => {
+      // V12 strict staff geofence: never bypass GPS when enforcement is enabled.
+      const settings = window.SC_SETTINGS || {};
+      const enforce = (window.SCHOOL && window.SCHOOL.enforceGeofence !== false) && settings.enforce_geofence !== false;
       if (!navigator.geolocation) {
-        this.updateLocationBadge(true, '📍 Location verification bypassed — GPS not supported by browser.');
-        resolve(true);
+        this.updateLocationBadge(!enforce, enforce ? '❌ GPS not supported. Staff attendance is blocked until GPS is available.' : '⚠️ GPS not supported; geofence not enforced.');
+        resolve(!enforce);
         return;
       }
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
-          const schoolLat = (window.SCHOOL && window.SCHOOL.latitude) || 6.5244; 
-          const schoolLng = (window.SCHOOL && window.SCHOOL.longitude) || 3.3792;
-          const radius = (window.SCHOOL && window.SCHOOL.geoRadius) || 200; 
+          const schoolLat = Number((window.SC_SETTINGS && window.SC_SETTINGS.latitude) || (window.SCHOOL && window.SCHOOL.latitude));
+          const schoolLng = Number((window.SC_SETTINGS && window.SC_SETTINGS.longitude) || (window.SCHOOL && window.SCHOOL.longitude));
+          const radius = Number((window.SC_SETTINGS && window.SC_SETTINGS.geo_radius_m) || (window.SCHOOL && window.SCHOOL.geoRadius) || 200);
+          if (!isFinite(schoolLat) || !isFinite(schoolLng)) { CK.updateLocationBadge(false, '❌ School geofence is not configured. Admin must set Settings → Staff Attendance Geofence.'); resolve(false); return; } 
           
           const R = 6371e3; 
           const phi1 = lat * Math.PI/180;
@@ -173,8 +177,8 @@ const CK = {
           }
         },
         (err) => {
-          CK.updateLocationBadge(true, '⚠️ GPS error: ' + err.message + '. Enforcing on-site check-in requires location permission.');
-          resolve(true); 
+          CK.updateLocationBadge(false, '❌ GPS permission/error: ' + err.message + '. Staff check-in blocked because on-premises attendance is enforced.');
+          resolve(false); 
         },
         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
       );
