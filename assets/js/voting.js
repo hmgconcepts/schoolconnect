@@ -48,7 +48,7 @@ const Voting = {
   },
 
   /* Create a poll (admin/staff only) */
-  async createPoll({ title, description, candidates, type, opens_at, closes_at, allow_multiple, anonymous, audience }) {
+  async createPoll({ title, description, candidates, type, opens_at, closes_at, allow_multiple, multi_winner, max_votes, anonymous, audience }) {
     const supabase = this.sb || window.sb || null;
     const payload = {
       title: (title || '').trim(),
@@ -57,12 +57,22 @@ const Voting = {
       candidates: Array.isArray(candidates) ? candidates : JSON.parse(candidates || '[]'),
       opens_at: opens_at || new Date().toISOString(),
       closes_at: closes_at || null,
-      allow_multiple: !!allow_multiple,
+      allow_multiple: !!(allow_multiple || multi_winner),
+      max_votes: Math.max(1, parseInt(max_votes || (allow_multiple || multi_winner ? 10 : 1), 10) || 1),
       anonymous: !!anonymous,
       audience: audience || 'all',
       status: 'open',
       created_at: new Date().toISOString()
     };
+
+    // Attach creator when signed in. This improves auditability and lets future RLS
+    // policies distinguish the poll owner from other staff.
+    try {
+      if (supabase && supabase.auth) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && user.id) payload.created_by = user.id;
+      }
+    } catch (_) {}
 
     if (!supabase) {
       try {
@@ -75,7 +85,13 @@ const Voting = {
     }
 
     // Removed manual ID generation to prevent UUID syntax error
-    const { data, error } = await supabase.from('polls').insert(payload).select().single();
+    let { data, error } = await supabase.from('polls').insert(payload).select().single();
+    // Backward-compatible retry for schools that have not yet run the v11 max_votes migration.
+    if (error && /max_votes/i.test(error.message || '')) {
+      const legacyPayload = Object.assign({}, payload); delete legacyPayload.max_votes;
+      const retry = await supabase.from('polls').insert(legacyPayload).select().single();
+      data = retry.data; error = retry.error;
+    }
     if (error) return { error: error.message };
     await this.broadcastPollOpened(data);
     return { data };
@@ -84,7 +100,14 @@ const Voting = {
   async updatePoll(pollId, patch) {
     const supabase = this.sb || window.sb || null;
     if (!supabase) return { error: 'No database' };
-    return await supabase.from('polls').update(patch).eq('id', pollId).select().single();
+    if (!pollId) return { error: 'Missing poll ID' };
+    const clean = Object.assign({}, patch || {});
+    if (clean.multi_winner != null && clean.allow_multiple == null) { clean.allow_multiple = !!clean.multi_winner; delete clean.multi_winner; }
+    if (clean.max_votes != null) clean.max_votes = Math.max(1, parseInt(clean.max_votes, 10) || 1);
+    let res = await supabase.from('polls').update(clean).eq('id', String(pollId)).select().single();
+    if (res.error && /max_votes/i.test(res.error.message || '')) { const legacy = Object.assign({}, clean); delete legacy.max_votes; res = await supabase.from('polls').update(legacy).eq('id', String(pollId)).select().single(); }
+    if (res.error) return { error: res.error.message };
+    return res;
   },
 
   /* Close a poll (admin only) */
@@ -120,16 +143,25 @@ const Voting = {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { error: 'You must sign in to vote.' };
+    const pollCheck = await supabase.from('polls').select('id,status,allow_multiple,max_votes').eq('id', String(pollId)).maybeSingle();
+    if (pollCheck.error) return { error: pollCheck.error.message };
+    if (!pollCheck.data) return { error: 'Poll not found.' };
+    if (String(pollCheck.data.status || 'open') === 'closed') return { error: 'This poll is closed.' };
 
     // De-dupe: one vote per user per poll (DB-level constraint too)
-    const existing = await supabase.from('poll_votes').select('id').eq('poll_id', pollId).eq('voter_id', user.id);
+    const existing = await supabase.from('poll_votes').select('id').eq('poll_id', String(pollId)).eq('voter_id', user.id);
     if (existing.data && existing.data.length) {
-      await supabase.from('poll_votes').delete().eq('poll_id', pollId).eq('voter_id', user.id);
+      await supabase.from('poll_votes').delete().eq('poll_id', String(pollId)).eq('voter_id', user.id);
     }
 
-    const rows = (Array.isArray(candidateIds) ? candidateIds : [candidateIds]).map(cid => ({
-      poll_id: pollId,
-      candidate_id: cid,
+    let choices = (Array.isArray(candidateIds) ? candidateIds : [candidateIds]).map(cid => String(cid)).filter(Boolean);
+    const maxVotes = Number(pollCheck.data.max_votes || (pollCheck.data.allow_multiple ? choices.length : 1)) || 1;
+    if (!pollCheck.data.allow_multiple && choices.length > 1) choices = choices.slice(0, 1);
+    if (choices.length > maxVotes) return { error: 'You can select at most ' + maxVotes + ' option(s).' };
+
+    const rows = choices.map(cid => ({
+      poll_id: String(pollId),
+      candidate_id: String(cid),
       voter_id: user.id,
       voted_at: new Date().toISOString()
     }));
@@ -161,10 +193,10 @@ const Voting = {
         for (let k = 0; k < count; k++) votes.push({ candidate_id: c.id });
       });
     } else {
-      const { data } = await supabase.from('polls').select('*').eq('id', pollId).single();
+      const { data } = await supabase.from('polls').select('*').eq('id', String(pollId)).single();
       poll = data;
       if (!poll) return null;
-      const { data: v } = await supabase.from('poll_votes').select('candidate_id').eq('poll_id', pollId);
+      const { data: v } = await supabase.from('poll_votes').select('candidate_id').eq('poll_id', String(pollId));
       votes = v || [];
     }
     const tally = {};

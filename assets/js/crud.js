@@ -651,11 +651,14 @@ const CRUD = {
 
     // Non-admin data scoping: never show another learner/family's private records.
     // strictStudentModules = one learner only; classAssignedModules = class-wide resources like assignments/e-resources.
-    const strictStudentModules = ['results', 'attendance', 'fees', 'report_cards', 'certificates', 'payments_online', 'idcards'];
+    const strictStudentModules = ['results', 'attendance', 'fees', 'report_cards', 'certificates', 'payments_online'];
+    // Identity documents are also learner-owned, but kept separate so fee/payment scoping stays explicit and regression-testable.
+    const identityScopedModules = ['idcards'];
+    const strictStudentLikeModules = strictStudentModules.concat(identityScopedModules);
     const classAssignedModules = ['assignments', 'eresources', 'digital_library', 'library_borrowers', 'timetable'];
     const messageModules = ['messages', 'inbox', 'complaints', 'helpdesk'];
-    const studentOwnedModules = strictStudentModules.concat(classAssignedModules, messageModules);
-    const parentViewModules = strictStudentModules.concat(['assignments', 'messages', 'inbox', 'complaints', 'helpdesk']);
+    const studentOwnedModules = strictStudentLikeModules.concat(classAssignedModules, messageModules);
+    const parentViewModules = strictStudentLikeModules.concat(['assignments', 'messages', 'inbox', 'complaints', 'helpdesk']);
     const requestedStudentId = new URLSearchParams(location.search).get('student') || '';
 
     // Build query with role-based filtering
@@ -707,7 +710,7 @@ const CRUD = {
             (r.data && r.data.class && String(r.data.class).toLowerCase() === stClass);
           const myMessage = (r) => r.created_by === currentUserId || r.submitted_by === currentUserId || r.recipient_id === currentUserId ||
             (r.data && (r.data.recipient_id === currentUserId || String(r.data.to || '').toLowerCase().includes(stName) || String(r.data.student || '').toLowerCase() === stName || String(r.data.admission_no || '').toLowerCase() === stAdm));
-          filteredData = (data || []).filter(r => strictStudentModules.includes(key) ? ownRecord(r) : (classAssignedModules.includes(key) ? (ownRecord(r) || classRecord(r)) : myMessage(r)));
+          filteredData = (data || []).filter(r => strictStudentLikeModules.includes(key) ? ownRecord(r) : (classAssignedModules.includes(key) ? (ownRecord(r) || classRecord(r)) : myMessage(r)));
         }
       } catch(e) { console.warn('Student filter failed:', e); filteredData = []; }
     }
@@ -729,7 +732,7 @@ const CRUD = {
             (r.student_class && childClasses.includes(String(r.student_class).toLowerCase())) ||
             (r.data && r.data.class && childClasses.includes(String(r.data.class).toLowerCase()));
           const myMessage = (r) => r.created_by === currentUserId || r.submitted_by === currentUserId || r.recipient_id === currentUserId || (r.data && (r.data.recipient_id === currentUserId || childNames.includes(String(r.data.student || '').toLowerCase()) || childAdm.includes(String(r.data.admission_no || '').toLowerCase())));
-          filteredData = (data || []).filter(r => strictStudentModules.includes(key) ? childOwn(r) : (key === 'assignments' ? (childOwn(r) || childClass(r)) : (messageModules.includes(key) ? myMessage(r) : childOwn(r))));
+          filteredData = (data || []).filter(r => strictStudentLikeModules.includes(key) ? childOwn(r) : (key === 'assignments' ? (childOwn(r) || childClass(r)) : (messageModules.includes(key) ? myMessage(r) : childOwn(r))));
         } else filteredData = [];
       } catch(e) { console.warn('Parent filter failed:', e); filteredData = []; }
     }
@@ -1302,8 +1305,12 @@ const CRUD = {
      ============================================================ */
   async promoteWholeClass() {
     if (!this.sb) { toast('Database not configured.', 'warning'); return; }
-    const { data: classes } = await this.sb.from('classes').select('name').order('name');
+    const [{ data: classes }, { data: lookups }] = await Promise.all([this.sb.from('classes').select('name').order('name'), this.sb.from('lookups').select('kind,value').in('kind',['term','session']).order('position')]);
     const opts = (classes || []).map(c => '<option>' + esc(c.name) + '</option>').join('');
+    const terms = [...new Set((lookups||[]).filter(x=>x.kind==='term').map(x=>x.value).filter(Boolean))];
+    const sessions = [...new Set((lookups||[]).filter(x=>x.kind==='session').map(x=>x.value).filter(Boolean))];
+    const termOpts = (terms.length?terms:['First Term','Second Term','Third Term']).map(v=>'<option>'+esc(v)+'</option>').join('');
+    const sessionOpts = (sessions.length?sessions:['2025/2026','2026/2027']).map(v=>'<option>'+esc(v)+'</option>').join('');
     openModal('🎓 End-of-Session Class Migration',
       '<p style="color:var(--gray-600)">Move every student from one class to the next after the 3rd-term exams. Results, fees and records remain attached to each student automatically.</p>' +
       '<div class="grid grid-2"><div class="form-group"><label>From class</label><select id="pm-from" class="form-select" onchange="CRUD._pmLoad()"><option value="">— select —</option>' + opts + '</select></div>' +
@@ -1575,12 +1582,16 @@ const CRUD = {
      ============================================================ */
   async bulkFillTraits(kind) {
     if (!this.sb) { toast('Database not configured.', 'warning'); return; }
-    const { data: classes } = await this.sb.from('classes').select('name').order('name');
+    const [{ data: classes }, { data: lookups }] = await Promise.all([this.sb.from('classes').select('name').order('name'), this.sb.from('lookups').select('kind,value').in('kind',['term','session']).order('position')]);
     const opts = (classes || []).map(c => '<option>' + esc(c.name) + '</option>').join('');
+    const terms = [...new Set((lookups||[]).filter(x=>x.kind==='term').map(x=>x.value).filter(Boolean))];
+    const sessions = [...new Set((lookups||[]).filter(x=>x.kind==='session').map(x=>x.value).filter(Boolean))];
+    const termOpts = (terms.length?terms:['First Term','Second Term','Third Term']).map(v=>'<option>'+esc(v)+'</option>').join('');
+    const sessionOpts = (sessions.length?sessions:['2025/2026','2026/2027']).map(v=>'<option>'+esc(v)+'</option>').join('');
     const title = kind === 'affective' ? '⭐ Bulk Fill Affective Domain' : '🏃 Bulk Fill Psychomotor Domain';
     openModal(title,
       '<div class="grid grid-2"><div class="form-group"><label>Class</label><select id="bf-class" class="form-select" onchange="CRUD._bfLoad(\''+kind+'\')"><option value="">— select —</option>' + opts + '</select></div>' +
-      '<div class="form-group"><label>Term</label><select id="bf-term" class="form-select"><option>First Term</option><option>Second Term</option><option>Third Term</option></select></div></div>' +
+      '<div class="form-group"><label>Term</label><select id="bf-term" class="form-select">'+termOpts+'</select></div><div class="form-group"><label>Session</label><select id="bf-session" class="form-select">'+sessionOpts+'</select></div></div>' +
       '<div id="bf-list" style="max-height:400px;overflow:auto;margin-top:10px"><p style="color:var(--gray-500)">Pick a class to load students...</p></div>',
       '<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="CRUD._bfSave(\''+kind+'\')">Save All</button>');
   },
@@ -1607,13 +1618,14 @@ const CRUD = {
   async _bfSave(kind) {
     const cls = document.getElementById('bf-class').value;
     const term = document.getElementById('bf-term').value;
+    const session = (document.getElementById('bf-session')||{}).value || new Date().getFullYear() + '/' + (new Date().getFullYear()+1);
     const table = kind === 'affective' ? 'affective_traits' : 'psychomotor_traits';
     const rows = [];
     document.querySelectorAll('#bf-list tr[data-student-id]').forEach(tr => {
       const student_id = tr.dataset.studentId;
       const ratings = {};
       tr.querySelectorAll('.bf-val').forEach(sel => { ratings[sel.dataset.trait] = sel.value; });
-      rows.push({ student_id, term, session: '2025/2026', ratings, teacher_id: window.SC_PROFILE?.id });
+      rows.push({ student_id, term, session, ratings, teacher_id: window.SC_PROFILE?.id });
     });
     const { error } = await this.sb.from(table).upsert(rows, { onConflict: 'student_id,term,session' });
     if (error) { toast(error.message, 'danger'); return; }

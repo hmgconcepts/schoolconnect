@@ -346,7 +346,7 @@ const App = {
     // enter an exam code to take a CBT (see STUDENT/PARENT_WHITELIST).
     'inbox','messages',
     'digital_library','digital-library',
-    'voting','surveys',
+    'surveys',
     'lms','gamification',
     'eresources','e-resources',
     'complaints','broadcast','document_builder','document-builder'
@@ -366,6 +366,7 @@ const App = {
     'results','report-cards','report_cards',
     'attendance','timetable','assignments',
     'fees',
+    'voting',
     'announcements','events','school_calendar','school-calendar',
     'gallery','helpdesk','lost_found','lost-found',
     'diary','parent_meeting','parent-meeting',
@@ -396,6 +397,7 @@ const App = {
     'gallery','helpdesk','lost_found','lost-found',
     'diary','parent_meeting','parent-meeting',
     'certificates',
+    'voting',
     'feature-guide','feature_guide','about','contact',
     'index','login','apply','verify-certificate','verify_certificate',
     'cbt-exam','cbt_exam'

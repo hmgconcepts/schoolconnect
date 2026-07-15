@@ -351,12 +351,12 @@ ${T.setupRequiredBanner()}
     const parentSet = new Set([
       'dashboard','profile','change_password','notifications','feature_guide','student_profile','fees','payments_online','results',
       'report_cards','attendance','assignments','diary','timetable','announcements','events','messages','inbox',
-      'complaints','eresources','certificates','school_calendar'
+      'complaints','eresources','certificates','school_calendar','voting'
     ]);
     const studentSet = new Set([
       'dashboard','profile','change_password','notifications','feature_guide','student_profile','cbt_exam','assignments','digital_library',
       'eresources','timetable','results','report_cards','attendance','announcements','events','messages','inbox',
-      'complaints','certificates','diary','school_calendar'
+      'complaints','certificates','diary','school_calendar','voting'
     ]);
 
     const roles = [admin];
