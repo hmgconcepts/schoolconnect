@@ -224,19 +224,25 @@ group by rs.class, rs.subject, rs.term, rs.session, rs.student_id_ref, rs.studen
 -- =====================================================================
 drop policy if exists "ac_staff" on public.assessment_columns;
 drop policy if exists "ac_read"  on public.assessment_columns;
+drop policy if exists "ac_staff" on public.assessment_columns;
 create policy "ac_staff" on public.assessment_columns for all using (public.is_staff(auth.uid()));
+drop policy if exists "ac_read" on public.assessment_columns;
 create policy "ac_read"  on public.assessment_columns for select using (auth.role() = 'authenticated');
 
 drop policy if exists "rs_staff" on public.report_scores;
 drop policy if exists "rs_read"  on public.report_scores;
+drop policy if exists "rs_staff" on public.report_scores;
 create policy "rs_staff" on public.report_scores for all using (public.is_staff(auth.uid()));
 -- students/parents may read; the parent-scoping in the main schema's
 -- parent_child still governs deeper access patterns at the app layer.
+drop policy if exists "rs_read" on public.report_scores;
 create policy "rs_read"  on public.report_scores for select using (auth.role() = 'authenticated');
 
 drop policy if exists "rc_staff" on public.report_cards;
 drop policy if exists "rc_read"  on public.report_cards;
+drop policy if exists "rc_staff" on public.report_cards;
 create policy "rc_staff" on public.report_cards for all using (public.is_staff(auth.uid()));
+drop policy if exists "rc_read" on public.report_cards;
 create policy "rc_read" on public.report_cards for select using (public.is_staff(auth.uid()) or student_id in (select id from public.students where user_id=auth.uid()) or public.is_parent_of(auth.uid(), student_id));
 
 -- the mapping function is called by the (security-definer) cbt_submit flow and

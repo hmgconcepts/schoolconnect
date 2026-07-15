@@ -195,6 +195,7 @@ end $$;
 drop policy if exists "uv1_rs_read"   on public.reading_scores;
 drop policy if exists "uv1_rs_insert" on public.reading_scores;
 drop policy if exists "uv1_rs_manage" on public.reading_scores;
+drop policy if exists "uv1_rs_read" on public.reading_scores;
 create policy "uv1_rs_read"   on public.reading_scores for select using (
   public.is_staff(auth.uid())
   or exists (
@@ -207,13 +208,17 @@ create policy "uv1_rs_read"   on public.reading_scores for select using (
       and (s.user_id = auth.uid() or public.is_parent_of(auth.uid(), s.id))
   )
 );
+drop policy if exists "uv1_rs_insert" on public.reading_scores;
 create policy "uv1_rs_insert" on public.reading_scores for insert with check (auth.role()='authenticated');
+drop policy if exists "uv1_rs_manage" on public.reading_scores;
 create policy "uv1_rs_manage" on public.reading_scores for update using (public.is_staff(auth.uid()));
 
 -- promotions policies (idempotent)
 drop policy if exists "uv1_prom_read"  on public.promotions;
 drop policy if exists "uv1_prom_write" on public.promotions;
+drop policy if exists "uv1_prom_read" on public.promotions;
 create policy "uv1_prom_read"  on public.promotions for select using (auth.role()='authenticated');
+drop policy if exists "uv1_prom_write" on public.promotions;
 create policy "uv1_prom_write" on public.promotions for all    using (public.is_staff(auth.uid()));
 
 select 'School Connect — Update v1 schema installed ✅' as status;

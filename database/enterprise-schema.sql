@@ -230,13 +230,17 @@ end $$;
 -- Check-ins: anyone authenticated may insert their own scan; staff read all.
 drop policy if exists "ent_checkin_insert" on public.attendance_checkins;
 drop policy if exists "ent_checkin_read"   on public.attendance_checkins;
+drop policy if exists "ent_checkin_insert" on public.attendance_checkins;
 create policy "ent_checkin_insert" on public.attendance_checkins for insert with check (auth.role() = 'authenticated');
+drop policy if exists "ent_checkin_read" on public.attendance_checkins;
 create policy "ent_checkin_read"   on public.attendance_checkins for select using (public.is_staff(auth.uid()));
 
 -- Survey responses: respondent manages own; staff read all.
 drop policy if exists "ent_sr_own"  on public.survey_responses;
 drop policy if exists "ent_sr_staff" on public.survey_responses;
+drop policy if exists "ent_sr_own" on public.survey_responses;
 create policy "ent_sr_own"   on public.survey_responses for all using (respondent = auth.uid());
+drop policy if exists "ent_sr_staff" on public.survey_responses;
 create policy "ent_sr_staff" on public.survey_responses for select using (public.is_staff(auth.uid()));
 
 -- Security prefs: each user manages own.
@@ -246,7 +250,9 @@ create policy "ent_sec_own" on public.security_prefs for all using (user_id = au
 -- Login audit: admin reads; any authenticated inserts.
 drop policy if exists "ent_la_read"   on public.login_audit;
 drop policy if exists "ent_la_insert" on public.login_audit;
+drop policy if exists "ent_la_read" on public.login_audit;
 create policy "ent_la_read"   on public.login_audit for select using (public.is_staff(auth.uid()));
+drop policy if exists "ent_la_insert" on public.login_audit;
 create policy "ent_la_insert" on public.login_audit for insert with check (auth.role() = 'authenticated');
 
 -- =====================================================================

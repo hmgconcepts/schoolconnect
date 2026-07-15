@@ -301,6 +301,7 @@ drop policy if exists "mr_write" on public.module_records;
 drop policy if exists "mr_write_staff" on public.module_records;
 drop policy if exists "mr_insert_family" on public.module_records;
 drop policy if exists "mr_update_family" on public.module_records;
+drop policy if exists "mr_read" on public.module_records;
 create policy "mr_read" on public.module_records for select using (
   auth.role()='authenticated' and (
     module not in ('inbox','messages')
@@ -311,8 +312,11 @@ create policy "mr_read" on public.module_records for select using (
     or coalesce(audience,'') = (select role from public.profiles where id=auth.uid())
   )
 );
+drop policy if exists "mr_write_staff" on public.module_records;
 create policy "mr_write_staff" on public.module_records for all using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
+drop policy if exists "mr_insert_family" on public.module_records;
 create policy "mr_insert_family" on public.module_records for insert with check (auth.role()='authenticated' and module in ('inbox','messages','helpdesk','book_request','parent_meeting','lost_found'));
+drop policy if exists "mr_update_family" on public.module_records;
 create policy "mr_update_family" on public.module_records for update using (created_by = auth.uid() and module in ('inbox','messages','helpdesk','book_request','parent_meeting','lost_found')) with check (created_by = auth.uid());
 
 -- =====================================================================
@@ -332,7 +336,9 @@ end $$;
 -- school_settings: everyone authenticated reads; admin writes page-access governance
 drop policy if exists "ss_read" on public.school_settings;
 drop policy if exists "ss_write" on public.school_settings;
+drop policy if exists "ss_read" on public.school_settings;
 create policy "ss_read"  on public.school_settings for select using (auth.role()='authenticated');
+drop policy if exists "ss_write" on public.school_settings;
 create policy "ss_write" on public.school_settings for all using (public.is_admin(auth.uid())) with check (public.is_admin(auth.uid()));
 
 -- admission_links readable by anon (so the public form can validate a token via RPC)

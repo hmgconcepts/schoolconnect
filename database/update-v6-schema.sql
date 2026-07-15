@@ -131,7 +131,9 @@ alter table public.school_settings add column if not exists principal_name text;
 alter table public.school_settings enable row level security;
 drop policy if exists "settings_read"  on public.school_settings;
 drop policy if exists "settings_write" on public.school_settings;
+drop policy if exists "settings_read" on public.school_settings;
 create policy "settings_read"  on public.school_settings for select using (auth.role() = 'authenticated');
+drop policy if exists "settings_write" on public.school_settings;
 create policy "settings_write" on public.school_settings for all    using (public.is_staff(auth.uid()));
 
 -- ---------------------------------------------------------------------

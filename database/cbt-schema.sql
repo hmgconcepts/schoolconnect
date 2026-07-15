@@ -245,9 +245,13 @@ drop policy if exists "cbt_exam_read"  on public.cbt_exams;
 drop policy if exists "cbt_exam_insert" on public.cbt_exams;
 drop policy if exists "cbt_exam_update" on public.cbt_exams;
 drop policy if exists "cbt_exam_delete" on public.cbt_exams;
+drop policy if exists "cbt_exam_read" on public.cbt_exams;
 create policy "cbt_exam_read" on public.cbt_exams for select using (auth.role() = 'authenticated');
+drop policy if exists "cbt_exam_insert" on public.cbt_exams;
 create policy "cbt_exam_insert" on public.cbt_exams for insert with check (public.is_staff(auth.uid()));
+drop policy if exists "cbt_exam_update" on public.cbt_exams;
 create policy "cbt_exam_update" on public.cbt_exams for update using (public.is_admin(auth.uid()) or teacher_id = auth.uid()) with check (public.is_admin(auth.uid()) or teacher_id = auth.uid());
+drop policy if exists "cbt_exam_delete" on public.cbt_exams;
 create policy "cbt_exam_delete" on public.cbt_exams for delete using (public.is_admin(auth.uid()) or teacher_id = auth.uid());
 
 -- Results: staff read all & manage; (anonymous students submit via the

@@ -162,8 +162,10 @@ create table if not exists public.parents (
   created_at timestamptz default now()
 );
 alter table public.parents enable row level security;
+drop policy if exists "parents_read" on public.parents;
 create policy "parents_read" on public.parents for select using (auth.role() = 'authenticated');
-create policy "parents_write" on public.parents for all using (public.is_staff(auth.uid()));
+drop policy if exists "parents_write" on public.parents;
+create policy "parents_write" on public.parents for all using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
 
 create table if not exists public.parent_child (
   id uuid primary key default uuid_generate_v4(),
@@ -862,9 +864,13 @@ drop policy if exists "profiles_self_read"   on public.profiles;
 drop policy if exists "profiles_self_update" on public.profiles;
 drop policy if exists "profiles_staff_read"  on public.profiles;
 drop policy if exists "profiles_admin_all"   on public.profiles;
+drop policy if exists "profiles_self_read" on public.profiles;
 create policy "profiles_self_read"   on public.profiles for select using (auth.uid() = id);
+drop policy if exists "profiles_self_update" on public.profiles;
 create policy "profiles_self_update" on public.profiles for update using (auth.uid() = id);
+drop policy if exists "profiles_staff_read" on public.profiles;
 create policy "profiles_staff_read"  on public.profiles for select using (public.is_staff(auth.uid()));
+drop policy if exists "profiles_admin_all" on public.profiles;
 create policy "profiles_admin_all"   on public.profiles for all    using (public.is_admin(auth.uid()));
 
 -- ---- Generic: any authenticated user reads; staff writes ----
@@ -892,23 +898,29 @@ drop policy if exists "results_select_v5" on public.results;
 drop policy if exists "results_insert_v5" on public.results;
 drop policy if exists "results_update_v5" on public.results;
 drop policy if exists "results_delete_v5" on public.results;
+drop policy if exists "results_select_v5" on public.results;
 create policy "results_select_v5" on public.results for select using (
   public.is_staff(auth.uid()) or public.is_parent_of(auth.uid(), student_id)
   or student_id in (select id from public.students where user_id = auth.uid())
 );
+drop policy if exists "results_insert_v5" on public.results;
 create policy "results_insert_v5" on public.results for insert with check (public.is_staff(auth.uid()));
+drop policy if exists "results_update_v5" on public.results;
 create policy "results_update_v5" on public.results for update using (public.is_admin(auth.uid()) or teacher_id = auth.uid()) with check (public.is_admin(auth.uid()) or teacher_id = auth.uid());
+drop policy if exists "results_delete_v5" on public.results;
 create policy "results_delete_v5" on public.results for delete using (public.is_admin(auth.uid()) or teacher_id = auth.uid());
 
 -- ---- Attendance: parents see own children; staff manage ----
 drop policy if exists "att_read"  on public.attendance;
 drop policy if exists "att_write" on public.attendance;
+drop policy if exists "att_read" on public.attendance;
 create policy "att_read"  on public.attendance for select using (
   public.is_parent_of(auth.uid(), student_id)
   or student_id in (select id from public.students where user_id = auth.uid())
   or student_id in (select id from public.students where guardian_email = auth.jwt()->>'email')
   or public.is_staff(auth.uid())
 );
+drop policy if exists "att_write" on public.attendance;
 create policy "att_write" on public.attendance for all using (public.is_staff(auth.uid()));
 
 -- ---- Results: parents see own children; staff manage ----
@@ -918,54 +930,68 @@ drop policy if exists "results_select_v5" on public.results;
 drop policy if exists "results_insert_v5" on public.results;
 drop policy if exists "results_update_v5" on public.results;
 drop policy if exists "results_delete_v5" on public.results;
+drop policy if exists "results_select_v5" on public.results;
 create policy "results_select_v5" on public.results for select using (
   public.is_staff(auth.uid()) or public.is_parent_of(auth.uid(), student_id)
   or student_id in (select id from public.students where user_id = auth.uid())
 );
+drop policy if exists "results_insert_v5" on public.results;
 create policy "results_insert_v5" on public.results for insert with check (public.is_staff(auth.uid()));
+drop policy if exists "results_update_v5" on public.results;
 create policy "results_update_v5" on public.results for update using (public.is_admin(auth.uid()) or teacher_id = auth.uid()) with check (public.is_admin(auth.uid()) or teacher_id = auth.uid());
+drop policy if exists "results_delete_v5" on public.results;
 create policy "results_delete_v5" on public.results for delete using (public.is_admin(auth.uid()) or teacher_id = auth.uid());
 
 -- ---- Conduct / Health / Behaviour / Support: parents see own; staff manage ----
 drop policy if exists "cond_read"  on public.conduct;
 drop policy if exists "cond_write" on public.conduct;
+drop policy if exists "cond_read" on public.conduct;
 create policy "cond_read"  on public.conduct for select using (
   public.is_parent_of(auth.uid(), student_id) or public.is_staff(auth.uid())
 );
+drop policy if exists "cond_write" on public.conduct;
 create policy "cond_write" on public.conduct for all using (public.is_staff(auth.uid()));
 
 drop policy if exists "hlth_read"  on public.health;
 drop policy if exists "hlth_write" on public.health;
+drop policy if exists "hlth_read" on public.health;
 create policy "hlth_read"  on public.health for select using (
   public.is_parent_of(auth.uid(), student_id) or public.is_staff(auth.uid())
 );
+drop policy if exists "hlth_write" on public.health;
 create policy "hlth_write" on public.health for all using (public.is_staff(auth.uid()));
 
 drop policy if exists "sp_read"  on public.support_plans;
 drop policy if exists "sp_write" on public.support_plans;
+drop policy if exists "sp_read" on public.support_plans;
 create policy "sp_read"  on public.support_plans for select using (
   public.is_parent_of(auth.uid(), student_id) or public.is_staff(auth.uid())
 );
+drop policy if exists "sp_write" on public.support_plans;
 create policy "sp_write" on public.support_plans for all using (public.is_staff(auth.uid()));
 
 -- ---- Fees: parents see own; staff manage ----
 drop policy if exists "fp_read"  on public.fee_payments;
 drop policy if exists "fp_write" on public.fee_payments;
+drop policy if exists "fp_read" on public.fee_payments;
 create policy "fp_read"  on public.fee_payments for select using (
   public.is_parent_of(auth.uid(), student_id)
   or student_id in (select id from public.students where user_id = auth.uid())
   or public.is_staff(auth.uid())
 );
+drop policy if exists "fp_write" on public.fee_payments;
 create policy "fp_write" on public.fee_payments for all using (public.is_staff(auth.uid()));
 
 -- ---- Payment intents: parents see own; staff manage ----
 drop policy if exists "pi_read"  on public.payment_intents;
 drop policy if exists "pi_write" on public.payment_intents;
+drop policy if exists "pi_read" on public.payment_intents;
 create policy "pi_read"  on public.payment_intents for select using (
   public.is_parent_of(auth.uid(), student_id)
   or student_id in (select id from public.students where user_id = auth.uid())
   or public.is_staff(auth.uid())
 );
+drop policy if exists "pi_write" on public.payment_intents;
 create policy "pi_write" on public.payment_intents for all using (public.is_staff(auth.uid()));
 
 -- ---- Finance / Payroll / Donations: admin only ----
@@ -985,7 +1011,9 @@ create policy "lr_all" on public.leave_requests for all using (public.is_staff(a
 -- ---- Visitors: anyone can sign in at the gate; staff reads ----
 drop policy if exists "vis_insert" on public.visitors;
 drop policy if exists "vis_read"   on public.visitors;
+drop policy if exists "vis_insert" on public.visitors;
 create policy "vis_insert" on public.visitors for insert with check (true);
+drop policy if exists "vis_read" on public.visitors;
 create policy "vis_read"   on public.visitors for select using (public.is_staff(auth.uid()));
 
 -- ---- Transport ----
@@ -995,7 +1023,9 @@ create policy "tr_all" on public.transport for all using (public.is_staff(auth.u
 -- ---- Announcements: everyone reads; staff writes ----
 drop policy if exists "ann_read"  on public.announcements;
 drop policy if exists "ann_write" on public.announcements;
+drop policy if exists "ann_read" on public.announcements;
 create policy "ann_read"  on public.announcements for select using (auth.role() = 'authenticated');
+drop policy if exists "ann_write" on public.announcements;
 create policy "ann_write" on public.announcements for all using (public.is_staff(auth.uid()));
 
 -- ---- Messages: only the two participants ----
@@ -1019,20 +1049,27 @@ create policy "hd_all" on public.helpdesk_tickets for all using (
 -- ---- Notifications: everyone reads; staff writes ----
 drop policy if exists "notif_read"  on public.notifications;
 drop policy if exists "notif_write" on public.notifications;
+drop policy if exists "notif_read" on public.notifications;
 create policy "notif_read"  on public.notifications for select using (auth.role() = 'authenticated');
+drop policy if exists "notif_write" on public.notifications;
 create policy "notif_write" on public.notifications for all using (public.is_staff(auth.uid()));
 
 -- ---- Voting ----
 drop policy if exists "polls_read"  on public.polls;
 drop policy if exists "polls_write" on public.polls;
+drop policy if exists "polls_read" on public.polls;
 create policy "polls_read"  on public.polls for select using (auth.role() = 'authenticated');
+drop policy if exists "polls_write" on public.polls;
 create policy "polls_write" on public.polls for all using (public.is_staff(auth.uid()));
 
 drop policy if exists "pv_read"   on public.poll_votes;
 drop policy if exists "pv_insert" on public.poll_votes;
 drop policy if exists "pv_update" on public.poll_votes;
+drop policy if exists "pv_read" on public.poll_votes;
 create policy "pv_read"   on public.poll_votes for select using (auth.uid() = voter_id or public.is_staff(auth.uid()));
+drop policy if exists "pv_insert" on public.poll_votes;
 create policy "pv_insert" on public.poll_votes for insert with check (auth.uid() = voter_id);
+drop policy if exists "pv_update" on public.poll_votes;
 create policy "pv_update" on public.poll_votes for update using (auth.uid() = voter_id);
 
 -- ---- Push subscriptions: each user manages own ----
@@ -1049,36 +1086,46 @@ create policy "prom_all" on public.promotions for all using (public.is_staff(aut
 -- ---- Academic periods / lookups: everyone may read; admins manage ----
 drop policy if exists "ap_read" on public.academic_periods;
 drop policy if exists "ap_write" on public.academic_periods;
+drop policy if exists "ap_read" on public.academic_periods;
 create policy "ap_read" on public.academic_periods for select using (auth.role() = 'authenticated');
+drop policy if exists "ap_write" on public.academic_periods;
 create policy "ap_write" on public.academic_periods for all using (public.is_admin(auth.uid()) or public.is_staff(auth.uid())) with check (public.is_admin(auth.uid()) or public.is_staff(auth.uid()));
 
 drop policy if exists "lookups_read" on public.lookups;
 drop policy if exists "lookups_write" on public.lookups;
+drop policy if exists "lookups_read" on public.lookups;
 create policy "lookups_read" on public.lookups for select using (auth.role() = 'authenticated');
+drop policy if exists "lookups_write" on public.lookups;
 create policy "lookups_write" on public.lookups for all using (public.is_admin(auth.uid()) or public.is_staff(auth.uid())) with check (public.is_admin(auth.uid()) or public.is_staff(auth.uid()));
 
 -- ---- Parent-child ----
 drop policy if exists "pc_read"  on public.parent_child;
 drop policy if exists "pc_write" on public.parent_child;
+drop policy if exists "pc_read" on public.parent_child;
 create policy "pc_read"  on public.parent_child for select using (
   parent_id = auth.uid() or public.is_staff(auth.uid())
 );
+drop policy if exists "pc_write" on public.parent_child;
 create policy "pc_write" on public.parent_child for all using (public.is_staff(auth.uid()));
 
 -- ---- LMS submissions: student sees own; staff manage ----
 drop policy if exists "sub_read"  on public.lms_submissions;
 drop policy if exists "sub_write" on public.lms_submissions;
+drop policy if exists "sub_read" on public.lms_submissions;
 create policy "sub_read"  on public.lms_submissions for select using (
   public.is_parent_of(auth.uid(), student_id)
   or student_id in (select id from public.students where user_id = auth.uid())
   or public.is_staff(auth.uid())
 );
+drop policy if exists "sub_write" on public.lms_submissions;
 create policy "sub_write" on public.lms_submissions for all using (public.is_staff(auth.uid()));
 
 -- ---- Activity log: staff/admin read; anyone authenticated may insert ----
 drop policy if exists "al_read"   on public.activity_log;
 drop policy if exists "al_insert" on public.activity_log;
+drop policy if exists "al_read" on public.activity_log;
 create policy "al_read"   on public.activity_log for select using (public.is_admin(auth.uid()));
+drop policy if exists "al_insert" on public.activity_log;
 create policy "al_insert" on public.activity_log for insert with check (auth.role() = 'authenticated');
 
 
@@ -1171,34 +1218,42 @@ alter table public.school_settings add column if not exists role_write jsonb;
 -- =====================================================================
 drop policy if exists "read_students" on public.students;
 drop policy if exists "write_students" on public.students;
+drop policy if exists "read_students" on public.students;
 create policy "read_students" on public.students for select using (
   public.is_staff(auth.uid()) or user_id = auth.uid() or public.is_parent_of(auth.uid(), id)
 );
+drop policy if exists "write_students" on public.students;
 create policy "write_students" on public.students for all using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
 
 drop policy if exists "read_assignments" on public.assignments;
 drop policy if exists "write_assignments" on public.assignments;
+drop policy if exists "read_assignments" on public.assignments;
 create policy "read_assignments" on public.assignments for select using (
   public.is_staff(auth.uid())
   or class in (select class from public.students where user_id = auth.uid())
   or class in (select class from public.students s join public.parent_child pc on pc.student_id=s.id where pc.parent_id=auth.uid())
 );
+drop policy if exists "write_assignments" on public.assignments;
 create policy "write_assignments" on public.assignments for all using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
 
 drop policy if exists "read_eresources" on public.eresources;
 drop policy if exists "write_eresources" on public.eresources;
+drop policy if exists "read_eresources" on public.eresources;
 create policy "read_eresources" on public.eresources for select using (
   public.is_staff(auth.uid())
   or class in (select class from public.students where user_id = auth.uid())
   or class in (select class from public.students s join public.parent_child pc on pc.student_id=s.id where pc.parent_id=auth.uid())
 );
+drop policy if exists "write_eresources" on public.eresources;
 create policy "write_eresources" on public.eresources for all using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
 
 drop policy if exists "read_certificates" on public.certificates;
 drop policy if exists "write_certificates" on public.certificates;
+drop policy if exists "read_certificates" on public.certificates;
 create policy "read_certificates" on public.certificates for select using (
   public.is_staff(auth.uid()) or student_id in (select id from public.students where user_id=auth.uid()) or public.is_parent_of(auth.uid(), student_id)
 );
+drop policy if exists "write_certificates" on public.certificates;
 create policy "write_certificates" on public.certificates for all using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
 
 
@@ -1338,14 +1393,19 @@ exception when others then null; end $$;
 -- ========================================================
 drop policy if exists "polls_read"  on public.polls;
 drop policy if exists "polls_write" on public.polls;
+drop policy if exists "polls_read" on public.polls;
 create policy "polls_read"  on public.polls for select using (auth.role() = 'authenticated');
+drop policy if exists "polls_write" on public.polls;
 create policy "polls_write" on public.polls for all using (public.is_staff(auth.uid()));
 
 drop policy if exists "pv_read"   on public.poll_votes;
 drop policy if exists "pv_insert" on public.poll_votes;
 drop policy if exists "pv_update" on public.poll_votes;
+drop policy if exists "pv_read" on public.poll_votes;
 create policy "pv_read"   on public.poll_votes for select using (auth.uid() = voter_id or public.is_staff(auth.uid()));
+drop policy if exists "pv_insert" on public.poll_votes;
 create policy "pv_insert" on public.poll_votes for insert with check (auth.uid() = voter_id);
+drop policy if exists "pv_update" on public.poll_votes;
 create policy "pv_update" on public.poll_votes for update using (auth.uid() = voter_id);
 
 
@@ -1623,9 +1683,13 @@ drop policy if exists "cbt_exam_read"  on public.cbt_exams;
 drop policy if exists "cbt_exam_insert" on public.cbt_exams;
 drop policy if exists "cbt_exam_update" on public.cbt_exams;
 drop policy if exists "cbt_exam_delete" on public.cbt_exams;
+drop policy if exists "cbt_exam_read" on public.cbt_exams;
 create policy "cbt_exam_read" on public.cbt_exams for select using (auth.role() = 'authenticated');
+drop policy if exists "cbt_exam_insert" on public.cbt_exams;
 create policy "cbt_exam_insert" on public.cbt_exams for insert with check (public.is_staff(auth.uid()));
+drop policy if exists "cbt_exam_update" on public.cbt_exams;
 create policy "cbt_exam_update" on public.cbt_exams for update using (public.is_admin(auth.uid()) or teacher_id = auth.uid()) with check (public.is_admin(auth.uid()) or teacher_id = auth.uid());
+drop policy if exists "cbt_exam_delete" on public.cbt_exams;
 create policy "cbt_exam_delete" on public.cbt_exams for delete using (public.is_admin(auth.uid()) or teacher_id = auth.uid());
 
 -- Results: staff read all & manage; (anonymous students submit via the
@@ -2138,19 +2202,25 @@ group by rs.class, rs.subject, rs.term, rs.session, rs.student_id_ref, rs.studen
 -- =====================================================================
 drop policy if exists "ac_staff" on public.assessment_columns;
 drop policy if exists "ac_read"  on public.assessment_columns;
+drop policy if exists "ac_staff" on public.assessment_columns;
 create policy "ac_staff" on public.assessment_columns for all using (public.is_staff(auth.uid()));
+drop policy if exists "ac_read" on public.assessment_columns;
 create policy "ac_read"  on public.assessment_columns for select using (auth.role() = 'authenticated');
 
 drop policy if exists "rs_staff" on public.report_scores;
 drop policy if exists "rs_read"  on public.report_scores;
+drop policy if exists "rs_staff" on public.report_scores;
 create policy "rs_staff" on public.report_scores for all using (public.is_staff(auth.uid()));
 -- students/parents may read; the parent-scoping in the main schema's
 -- parent_child still governs deeper access patterns at the app layer.
+drop policy if exists "rs_read" on public.report_scores;
 create policy "rs_read"  on public.report_scores for select using (auth.role() = 'authenticated');
 
 drop policy if exists "rc_staff" on public.report_cards;
 drop policy if exists "rc_read"  on public.report_cards;
+drop policy if exists "rc_staff" on public.report_cards;
 create policy "rc_staff" on public.report_cards for all using (public.is_staff(auth.uid()));
+drop policy if exists "rc_read" on public.report_cards;
 create policy "rc_read" on public.report_cards for select using (public.is_staff(auth.uid()) or student_id in (select id from public.students where user_id=auth.uid()) or public.is_parent_of(auth.uid(), student_id));
 
 -- the mapping function is called by the (security-definer) cbt_submit flow and
@@ -2420,13 +2490,17 @@ end $$;
 -- Check-ins: anyone authenticated may insert their own scan; staff read all.
 drop policy if exists "ent_checkin_insert" on public.attendance_checkins;
 drop policy if exists "ent_checkin_read"   on public.attendance_checkins;
+drop policy if exists "ent_checkin_insert" on public.attendance_checkins;
 create policy "ent_checkin_insert" on public.attendance_checkins for insert with check (auth.role() = 'authenticated');
+drop policy if exists "ent_checkin_read" on public.attendance_checkins;
 create policy "ent_checkin_read"   on public.attendance_checkins for select using (public.is_staff(auth.uid()));
 
 -- Survey responses: respondent manages own; staff read all.
 drop policy if exists "ent_sr_own"  on public.survey_responses;
 drop policy if exists "ent_sr_staff" on public.survey_responses;
+drop policy if exists "ent_sr_own" on public.survey_responses;
 create policy "ent_sr_own"   on public.survey_responses for all using (respondent = auth.uid());
+drop policy if exists "ent_sr_staff" on public.survey_responses;
 create policy "ent_sr_staff" on public.survey_responses for select using (public.is_staff(auth.uid()));
 
 -- Security prefs: each user manages own.
@@ -2436,7 +2510,9 @@ create policy "ent_sec_own" on public.security_prefs for all using (user_id = au
 -- Login audit: admin reads; any authenticated inserts.
 drop policy if exists "ent_la_read"   on public.login_audit;
 drop policy if exists "ent_la_insert" on public.login_audit;
+drop policy if exists "ent_la_read" on public.login_audit;
 create policy "ent_la_read"   on public.login_audit for select using (public.is_staff(auth.uid()));
+drop policy if exists "ent_la_insert" on public.login_audit;
 create policy "ent_la_insert" on public.login_audit for insert with check (auth.role() = 'authenticated');
 
 -- =====================================================================
@@ -2876,6 +2952,7 @@ drop policy if exists "mr_write" on public.module_records;
 drop policy if exists "mr_write_staff" on public.module_records;
 drop policy if exists "mr_insert_family" on public.module_records;
 drop policy if exists "mr_update_family" on public.module_records;
+drop policy if exists "mr_read" on public.module_records;
 create policy "mr_read" on public.module_records for select using (
   auth.role()='authenticated' and (
     module not in ('inbox','messages')
@@ -2886,8 +2963,11 @@ create policy "mr_read" on public.module_records for select using (
     or coalesce(audience,'') = (select role from public.profiles where id=auth.uid())
   )
 );
+drop policy if exists "mr_write_staff" on public.module_records;
 create policy "mr_write_staff" on public.module_records for all using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
+drop policy if exists "mr_insert_family" on public.module_records;
 create policy "mr_insert_family" on public.module_records for insert with check (auth.role()='authenticated' and module in ('inbox','messages','helpdesk','book_request','parent_meeting','lost_found'));
+drop policy if exists "mr_update_family" on public.module_records;
 create policy "mr_update_family" on public.module_records for update using (created_by = auth.uid() and module in ('inbox','messages','helpdesk','book_request','parent_meeting','lost_found')) with check (created_by = auth.uid());
 
 -- =====================================================================
@@ -2907,7 +2987,9 @@ end $$;
 -- school_settings: everyone authenticated reads; admin writes page-access governance
 drop policy if exists "ss_read" on public.school_settings;
 drop policy if exists "ss_write" on public.school_settings;
+drop policy if exists "ss_read" on public.school_settings;
 create policy "ss_read"  on public.school_settings for select using (auth.role()='authenticated');
+drop policy if exists "ss_write" on public.school_settings;
 create policy "ss_write" on public.school_settings for all using (public.is_admin(auth.uid())) with check (public.is_admin(auth.uid()));
 
 -- admission_links readable by anon (so the public form can validate a token via RPC)
@@ -3140,6 +3222,7 @@ end $$;
 drop policy if exists "uv1_rs_read"   on public.reading_scores;
 drop policy if exists "uv1_rs_insert" on public.reading_scores;
 drop policy if exists "uv1_rs_manage" on public.reading_scores;
+drop policy if exists "uv1_rs_read" on public.reading_scores;
 create policy "uv1_rs_read"   on public.reading_scores for select using (
   public.is_staff(auth.uid())
   or exists (
@@ -3152,13 +3235,17 @@ create policy "uv1_rs_read"   on public.reading_scores for select using (
       and (s.user_id = auth.uid() or public.is_parent_of(auth.uid(), s.id))
   )
 );
+drop policy if exists "uv1_rs_insert" on public.reading_scores;
 create policy "uv1_rs_insert" on public.reading_scores for insert with check (auth.role()='authenticated');
+drop policy if exists "uv1_rs_manage" on public.reading_scores;
 create policy "uv1_rs_manage" on public.reading_scores for update using (public.is_staff(auth.uid()));
 
 -- promotions policies (idempotent)
 drop policy if exists "uv1_prom_read"  on public.promotions;
 drop policy if exists "uv1_prom_write" on public.promotions;
+drop policy if exists "uv1_prom_read" on public.promotions;
 create policy "uv1_prom_read"  on public.promotions for select using (auth.role()='authenticated');
+drop policy if exists "uv1_prom_write" on public.promotions;
 create policy "uv1_prom_write" on public.promotions for all    using (public.is_staff(auth.uid()));
 
 select 'School Connect — Update v1 schema installed ✅' as status;
@@ -3723,7 +3810,9 @@ alter table public.school_settings add column if not exists principal_name text;
 alter table public.school_settings enable row level security;
 drop policy if exists "settings_read"  on public.school_settings;
 drop policy if exists "settings_write" on public.school_settings;
+drop policy if exists "settings_read" on public.school_settings;
 create policy "settings_read"  on public.school_settings for select using (auth.role() = 'authenticated');
+drop policy if exists "settings_write" on public.school_settings;
 create policy "settings_write" on public.school_settings for all    using (public.is_staff(auth.uid()));
 
 -- ---------------------------------------------------------------------
@@ -4416,30 +4505,183 @@ drop policy if exists "polls_read"  on public.polls;
 drop policy if exists "polls_write" on public.polls;
 drop policy if exists "polls_update_v11" on public.polls;
 drop policy if exists "polls_delete_v11" on public.polls;
+drop policy if exists "polls_read" on public.polls;
 create policy "polls_read" on public.polls for select using (auth.role() = 'authenticated');
+drop policy if exists "polls_write" on public.polls;
 create policy "polls_write" on public.polls for insert with check (public.is_staff(auth.uid()));
+drop policy if exists "polls_update_v11" on public.polls;
 create policy "polls_update_v11" on public.polls for update using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
+drop policy if exists "polls_delete_v11" on public.polls;
 create policy "polls_delete_v11" on public.polls for delete using (public.is_admin(auth.uid()));
 
 drop policy if exists "pv_read"   on public.poll_votes;
 drop policy if exists "pv_insert" on public.poll_votes;
 drop policy if exists "pv_update" on public.poll_votes;
 drop policy if exists "pv_delete_v11" on public.poll_votes;
+drop policy if exists "pv_read" on public.poll_votes;
 create policy "pv_read" on public.poll_votes for select using (auth.uid() = voter_id or public.is_staff(auth.uid()));
+drop policy if exists "pv_insert" on public.poll_votes;
 create policy "pv_insert" on public.poll_votes for insert with check (
   auth.uid() = voter_id
   and exists (select 1 from public.polls p where p.id = poll_id and coalesce(p.status,'open') = 'open')
 );
+drop policy if exists "pv_update" on public.poll_votes;
 create policy "pv_update" on public.poll_votes for update using (auth.uid() = voter_id) with check (auth.uid() = voter_id);
+drop policy if exists "pv_delete_v11" on public.poll_votes;
 create policy "pv_delete_v11" on public.poll_votes for delete using (auth.uid() = voter_id or public.is_staff(auth.uid()));
 
 -- Strict family-safe ID-card visibility: staff manage; student/parent can only
 -- read cards connected to themselves/their child.
 drop policy if exists "read_idcards" on public.idcards;
 drop policy if exists "write_idcards" on public.idcards;
+drop policy if exists "read_idcards" on public.idcards;
 create policy "read_idcards" on public.idcards for select using (
   public.is_staff(auth.uid())
   or (person_type = 'student' and person_id in (select id from public.students where user_id = auth.uid()))
   or (person_type = 'student' and public.is_parent_of(auth.uid(), person_id))
 );
+drop policy if exists "write_idcards" on public.idcards;
+create policy "write_idcards" on public.idcards for all using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
+
+
+-- ========================================================
+-- SCHOOL CONNECT V12: Idempotent policies, voting repair, ownership locks,
+-- persistent notifications support, and staff geofenced attendance settings.
+-- Safe to run repeatedly after complete-schema/schema.
+-- ========================================================
+create extension if not exists "uuid-ossp";
+
+-- Parents policy idempotency fix: prevents ERROR 42710 policy already exists.
+drop policy if exists "parents_read" on public.parents;
+drop policy if exists "parents_write" on public.parents;
+drop policy if exists "parents_read" on public.parents;
+create policy "parents_read" on public.parents for select using (auth.role() = 'authenticated');
+drop policy if exists "parents_write" on public.parents;
+create policy "parents_write" on public.parents for all using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
+
+-- Voting UUID/type repair: legacy databases may have candidate_id as uuid.
+do $$ begin
+  alter table public.poll_votes alter column candidate_id type text using candidate_id::text;
+exception when undefined_table then null; end $$;
+
+do $$ begin
+  alter table public.polls add column if not exists max_votes integer default 1;
+  alter table public.polls add column if not exists created_by uuid references public.profiles(id) on delete set null;
+  alter table public.poll_votes add column if not exists voter_id uuid references public.profiles(id) on delete cascade;
+  alter table public.poll_votes add column if not exists voted_at timestamptz default now();
+exception when undefined_table then null; end $$;
+
+drop policy if exists "polls_read"  on public.polls;
+drop policy if exists "polls_write" on public.polls;
+drop policy if exists "polls_update_v11" on public.polls;
+drop policy if exists "polls_delete_v11" on public.polls;
+drop policy if exists "polls_read" on public.polls;
+create policy "polls_read" on public.polls for select using (auth.role() = 'authenticated');
+drop policy if exists "polls_write" on public.polls;
+create policy "polls_write" on public.polls for insert with check (public.is_staff(auth.uid()));
+drop policy if exists "polls_update_v11" on public.polls;
+create policy "polls_update_v11" on public.polls for update using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
+drop policy if exists "polls_delete_v11" on public.polls;
+create policy "polls_delete_v11" on public.polls for delete using (public.is_admin(auth.uid()));
+
+drop policy if exists "pv_read" on public.poll_votes;
+drop policy if exists "pv_insert" on public.poll_votes;
+drop policy if exists "pv_update" on public.poll_votes;
+drop policy if exists "pv_delete_v11" on public.poll_votes;
+drop policy if exists "pv_read" on public.poll_votes;
+create policy "pv_read" on public.poll_votes for select using (auth.uid() = voter_id or public.is_staff(auth.uid()));
+drop policy if exists "pv_insert" on public.poll_votes;
+create policy "pv_insert" on public.poll_votes for insert with check (
+  auth.uid() = voter_id and exists (select 1 from public.polls p where p.id = poll_id and coalesce(p.status,'open') = 'open')
+);
+drop policy if exists "pv_update" on public.poll_votes;
+create policy "pv_update" on public.poll_votes for update using (auth.uid() = voter_id) with check (auth.uid() = voter_id);
+drop policy if exists "pv_delete_v11" on public.poll_votes;
+create policy "pv_delete_v11" on public.poll_votes for delete using (auth.uid() = voter_id or public.is_staff(auth.uid()));
+
+-- Staff geofenced attendance settings, configured by admin in Settings.
+do $$ begin
+  alter table public.school_settings add column if not exists latitude numeric;
+  alter table public.school_settings add column if not exists longitude numeric;
+  alter table public.school_settings add column if not exists geo_radius_m integer default 200;
+  alter table public.school_settings add column if not exists enforce_geofence boolean default true;
+  alter table public.school_settings add column if not exists geo_updated_at timestamptz;
+exception when undefined_table then null; end $$;
+
+-- Ownership columns for teacher/staff-only editing.
+do $$ begin
+  alter table public.health add column if not exists recorded_by_id uuid references public.profiles(id) on delete set null;
+  alter table public.reports add column if not exists generated_by uuid references public.profiles(id) on delete set null;
+  alter table public.helpdesk_tickets add column if not exists submitted_by uuid references public.profiles(id) on delete set null;
+exception when undefined_table then null; end $$;
+
+-- Health/clinic: staff may read; only owner or admin may edit/delete.
+drop policy if exists "hlth_read" on public.health;
+drop policy if exists "hlth_write" on public.health;
+drop policy if exists "hlth_insert_v12" on public.health;
+drop policy if exists "hlth_update_v12" on public.health;
+drop policy if exists "hlth_delete_v12" on public.health;
+drop policy if exists "hlth_read" on public.health;
+create policy "hlth_read" on public.health for select using (
+  public.is_staff(auth.uid()) or public.is_parent_of(auth.uid(), student_id) or student_id in (select id from public.students where user_id = auth.uid())
+);
+drop policy if exists "hlth_insert_v12" on public.health;
+create policy "hlth_insert_v12" on public.health for insert with check (public.is_staff(auth.uid()));
+drop policy if exists "hlth_update_v12" on public.health;
+create policy "hlth_update_v12" on public.health for update using (public.is_admin(auth.uid()) or recorded_by_id = auth.uid()) with check (public.is_admin(auth.uid()) or recorded_by_id = auth.uid());
+drop policy if exists "hlth_delete_v12" on public.health;
+create policy "hlth_delete_v12" on public.health for delete using (public.is_admin(auth.uid()) or recorded_by_id = auth.uid());
+
+-- Helpdesk: staff can read; ticket owner/assignee/admin can update; admin can delete.
+drop policy if exists "hd_all" on public.helpdesk_tickets;
+drop policy if exists "hd_select_v12" on public.helpdesk_tickets;
+drop policy if exists "hd_insert_v12" on public.helpdesk_tickets;
+drop policy if exists "hd_update_v12" on public.helpdesk_tickets;
+drop policy if exists "hd_delete_v12" on public.helpdesk_tickets;
+drop policy if exists "hd_select_v12" on public.helpdesk_tickets;
+create policy "hd_select_v12" on public.helpdesk_tickets for select using (public.is_staff(auth.uid()) or submitted_by = auth.uid() or assignee = auth.uid());
+drop policy if exists "hd_insert_v12" on public.helpdesk_tickets;
+create policy "hd_insert_v12" on public.helpdesk_tickets for insert with check (auth.role() = 'authenticated');
+drop policy if exists "hd_update_v12" on public.helpdesk_tickets;
+create policy "hd_update_v12" on public.helpdesk_tickets for update using (public.is_admin(auth.uid()) or submitted_by = auth.uid() or assignee = auth.uid()) with check (public.is_admin(auth.uid()) or submitted_by = auth.uid() or assignee = auth.uid());
+drop policy if exists "hd_delete_v12" on public.helpdesk_tickets;
+create policy "hd_delete_v12" on public.helpdesk_tickets for delete using (public.is_admin(auth.uid()) or submitted_by = auth.uid());
+
+-- Reports table: staff read; creator/admin modify.
+drop policy if exists "rep_all" on public.reports;
+drop policy if exists "rep_select_v12" on public.reports;
+drop policy if exists "rep_insert_v12" on public.reports;
+drop policy if exists "rep_update_v12" on public.reports;
+drop policy if exists "rep_delete_v12" on public.reports;
+drop policy if exists "rep_select_v12" on public.reports;
+create policy "rep_select_v12" on public.reports for select using (public.is_staff(auth.uid()));
+drop policy if exists "rep_insert_v12" on public.reports;
+create policy "rep_insert_v12" on public.reports for insert with check (public.is_staff(auth.uid()));
+drop policy if exists "rep_update_v12" on public.reports;
+create policy "rep_update_v12" on public.reports for update using (public.is_admin(auth.uid()) or generated_by = auth.uid()) with check (public.is_admin(auth.uid()) or generated_by = auth.uid());
+drop policy if exists "rep_delete_v12" on public.reports;
+create policy "rep_delete_v12" on public.reports for delete using (public.is_admin(auth.uid()) or generated_by = auth.uid());
+
+-- Generic module records (reports, counselling, wellbeing, etc.): staff can read,
+-- creator/admin can modify; family users only modify their own allowed family records.
+drop policy if exists "mr_update_family" on public.module_records;
+drop policy if exists "mr_update_v12_owner" on public.module_records;
+drop policy if exists "mr_delete_v12_owner" on public.module_records;
+drop policy if exists "mr_update_v12_owner" on public.module_records;
+create policy "mr_update_v12_owner" on public.module_records for update using (
+  public.is_admin(auth.uid()) or created_by = auth.uid()
+) with check (public.is_admin(auth.uid()) or created_by = auth.uid());
+drop policy if exists "mr_delete_v12_owner" on public.module_records;
+create policy "mr_delete_v12_owner" on public.module_records for delete using (public.is_admin(auth.uid()) or created_by = auth.uid());
+
+-- ID cards remain private to staff, owning student, or linked parent.
+drop policy if exists "read_idcards" on public.idcards;
+drop policy if exists "write_idcards" on public.idcards;
+drop policy if exists "read_idcards" on public.idcards;
+create policy "read_idcards" on public.idcards for select using (
+  public.is_staff(auth.uid())
+  or (person_type = 'student' and person_id in (select id from public.students where user_id = auth.uid()))
+  or (person_type = 'student' and public.is_parent_of(auth.uid(), person_id))
+);
+drop policy if exists "write_idcards" on public.idcards;
 create policy "write_idcards" on public.idcards for all using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
