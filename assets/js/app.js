@@ -96,6 +96,12 @@ const App = {
           if (data.principal_name && !localStorage.getItem('sc-principal-name')) localStorage.setItem('sc-principal-name', data.principal_name);
           if (data.terms)        window.SC_TERMS    = data.terms;
           if (data.sessions)     window.SC_SESSIONS = data.sessions;
+          // V12: expose admin-configured geofence to check-in pages.
+          window.SCHOOL = window.SCHOOL || {};
+          if (data.latitude != null)  window.SCHOOL.latitude = Number(data.latitude);
+          if (data.longitude != null) window.SCHOOL.longitude = Number(data.longitude);
+          if (data.geo_radius_m != null) window.SCHOOL.geoRadius = Number(data.geo_radius_m);
+          window.SCHOOL.enforceGeofence = data.enforce_geofence !== false;
         } catch (_) {}
       }
     } catch (_) {}

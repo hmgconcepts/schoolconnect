@@ -320,7 +320,7 @@ const Notifications = {
     if (error) return { error: error.message };
     if (channels.includes('inapp')) {
       this.refreshUnreadCount();
-      try { this.showInApp(title || 'Notification', body || '', 'info'); } catch(_) {}
+      try { this.showInApp(title || 'Notification', body || '', 'info', url || 'notifications.html'); } catch(_) {}
     }
     if (channels.includes('push') && document.visibilityState !== 'visible') this.broadcast({ title, body, url });
     if (channels.includes('email'))    this.composeEmail({ title, body, url });
@@ -343,7 +343,33 @@ const Notifications = {
     } catch (e) {}
   },
 
-  showInApp(title, body, type = 'info') { toast(`${title} — ${body}`, type); },
+  
+  ensureLiveTray() {
+    if (typeof document === 'undefined') return null;
+    let tray = document.getElementById('sc-live-notification-tray');
+    if (!tray) {
+      tray = document.createElement('div');
+      tray.id = 'sc-live-notification-tray';
+      tray.setAttribute('aria-live', 'polite');
+      tray.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:2147482500;display:flex;flex-direction:column;gap:10px;max-width:min(420px,calc(100vw - 36px));pointer-events:none';
+      document.body.appendChild(tray);
+    }
+    return tray;
+  },
+
+  showInApp(title, body, type = 'info', url = 'notifications.html') {
+    const tray = this.ensureLiveTray();
+    const safe = (typeof esc === 'function' ? esc : this._esc).bind(this);
+    if (!tray) { try { toast(`${title} — ${body}`, type, 12000); } catch(_) {} return; }
+    const card = document.createElement('div');
+    card.className = 'sc-live-notification-card';
+    card.style.cssText = 'pointer-events:auto;background:#fff;border:1px solid #dbeafe;border-left:5px solid #2563eb;border-radius:14px;box-shadow:0 18px 45px rgba(15,23,42,.22);padding:12px 14px;color:#0f172a;font-family:system-ui,sans-serif';
+    card.innerHTML = '<div style="display:flex;gap:10px;align-items:flex-start"><div style="font-size:1.35rem">🔔</div><div style="flex:1;min-width:0"><div style="font-weight:900;margin-bottom:3px">'+safe(title||'Notification')+'</div><div style="font-size:.88rem;color:#475569;line-height:1.35">'+safe(body||'')+'</div><div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-open style="border:0;background:#2563eb;color:white;border-radius:8px;padding:6px 10px;font-weight:800;cursor:pointer">Open notifications</button><button type="button" data-dismiss style="border:1px solid #cbd5e1;background:white;color:#334155;border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer">Dismiss</button></div></div></div>';
+    tray.prepend(card);
+    card.querySelector('[data-dismiss]').onclick = () => card.remove();
+    card.querySelector('[data-open]').onclick = () => { location.href = url || 'notifications.html'; };
+    while (tray.children.length > 5) tray.lastElementChild.remove();
+  },
 
   composeEmail({ title, body, url }) {
     const subject = encodeURIComponent(title);
@@ -372,6 +398,7 @@ const Notifications = {
           const n = payload.new;
           this.refreshUnreadCount();
           this.renderPageList().catch(()=>{});
+          if (Notifications.allowedForMe(n)) this.showInApp(n.title || 'Notification', n.body || '', 'info', n.url || 'notifications.html');
           this.broadcast({ title: n.title, body: n.body, url: n.url, tag: 'n-' + n.id });
         })
         .subscribe();

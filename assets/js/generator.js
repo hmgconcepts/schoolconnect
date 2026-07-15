@@ -201,7 +201,8 @@ const Generator = {
       'database/update-v8-schema.sql',
       'database/update-v9-schema.sql',
       'database/update-v11-schema.sql',
-      'database/update-v11-voting-security.sql'
+      'database/update-v11-voting-security.sql',
+      'database/update-v12-schema.sql'
     ];
     const sqlContents = {};
     for (const f of sqlFiles) {

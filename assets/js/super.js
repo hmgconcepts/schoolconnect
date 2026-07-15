@@ -43,6 +43,10 @@ const Super = {
     /* Enhanced knowledge base: each entry has keywords (m), a reply (r), an
        optional page link (p) and optional follow-up chips (chips). */
     KB: [
+      { m: ['v12 voting repair','invalid input syntax uuid','invalid input syntax for type uuid','cannot create poll','cannot close poll','cannot vote'], r: 'Voting has been repaired in V12. Admin/staff can create, edit, close and re-open polls. Students/parents can vote on open polls. If your Supabase project was created before V12, run `database/update-v12-schema.sql` after the main schemas so `poll_votes.candidate_id` is converted to text and the open-poll policies are installed.', p: 'voting.html', chips: ['Create a poll', 'Student voting', 'Run V12 SQL'] },
+      { m: ['notification disappears','notification flashes','bell closes','parent notifications','student notifications'], r: 'V12 notifications now stay in the bell, the Notifications page, and a persistent live notification tray. If a toast appears, it no longer disappears as the only copy; open the bell or Notifications page to review it again.', p: 'notifications.html' },
+      { m: ['teacher ownership','cannot edit another teacher','read only record','health clinic ownership','helpdesk ownership','counselling ownership'], r: 'V12 enforces creator/owner editing. Teachers may read relevant records for coordination, but only the creator/assigned owner or an admin can edit/delete exams, results, helpdesk, health/clinic, counselling and reports. Admins retain full oversight.', p: 'teacher-overview.html' },
+      { m: ['staff geofence','school location','staff attendance location','outside premises','gps attendance'], r: 'Admins set the school GPS point in Settings → Staff Attendance Geofence. Staff check-in requires browser GPS and must be inside the configured radius, preventing attendance from outside the premises.', p: 'settings.html' },
       { m: ['role based navigation', 'menu security', 'why hidden', 'navigation', 'permission', 'not safe', 'roles'], r: 'School Connect uses role-based navigation for safety. **Admin/Super Admin** can see all modules plus oversight panels because they manage payments, staff, parents and students. **Staff/Teacher** see teaching/operation pages only. **Parents** see child/payment/communication pages only. **Students** see learning/exam/result pages only. Hidden menu items are intentional data protection, not a bug.', p: 'dashboard.html', chips: ['Admin overview', 'Staff dashboard', 'Parent dashboard', 'Student dashboard'] },
       { m: ['inbox workflow', 'in app inbox', 'internal message', 'message status', 'unread read archived'], r: 'The **In-App Inbox** is the internal message log. Compose in **Messaging Centre** or click **+ Add new** in Inbox. Messages are saved as inbox records, notifications appear in the bell, and staff/admin track status from **unread → read → archived**. Parents and students use it for school communication without paid APIs.', p: 'inbox.html', chips: ['Open Messaging Centre', 'Who can use inbox?', 'Notifications'] },
       { m: ['notification not visible', 'notification bell', 'left aligned', 'bell alert'], r: 'The notification bell opens a fixed, right-aligned panel so messages are visible on mobile and desktop. Click a notification to mark it read and open its page. Announcements, polls and in-app messages create notification records for the proper audience.', p: 'notifications.html' },
@@ -286,7 +290,8 @@ const Super = {
     },
     renderPageInfo(id) {
       if (window.SC_HELP && SC_HELP.get && SC_HELP.format) return SC_HELP.format(SC_HELP.get(id));
-      const i = this.PAGE_INFO[id];
+      this.ensurePageInfoCoverage();
+      const i = this.PAGE_INFO[id] || this.PAGE_INFO[id.replace(/-/g,'_')];
       if (!i) return this.PAGE_HELP[id] || ('This is the **' + id.replace(/-/g, ' ') + '** page. Ask me anything specific about it!');
       return '📖 **' + (id.charAt(0).toUpperCase() + id.slice(1)).replace(/-/g, ' ').replace(/_/g, ' ') + ' page**\n\n' +
         '**What it is:** ' + i.purpose + '\n\n' +
@@ -296,6 +301,24 @@ const Super = {
         '**Benefit to the school:** ' + i.benefit;
     },
     currentPageId() { return (location.pathname.split('/').pop() || 'dashboard').replace('.html', '') || 'dashboard'; },
+    ensurePageInfoCoverage() {
+      try {
+        const navs = Array.from(document.querySelectorAll('[data-module-id]'));
+        navs.forEach(a => {
+          const id = (a.getAttribute('data-module-id') || '').replace(/-/g,'_');
+          const label = (a.textContent || id).trim().replace(/\s+/g,' ');
+          if (!id || this.PAGE_INFO[id] || this.PAGE_INFO[id.replace(/_/g,'-')]) return;
+          this.PAGE_INFO[id] = {
+            purpose: label + ' module.',
+            does: 'This page is part of the School Connect platform. It is connected to role-based access, Supabase security policies, notifications, audit logs and the school dashboard. Use the form/table actions shown on the page; if a control is hidden or read-only, your role is intentionally protected from changing that record.',
+            who: 'Available only to the roles shown in the menu and access policy.',
+            advantages: ['Role-aware access', 'Connected records', 'Export/search where available', 'Free browser-based workflow'],
+            benefit: 'Gives first-time users a clear, safe and guided digital workflow.'
+          };
+        });
+      } catch(e) {}
+    },
+
     explainPage() {
       const id = this.currentPageId();
       const msg = this.renderPageInfo(id);

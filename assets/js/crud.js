@@ -803,6 +803,23 @@ const CRUD = {
     return this.dedupeOptions((c.options || []).map(o => ({ value: o, label: o })));
   },
 
+  isOwnedByCurrent(row) {
+    if (!row) return true;
+    const uid = window.SC_PROFILE?.id || '';
+    const uname = String(window.SC_PROFILE?.full_name || '').toLowerCase();
+    const checks = [row.teacher_id, row.posted_by, row.recorded_by_id, row.created_by, row.submitted_by, row.generated_by, row.assignee];
+    if (checks.some(v => v && uid && String(v) === String(uid))) return true;
+    if (row.teacher && uname && String(row.teacher).toLowerCase() === uname) return true;
+    if (row.recorded_by && uname && String(row.recorded_by).toLowerCase() === uname) return true;
+    if (row.data && row.data.created_by && uid && String(row.data.created_by) === String(uid)) return true;
+    return false;
+  },
+
+  hasOwnershipMarker(row) {
+    if (!row) return false;
+    return !!(row.teacher_id || row.posted_by || row.recorded_by_id || row.created_by || row.submitted_by || row.generated_by || row.assignee || row.teacher || row.recorded_by || (row.data && row.data.created_by));
+  },
+
   async openForm(moduleId, id) {
     const d = this.def(moduleId);
     if (!d) { toast('This module has no editable form.', 'warning'); return; }
@@ -810,13 +827,9 @@ const CRUD = {
     if (!this.sb) { toast('Database not configured (add Supabase keys in assets/js/config.js).', 'warning', 6000); return; }
     let row = {};
     if (id) { const { data } = await this.sb.from(d.table).select('*').eq('id', id).maybeSingle(); row = data || {}; }
-    if (window.App && !App.isAdminRole(App.currentRole) && row && (row.teacher_id || row.posted_by || row.teacher)) {
-      const uid = window.SC_PROFILE?.id;
-      const uname = window.SC_PROFILE?.full_name;
-      if (row.teacher_id !== uid && row.posted_by !== uid && row.teacher !== uname) {
-        toast('Access Denied: You cannot edit records created by another subject teacher.', 'danger', 6000);
-        return;
-      }
+    if (window.App && !App.isAdminRole(App.currentRole) && row && this.hasOwnershipMarker(row) && !this.isOwnedByCurrent(row)) {
+      toast('Access Denied: You can read this record, but only the creator/assigned owner or an admin can edit it.', 'danger', 7000);
+      return;
     }
     // Pre-load any ref/lookup/select option sources
     const getVal = (k) => k.indexOf('data.') === 0 ? ((row.data || {})[k.slice(5)]) : row[k];
@@ -914,12 +927,13 @@ const CRUD = {
     });
     if (missing) { toast(missing + ' is required.', 'warning'); return; }
     if (d.generic) { payload.module = d.module; payload.data = dataObj; if (!payload.title && dataObj.title) payload.title = dataObj.title; if (!id && window.SC_PROFILE && SC_PROFILE.id) payload.created_by = SC_PROFILE.id; }
-    if (!id && d.table === 'complaints' && window.SC_PROFILE && SC_PROFILE.id) payload.submitted_by = SC_PROFILE.id;
-    if (!id && d.table === 'academic_print_records' && window.SC_PROFILE && SC_PROFILE.id) payload.generated_by = SC_PROFILE.id;
+    if (!id && ['complaints','helpdesk_tickets'].includes(d.table) && window.SC_PROFILE && SC_PROFILE.id) payload.submitted_by = SC_PROFILE.id;
+    if (!id && d.table === 'health' && window.SC_PROFILE && SC_PROFILE.id) { payload.recorded_by_id = SC_PROFILE.id; if (!payload.recorded_by && SC_PROFILE.full_name) payload.recorded_by = SC_PROFILE.full_name; }
+    if (!id && ['academic_print_records','reports'].includes(d.table) && window.SC_PROFILE && SC_PROFILE.id) payload.generated_by = SC_PROFILE.id;
     // V6/V4: teacher-owned academic records. Admin can supervise all, but subject teachers
     // should not edit/delete another teacher's records.
     if (!id && window.SC_PROFILE && SC_PROFILE.id && !(window.App && App.isAdminRole && App.isAdminRole(App.currentRole))) {
-      const ownedTables = ['results','assignments','scheme_of_work','lesson_plans','cbt_exams','attendance'];
+      const ownedTables = ['results','assignments','scheme_of_work','lesson_plans','cbt_exams','attendance','health','helpdesk_tickets','reports'];
       if (ownedTables.includes(d.table)) {
         if (!payload.teacher_id) payload.teacher_id = SC_PROFILE.id;
         if (!payload.posted_by) payload.posted_by = SC_PROFILE.id;
@@ -960,13 +974,9 @@ const CRUD = {
     const sharedTables = ['library', 'digital_library', 'gallery', 'eresources', 'events', 'announcements'];
     if (id && window.App && !App.isAdminRole(App.currentRole) && !sharedTables.includes(d.table)) {
       const { data: row } = await this.sb.from(d.table).select('*').eq('id', id).maybeSingle();
-      if (row && (row.teacher_id || row.posted_by || row.teacher)) {
-        const uid = window.SC_PROFILE?.id;
-        const uname = window.SC_PROFILE?.full_name;
-        if (row.teacher_id !== uid && row.posted_by !== uid && row.teacher !== uname) {
-          toast('Access Denied: You cannot modify records created by another subject teacher.', 'danger', 6000);
-          return;
-        }
+      if (row && this.hasOwnershipMarker(row) && !this.isOwnedByCurrent(row)) {
+        toast('Access Denied: You can read this record, but only the creator/assigned owner or an admin can modify it.', 'danger', 7000);
+        return;
       }
     }
     const runSave = async (pl) => id ? await this.sb.from(d.table).update(pl).eq('id', id) : await this.sb.from(d.table).insert(pl);
@@ -1180,13 +1190,9 @@ const CRUD = {
     const sharedTables = ['library', 'digital_library', 'gallery', 'eresources', 'events', 'announcements'];
     if (window.App && !App.isAdminRole(App.currentRole) && !sharedTables.includes(d.table)) {
       const { data: row } = await this.sb.from(d.table).select('*').eq('id', id).maybeSingle();
-      if (row && (row.teacher_id || row.posted_by || row.teacher)) {
-        const uid = window.SC_PROFILE?.id;
-        const uname = window.SC_PROFILE?.full_name;
-        if (row.teacher_id !== uid && row.posted_by !== uid && row.teacher !== uname) {
-          toast('Access Denied: You cannot delete records created by another subject teacher.', 'danger', 6000);
-          return;
-        }
+      if (row && this.hasOwnershipMarker(row) && !this.isOwnedByCurrent(row)) {
+        toast('Access Denied: You can read this record, but only the creator/assigned owner or an admin can delete it.', 'danger', 7000);
+        return;
       }
     }
     if (!confirm('Delete this ' + d.title.toLowerCase() + '?')) return;
