@@ -631,6 +631,12 @@ const CRUD = {
      - Parents see only their linked children's data
      - Staff/Admin see all data (no filter)
   */
+  stableTableCacheKey(moduleId, suffix='') {
+    const uid = (window.SC_PROFILE && SC_PROFILE.id) || 'guest';
+    const role = (window.SC_PROFILE && SC_PROFILE.role) || (window.App && App.currentRole) || 'guest';
+    return 'sc-table-cache:' + role + ':' + uid + ':' + moduleId + ':' + suffix;
+  },
+
   async renderList(moduleId, options = {}) {
     const d = this.def(moduleId);
     const key = this.canonicalId(moduleId);
@@ -660,6 +666,7 @@ const CRUD = {
     const studentOwnedModules = strictStudentLikeModules.concat(classAssignedModules, messageModules);
     const parentViewModules = strictStudentLikeModules.concat(['assignments', 'messages', 'inbox', 'complaints', 'helpdesk']);
     const requestedStudentId = new URLSearchParams(location.search).get('student') || '';
+    const cacheKey = this.stableTableCacheKey(moduleId, requestedStudentId || 'all');
 
     // Build query with role-based filtering
     const listTable = d.listTable || d.table;
@@ -688,7 +695,11 @@ const CRUD = {
     const head = '<tr>' + cols.map(c => '<th>' + esc(c.label) + '</th>').join('') + (writable ? '<th>Actions</th>' : '') + '</tr>';
     tableEl.querySelector('thead').innerHTML = head;
     const tb = tableEl.querySelector('tbody');
-    if (error) { tb.innerHTML = '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '">' + esc(error.message) + '</td></tr>'; return; }
+    if (error) {
+      let cached = null; try { cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null'); } catch(_) {}
+      if (cached && cached.html) { tb.innerHTML = cached.html + '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '" style="color:#b45309;background:#fffbeb">Live refresh failed; showing the last visible records so they do not disappear. ' + esc(error.message) + '</td></tr>'; return; }
+      tb.innerHTML = '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '">' + esc(error.message) + '</td></tr>'; return;
+    }
 
     // Additional filtering for students and parents - get linked IDs/names and filter data
     let filteredData = data || [];
@@ -700,11 +711,13 @@ const CRUD = {
           const stName = String(st.full_name || '').toLowerCase();
           const stClass = String(st.class || '').toLowerCase();
           const stAdm = String(st.admission_no || '').toLowerCase();
-          const ownRecord = (r) => r.student_id === st.id || r.student_id_ref === st.id || r.user_id === currentUserId ||
+          const ownRecord = (r) => r.student_id === st.id || r.student_id_ref === st.id || r.person_id === st.id || r.user_id === currentUserId ||
             (r.student_name && String(r.student_name).toLowerCase() === stName) ||
             (r.admission_no && String(r.admission_no).toLowerCase() === stAdm) ||
             (r.data && r.data.student && String(r.data.student).toLowerCase() === stName) ||
-            (r.data && r.data.admission_no && String(r.data.admission_no).toLowerCase() === stAdm);
+            (r.data && r.data.student_name && String(r.data.student_name).toLowerCase() === stName) ||
+            (r.data && r.data.admission_no && String(r.data.admission_no).toLowerCase() === stAdm) ||
+            (r.data && r.data.person_id && String(r.data.person_id) === String(st.id));
           const classRecord = (r) => (r.class && String(r.class).toLowerCase() === stClass) ||
             (r.student_class && String(r.student_class).toLowerCase() === stClass) ||
             (r.data && r.data.class && String(r.data.class).toLowerCase() === stClass);
@@ -724,10 +737,12 @@ const CRUD = {
           const childNames = (kids || []).map(k => String(k.full_name || '').toLowerCase()).filter(Boolean);
           const childClasses = (kids || []).flatMap(k => [k.class]).map(x => String(x || '').toLowerCase()).filter(Boolean);
           const childAdm = (kids || []).map(k => String(k.admission_no || '').toLowerCase()).filter(Boolean);
-          const childOwn = (r) => childIds.includes(r.student_id) || childIds.includes(r.student_id_ref) ||
+          const childOwn = (r) => childIds.includes(r.student_id) || childIds.includes(r.student_id_ref) || childIds.includes(r.person_id) ||
             (r.student_name && childNames.includes(String(r.student_name).toLowerCase())) ||
             (r.admission_no && childAdm.includes(String(r.admission_no).toLowerCase())) ||
-            (r.data && r.data.student && childNames.includes(String(r.data.student).toLowerCase()));
+            (r.data && r.data.student && childNames.includes(String(r.data.student).toLowerCase())) ||
+            (r.data && r.data.student_name && childNames.includes(String(r.data.student_name).toLowerCase())) ||
+            (r.data && r.data.person_id && childIds.includes(String(r.data.person_id)));
           const childClass = (r) => (r.class && childClasses.includes(String(r.class).toLowerCase())) ||
             (r.student_class && childClasses.includes(String(r.student_class).toLowerCase())) ||
             (r.data && r.data.class && childClasses.includes(String(r.data.class).toLowerCase()));
@@ -737,9 +752,13 @@ const CRUD = {
       } catch(e) { console.warn('Parent filter failed:', e); filteredData = []; }
     }
 
-    if (!filteredData || !filteredData.length) { tb.innerHTML = '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '" style="color:var(--gray-500)">No records yet.' + (writable ? ' Click “+ Add new”.' : '') + '</td></tr>'; return; }
+    if (!filteredData || !filteredData.length) {
+      let cached = null; try { cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null'); } catch(_) {}
+      if (cached && cached.html) { tb.innerHTML = cached.html + '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '" style="color:#64748b;background:#f8fafc">No new live rows found right now; the last visible records are kept here so recipients can continue reading them.</td></tr>'; return; }
+      tb.innerHTML = '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '" style="color:var(--gray-500)">No records yet.' + (writable ? ' Click “+ Add new”.' : '') + '</td></tr>'; return;
+    }
     const isLinkCol = (key) => /(_link|link|media_url|photo_url|video|image|thumbnail|read_link|drive)$/i.test(key) || /^(media_url|read_link|drive_link|photo_url)$/i.test(key);
-    tb.innerHTML = filteredData.map(row => '<tr>' + cols.map(c => {
+    const renderedRows = filteredData.map(row => '<tr>' + cols.map(c => {
       let v = cellVal(row, c);
       // ENTERPRISE FINAL V2 (#8): fee balance reflects in every record —
       // auto-compute for display when the stored value is missing.
@@ -765,6 +784,8 @@ const CRUD = {
         '<button class="btn btn-sm btn-outline" onclick="CRUD.openForm(\'' + moduleId + '\',\'' + row.id + '\')">Edit</button> ' +
         '<button class="btn btn-sm btn-outline" onclick="CRUD.remove(\'' + moduleId + '\',\'' + row.id + '\')">Delete</button>' +
       '</td>') + '</tr>').join('');
+    tb.innerHTML = renderedRows;
+    try { sessionStorage.setItem(cacheKey, JSON.stringify({ at: Date.now(), html: renderedRows })); } catch(_) {}
     // re-apply role visibility to the freshly-rendered action buttons
     if (window.App && App.applyVisibilityTokens) try { App.applyVisibilityTokens(App.currentRole || (window.SC_PROFILE && SC_PROFILE.role) || ''); } catch (e) {}
   },

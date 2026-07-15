@@ -143,7 +143,12 @@ const Voting = {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { error: 'You must sign in to vote.' };
-    const pollCheck = await supabase.from('polls').select('id,status,allow_multiple,max_votes').eq('id', String(pollId)).maybeSingle();
+    let pollCheck = await supabase.from('polls').select('id,status,allow_multiple,max_votes').eq('id', String(pollId)).maybeSingle();
+    // V13 backward compatibility: older databases do not have polls.max_votes yet.
+    if (pollCheck.error && /max_votes/i.test(pollCheck.error.message || '')) {
+      pollCheck = await supabase.from('polls').select('id,status,allow_multiple').eq('id', String(pollId)).maybeSingle();
+      if (pollCheck.data && pollCheck.data.max_votes == null) pollCheck.data.max_votes = pollCheck.data.allow_multiple ? 99 : 1;
+    }
     if (pollCheck.error) return { error: pollCheck.error.message };
     if (!pollCheck.data) return { error: 'Poll not found.' };
     if (String(pollCheck.data.status || 'open') === 'closed') return { error: 'This poll is closed.' };

@@ -43,6 +43,7 @@ const Super = {
     /* Enhanced knowledge base: each entry has keywords (m), a reply (r), an
        optional page link (p) and optional follow-up chips (chips). */
     KB: [
+      { m: ['exam registration page','waec registration','neco registration','nabteb registration','ncee registration','jamb registration'], r: 'The **Public Examination Registration** page is for collecting candidate details for WAEC, NECO, NABTEB, NCEE, UTME/JAMB, GCE, IGCSE and other exams. Applicants fill biodata, exam type/year/series, subjects, centre preferences and documents; the school examination officer reviews and processes the registration.', p: 'exam-register.html' },
       { m: ['v12 voting repair','invalid input syntax uuid','invalid input syntax for type uuid','cannot create poll','cannot close poll','cannot vote'], r: 'Voting has been repaired in V12. Admin/staff can create, edit, close and re-open polls. Students/parents can vote on open polls. If your Supabase project was created before V12, run `database/update-v12-schema.sql` after the main schemas so `poll_votes.candidate_id` is converted to text and the open-poll policies are installed.', p: 'voting.html', chips: ['Create a poll', 'Student voting', 'Run V12 SQL'] },
       { m: ['notification disappears','notification flashes','bell closes','parent notifications','student notifications'], r: 'V12 notifications now stay in the bell, the Notifications page, and a persistent live notification tray. If a toast appears, it no longer disappears as the only copy; open the bell or Notifications page to review it again.', p: 'notifications.html' },
       { m: ['teacher ownership','cannot edit another teacher','read only record','health clinic ownership','helpdesk ownership','counselling ownership'], r: 'V12 enforces creator/owner editing. Teachers may read relevant records for coordination, but only the creator/assigned owner or an admin can edit/delete exams, results, helpdesk, health/clinic, counselling and reports. Admins retain full oversight.', p: 'teacher-overview.html' },
@@ -289,6 +290,8 @@ const Super = {
 
     },
     renderPageInfo(id) {
+      const forced = (id === 'exam-register' || id === 'exam_registrations') ? (this.PAGE_INFO[id] || this.PAGE_INFO[id.replace(/-/g,'_')]) : null;
+      if (forced) return '📖 **' + (id.charAt(0).toUpperCase() + id.slice(1)).replace(/-/g, ' ').replace(/_/g, ' ') + ' page**\n\n' + '**What it is:** ' + forced.purpose + '\n\n' + '**What it does:** ' + forced.does + '\n\n' + '**Who uses it:** ' + forced.who + '\n\n' + '**Advantages:** ' + forced.advantages.map(a => '• ' + a).join('  ') + '\n\n' + '**Benefit to the school:** ' + forced.benefit;
       if (window.SC_HELP && SC_HELP.get && SC_HELP.format) return SC_HELP.format(SC_HELP.get(id));
       this.ensurePageInfoCoverage();
       const i = this.PAGE_INFO[id] || this.PAGE_INFO[id.replace(/-/g,'_')];
