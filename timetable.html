@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Voting &amp; Polls • God of Seed Academy</title>
-<meta name="description" content="God of Seed Academy — Voting &amp; Polls. Free school management platform by HMG Concepts.">
-<meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
+<title>Timetable • School Connect Demo School</title>
+<meta name="description" content="School Connect Demo School — Timetable. Free school management platform by HMG Concepts.">
+<meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="manifest" href="manifest.json">
@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<meta property="og:title" content="Voting &amp; Polls • God of Seed Academy">
-<meta property="og:description" content="God of Seed Academy — Free school management by HMG Concepts">
+<meta property="og:title" content="Timetable • School Connect Demo School">
+<meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
 <meta property="og:image" content="assets/img/logo.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -61,22 +61,22 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 @media(min-width:901px){.app-topbar .mobile-toggle{display:none}}
 </style>
 
-    <meta name="description" content="God of Seed Academy — Voting &amp; Polls. Free school management platform by HMG Concepts.">
-    <meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
+    <meta name="description" content="School Connect Demo School — Timetable. Free school management platform by HMG Concepts.">
+    <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
     <meta name="author" content="HMG Concepts">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://2gosaportal.pages.dev/voting.html">
-    <meta property="og:title" content="Voting &amp; Polls • God of Seed Academy">
-    <meta property="og:description" content="God of Seed Academy — Voting &amp; Polls. Free school management platform by HMG Concepts.">
-    <meta property="og:url" content="https://2gosaportal.pages.dev/voting.html">
+    <link rel="canonical" href="./timetable.html">
+    <meta property="og:title" content="Timetable • School Connect Demo School">
+    <meta property="og:description" content="School Connect Demo School — Timetable. Free school management platform by HMG Concepts.">
+    <meta property="og:url" content="./timetable.html">
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="School Connect v5 — God of Seed Academy">
+    <meta property="og:site_name" content="School Connect v5 — School Connect Demo School">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Voting &amp; Polls • God of Seed Academy">
-    <meta name="twitter:description" content="God of Seed Academy — Voting &amp; Polls. Free school management platform by HMG Concepts.">
+    <meta name="twitter:title" content="Timetable • School Connect Demo School">
+    <meta name="twitter:description" content="School Connect Demo School — Timetable. Free school management platform by HMG Concepts.">
     <link rel="alternate" href="https://hmgconcepts.pages.dev/" title="HMG Concepts Ecosystem">
   </head>
-<body data-theme="theme15" data-school="God of Seed Academy" data-font="plusjakarta">
+<body data-theme="theme15" data-school="School Connect Demo School" data-font="plusjakarta">
 
 <div id="notif-bell" class="notif-bell" title="Notifications" data-chatbot>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -116,13 +116,13 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
     <div id="modal-footer" class="modal-footer"></div>
   </div>
 </div>
-<div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher">
+<div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher parent student">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.png" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{textContent:('G'),style:'width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900'}))">
+        <img src="assets/img/logo.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{textContent:('G'),style:'width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900'}))">
         <div>
-          <strong>God of Seed Academy</strong>
-          <div style="font-size:0.7rem;color:var(--gray-500)">GOSA</div>
+          <strong>School Connect Demo School</strong>
+          <div style="font-size:0.7rem;color:var(--gray-500)">SCD</div>
         </div>
       </div>
       <nav class="app-nav">
@@ -213,7 +213,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
         </a><a href="payment-history.html" data-module-id="payment-history" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
           <span class="app-nav-icon">🧾</span>
           <span>Payment History</span>
-        </a><a href="timetable.html" data-module-id="timetable" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
+        </a><a href="timetable.html" data-module-id="timetable" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="active">
           <span class="app-nav-icon">🗓️</span>
           <span>Timetable</span>
         </a><a href="cbt.html" data-module-id="cbt" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
@@ -447,7 +447,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
   <main class="app-main">
     <header class="app-topbar">
       <button class="mobile-toggle" onclick="App.toggleSidebar()" title="Menu">☰</button>
-      <h1 class="app-page-title">Voting &amp; Polls</h1>
+      <h1 class="app-page-title">Timetable</h1>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
         
         <button class="btn btn-sm btn-outline" onclick="if(window.Super)Super.chatbot.explainPage()" title="About this page">ℹ️ Help</button>
@@ -456,39 +456,14 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
         <button class="btn btn-sm btn-outline" onclick="App.signOut()" data-signout >Sign out</button>
       </div>
     </header>
-    <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-color:#fcd34d">
-      <h3 style="margin-top:0">🗳️ Voting &amp; Elections — Create, run, analyse</h3>
-      <p style="color:var(--gray-700);line-height:1.7;margin:0">Run anonymous or named elections (prefect, head-boy, head-girl, PTA, staff polls). Share a code or link with your audience, watch results come in live, and get a one-click <strong>Insights Dashboard</strong> with auto-tallies, charts, demographic breakdown, integrity log and CSV export.</p>
-      <p style="font-size:.85rem;color:var(--gray-600);margin:8px 0 0"><strong>Affordable one-time setup, no monthly bills</strong>: the entire platform runs on free Supabase + free hosting, and every feature is deterministic and rules-based (no AI API). We deliberately avoid monthly, termly or yearly subscriptions because many small schools cannot afford recurring fees — so the platform is offered as a <strong>single, low one-time setup fee</strong>. Your school owns its data forever and pays nothing to run it.</p>
-      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-primary" data-staff-only onclick="VT.create()">+ New Poll</button>
-        <button class="btn btn-outline" data-staff-only onclick="VT.refresh()">↻ Refresh</button>
-      </div>
-    </div>
-    <div class="stats-grid" id="vt-stats">
-      <div class="stat-card"><div class="stat-value" id="vt-stat-active">–</div><div class="stat-label">Active polls</div></div>
-      <div class="stat-card"><div class="stat-value" id="vt-stat-closed">–</div><div class="stat-label">Closed</div></div>
-      <div class="stat-card"><div class="stat-value" id="vt-stat-votes">–</div><div class="stat-label">Total votes</div></div>
-      <div class="stat-card"><div class="stat-value" id="vt-stat-turnout">–</div><div class="stat-label">Avg turnout</div></div>
-    </div>
-    <div class="card" style="margin-bottom:16px">
-      <h3 style="margin-top:0">📚 Poll Library</h3>
-      <p style="font-size:.85rem;color:#64748b;margin:0 0 12px">Click a poll to see <strong>Live Results</strong>, demographic breakdown, integrity log and export.</p>
-      <div id="vt-list"><span class="pulse">Loading…</span></div>
-    </div>
-    <div class="card" id="vt-results-card" style="display:none">
-      <h3 style="margin-top:0">📊 Results — <span id="vt-results-title"></span></h3>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-        <button class="btn btn-sm btn-outline" onclick="VT.exportCSV()">⬇ Export CSV</button>
-        <button class="btn btn-sm btn-outline" onclick="VT.exportResults()">📋 Report</button>
-        <button class="btn btn-sm btn-outline" id="vt-toggle-btn" onclick="VT.toggleClose()">🔒 Close poll</button>
-        <button class="btn btn-sm btn-outline" onclick="VT.closeResults()">✕ Close</button>
-      </div>
-      <div id="vt-results-body"></div>
-    </div>
+    <div class="app-content">
+      
+      <div class="card" style="margin-bottom:16px;background:#eef2ff;border-color:#c7d2fe"><h3 style="margin-top:0">🗓️ Published School Timetable</h3><p style="color:var(--gray-700);line-height:1.7;margin:0">Everyone can read the school timetable. Staff/admin can add or edit timetable slots; generated slots from Auto-Timetable are shown here for classes, students and parents.</p></div>
+      <div class="card" style="margin-bottom:16px"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end"><div class="form-group"><label>Class</label><select class="form-select" id="tt-class" onchange="TT.load()"><option value="">All classes</option></select></div><button class="btn btn-outline" onclick="TT.load()">Refresh</button><button class="btn btn-primary" data-staff-only onclick="CRUD.openForm('timetable')">+ Add slot</button><a class="btn btn-outline" data-staff-only href="timetable-generator.html">Auto-generate</a></div></div>
+      <div id="tt-view"><p class="pulse">Loading timetable…</p></div>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
-      © 2026 God of Seed Academy · Built by <a href="https://cssadewale.pages.dev" target="_blank" rel="noopener">Adewale Samson Adeagbo</a> · Powered by <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener">HMG Concepts</a> · <a href="developer.html">About the developer</a>
+      © 2026 School Connect Demo School · Built by <a href="https://cssadewale.pages.dev" target="_blank" rel="noopener">Adewale Samson Adeagbo</a> · Powered by <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener">HMG Concepts</a> · <a href="developer.html">About the developer</a>
     </footer>
   </main>
 </div>
@@ -506,215 +481,13 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <script src="assets/js/analytics.js"></script>
 <script src="assets/js/app.js"></script>
 <script>
-const VT={
-  rows:[], current:null, channel:null,
-  esc:s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'),
-  async refresh(){ await this.load(); await this.loadStats(); },
-  async load(){
-    const supabase = window.sb || null;
-    if (!supabase) { this.renderDemo(); return; }
-    const {data, error}=await supabase.from('polls').select('*').order('created_at',{ascending:false});
-    if(error){ toast(error.message,'danger'); return; }
-    this.rows=data||[];
-    const box=document.getElementById('vt-list');
-    if(!this.rows.length){ box.innerHTML='<div class="card" style="background:#f8fafc"><p style="color:#64748b;margin:0">No polls yet. Click <b>+ New Poll</b> to create one.</p></div>'; return; }
-    box.innerHTML=this.rows.map(p=>{
-      const opts=p.candidates ? (typeof p.candidates === 'string' ? JSON.parse(p.candidates) : p.candidates) : [];
-      const isOpen = p.status!=='closed';
-      const canManage = this.canManagePoll(p);
-      // Fixed: pass string ID with quotes for UUIDs
-      return '<div class="card" style="margin-bottom:10px;cursor:pointer" onclick="VT.openResults(\'' + p.id + '\')" onmouseover="this.style.borderColor=\'#4f46e5\'" onmouseout="this.style.borderColor=\'#e2e8f0\'">'
-        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
-        +'<div style="flex:1;min-width:200px"><h3 style="margin:0">'+this.esc(p.title)+'</h3>'
-        +'<p style="color:var(--gray-600);margin:4px 0;font-size:.85rem">'+this.esc(p.description||'')+'</p>'
-        +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'
-        +'<span class="badge-mini" style="background:'+(isOpen?'#dcfce7':'#e5e7eb')+';color:'+(isOpen?'#166534':'#475569')+';padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:800">'+(isOpen?'OPEN':'CLOSED')+'</span>'
-        +'<span class="badge-mini" style="background:#eef2ff;color:#3730a3;padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:800">'+opts.length+' candidates</span>'
-        +(p.anonymous?'<span class="badge-mini" style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:800">anonymous</span>':'')
-        +'</div></div>'
-        +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
-        +'<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();VT.vote(\'' + p.id + '\')">'+(isOpen?'Vote':'View')+'</button>'
-        +'<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();VT.shareLink(\'' + p.id + '\')">Share</button>'
-        +(canManage?'<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();VT.editPoll(\''+p.id+'\')">Edit</button><button class="btn btn-sm btn-outline" onclick="event.stopPropagation();VT.toggleClose(\''+p.id+'\')">'+(isOpen?'Close':'Re-open')+'</button>':'')
-        +'</div></div></div>';
-    }).join('');
-  },
-  renderDemo(){
-    // Demo fallback for unconfigured portals
-    this.rows = [
-      { id:'demo-1', title:'Head Boy 2026', description:'Election for school head boy', candidates:[{id:'c1',name:'John Doe'},{id:'c2',name:'Jane Doe'}], status:'open', anonymous:true, vote_count:12 }
-    ];
-    // ... similar render logic
-  },
-  async loadStats(){
-    try{
-      const rows=this.rows;
-      const active=rows.filter(r=>r.status!=='closed').length;
-      const closed=rows.filter(r=>r.status==='closed').length;
-      let totalVotes=0;
-      rows.forEach(r => totalVotes += r.vote_count || 0);
-      const el=(id,v)=>{const e=document.getElementById(id); if(e) e.textContent=v;};
-      el('vt-stat-active', active);
-      el('vt-stat-closed', closed);
-      el('vt-stat-votes', totalVotes);
-      el('vt-stat-turnout', active+closed? Math.round(totalVotes/Math.max(1,active+closed)*100)+'%':'0%');
-    }catch(_){}
-  },
-  create(){
-    openModal('New Poll / Election',
-      '<div class="form-group"><label>Title *</label><input class="form-input" id="vt-t" placeholder="e.g. Head Boy 2026"></div>'
-      +'<div class="form-group"><label>Description</label><input class="form-input" id="vt-d"></div>'
-      +'<div class="form-group"><label>Audience</label><select class="form-select" id="vt-aud"><option value="all">All</option><option value="parents">Parents</option><option value="students">Students</option><option value="staff">Staff</option></select></div>'
-      +'<div class="form-group"><label><input type="checkbox" id="vt-anon" checked> Anonymous</label></div>'
-      +'<div class="form-group"><label><input type="checkbox" id="vt-multi"> Multi-winner</label></div>'
-      +'<div class="form-group"><label>Max votes per voter</label><input type="number" class="form-input" id="vt-maxv" value="1" min="1" max="10"></div>'
-      +'<div class="form-group"><label>Closes on</label><input type="date" class="form-input" id="vt-closes"></div>'
-      +'<div class="form-group"><label>Candidates (one per line: <b>Name — Description</b>)</label><textarea class="form-input" id="vt-opts" rows="6" placeholder="Ade Adewale — Head Boy&#10;Bola Bola — Head Boy"></textarea></div>',
-      '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
-      +'<button class="btn btn-primary" onclick="VT.save()">Create poll</button>');
-  },
-  async save(){
-    const rawOpts = document.getElementById('vt-opts').value.split(/\r?\n/).filter(Boolean);
-    const opts = rawOpts.map((line, i) => {
-      const dash = line.indexOf('—')>=0 ? line.indexOf('—') : line.indexOf(' - ');
-      if(dash>0) return {id:'c'+(i+1), label:line.substring(0,dash).trim(), desc:line.substring(dash+1).trim()};
-      return {id:'c'+(i+1), label:line.trim(), desc:''};
-    });
-    const payload={title:document.getElementById('vt-t').value,description:document.getElementById('vt-d').value,
-      audience:document.getElementById('vt-aud').value, anonymous:document.getElementById('vt-anon').checked,
-      allow_multiple:document.getElementById('vt-multi').checked, multi_winner:document.getElementById('vt-multi').checked, max_votes:parseInt(document.getElementById('vt-maxv').value)||1,
-      closes_at:document.getElementById('vt-closes').value||null, candidates:opts, status:'open'};
-    if(!payload.title){toast('Title required','warning');return;}
-    if(opts.length<2){toast('Add at least 2 candidates','warning');return;}
-    const r=await (window.Voting ? Voting.createPoll(payload) : {error:'not implemented'});
-    if(r&&r.error){toast(r.error.message || r.error,'danger');return;}
-    closeModal(); toast('Poll created','success'); VT.refresh();
-  },
-  async editPoll(id){
-    const p=this.rows.find(x=>x.id===id); if(!p){toast('Poll not found','warning');return;}
-    if(!this.canManagePoll(p)){toast('You can only edit polls you are allowed to manage.','warning');return;}
-    let opts=[]; try{opts=p.candidates ? (typeof p.candidates==='string'?JSON.parse(p.candidates):p.candidates):[];}catch(_){opts=[];}
-    const lines=opts.map(o=>(o.label||o.name||'')+(o.desc||o.info?' — '+(o.desc||o.info):'')).join('\n');
-    openModal('Edit Poll / Election',
-      '<div class="form-group"><label>Title *</label><input class="form-input" id="vt-et" value="'+this.esc(p.title||'')+'"></div>'+
-      '<div class="form-group"><label>Description</label><input class="form-input" id="vt-ed" value="'+this.esc(p.description||'')+'"></div>'+
-      '<div class="form-group"><label>Audience</label><select class="form-select" id="vt-eaud"><option value="all">All</option><option value="parents">Parents</option><option value="students">Students</option><option value="staff">Staff</option></select></div>'+
-      '<div class="form-group"><label><input type="checkbox" id="vt-eanon" '+(p.anonymous?'checked':'')+'> Anonymous</label></div>'+
-      '<div class="form-group"><label><input type="checkbox" id="vt-emulti" '+(p.allow_multiple||p.multi_winner?'checked':'')+'> Allow multiple choices</label></div>'+
-      '<div class="form-group"><label>Max votes per voter</label><input type="number" class="form-input" id="vt-emaxv" value="'+(p.max_votes||1)+'" min="1" max="10"></div>'+
-      '<div class="form-group"><label>Status</label><select class="form-select" id="vt-est"><option value="open">Open</option><option value="closed">Closed</option><option value="draft">Draft</option></select></div>'+
-      '<div class="form-group"><label>Candidates (one per line: Name — Description)</label><textarea class="form-input" id="vt-eopts" rows="6">'+this.esc(lines)+'</textarea></div>',
-      '<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="VT.saveEdit(\''+id+'\')">Save changes</button>');
-    setTimeout(()=>{ const a=document.getElementById('vt-eaud'); if(a)a.value=p.audience||'all'; const st=document.getElementById('vt-est'); if(st)st.value=p.status||'open'; },50);
-  },
-  async saveEdit(id){
-    const rawOpts = document.getElementById('vt-eopts').value.split(/\r?\n/).filter(Boolean);
-    const opts = rawOpts.map((line, i) => { const dash=line.indexOf('—')>=0?line.indexOf('—'):line.indexOf(' - '); return dash>0 ? {id:'c'+(i+1), label:line.substring(0,dash).trim(), desc:line.substring(dash+1).trim()} : {id:'c'+(i+1), label:line.trim(), desc:''}; });
-    const patch={ title:document.getElementById('vt-et').value.trim(), description:document.getElementById('vt-ed').value.trim(), audience:document.getElementById('vt-eaud').value, anonymous:document.getElementById('vt-eanon').checked, allow_multiple:document.getElementById('vt-emulti').checked, max_votes:parseInt(document.getElementById('vt-emaxv').value)||1, status:document.getElementById('vt-est').value, candidates:opts };
-    if(!patch.title){toast('Title required','warning');return;} if(opts.length<2){toast('Add at least 2 candidates','warning');return;}
-    const r=await (window.Voting ? Voting.updatePoll(id, patch) : {error:'not implemented'}); if(r&&r.error){toast(r.error.message||r.error,'danger');return;}
-    closeModal(); toast('Poll updated.','success'); VT.refresh();
-  },
-  async vote(id){
-    const p=this.rows.find(x=>x.id===id);
-    if(!p){toast('Poll not found','warning');return;}
-    if(p.status==='closed'){toast('Poll is closed','warning');return;}
-    const opts = p.candidates ? (typeof p.candidates === 'string' ? JSON.parse(p.candidates) : p.candidates) : [];
-    const multiple = !!(p.allow_multiple || p.multi_winner);
-    const html = '<p>'+this.esc(p.description||'')+'</p><div style="margin-top:10px">'+opts.map((o,i)=>'<label style="display:flex;gap:8px;align-items:flex-start;padding:8px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer"><input type="'+(multiple?'checkbox':'radio')+'" name="vt-vote" value="'+(o.id || i)+'" style="margin-top:4px"><div><b>'+this.esc(o.label||o.name||o)+'</b>'+(o.desc?'<div style="font-size:.82rem;color:#64748b">'+this.esc(o.desc)+'</div>':'')+'</div></label>').join('')+'</div>';
-    openModal('Cast your vote: '+p.title, html,
-      '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'
-      + '<button class="btn btn-primary" onclick="VT.submitVote(\'' + id + '\')">Submit</button>');
-  },
-  async submitVote(id){
-    const p=this.rows.find(x=>x.id===id);
-    const checks = [...document.querySelectorAll('input[name=vt-vote]:checked')].map(c=>c.value);
-    if(!checks.length){toast('Pick a candidate','warning');return;}
-    if(p && p.max_votes && checks.length > Number(p.max_votes)){toast('Select at most '+p.max_votes+' option(s).','warning');return;}
-    const r=await (window.Voting ? Voting.vote(id, checks) : {error:'not implemented'});
-    if(r&&r.error){toast(r.error.message || r.error,'danger');return;}
-    closeModal(); toast('Vote recorded. Thank you!','success'); VT.refresh();
-  },
-  async shareLink(id){
-    const url = location.origin + location.pathname.replace(/[^/]*$/,'') + 'voting.html?id=' + id;
-    try{ await navigator.clipboard.writeText(url); toast('Link copied: '+url,'success',5000); }
-    catch(_){ prompt('Copy this link:', url); }
-  },
-  async openResults(id){
-    const p=this.rows.find(x=>x.id===id); if(!p){toast('Poll not found','warning');return;}
-    this.current=p;
-    document.getElementById('vt-results-title').textContent = p.title;
-    document.getElementById('vt-results-card').style.display='block';
-    document.getElementById('vt-results-body').innerHTML = '<span class="pulse">Loading results…</span>';
-    document.getElementById('vt-results-card').scrollIntoView({behavior:'smooth'});
-    document.getElementById('vt-toggle-btn').textContent = p.status==='closed'?'Re-open poll':'Close poll';
-    let votes=[];
-    try{ const {data}=await sb.from('poll_votes').select('candidate_id,voter_id').eq('poll_id', id); votes=data||[]; }catch(_){}
-    p.votes=votes; p.vote_count=votes.length;
-    this.renderResults();
-  },
-  closeResults(){ document.getElementById('vt-results-card').style.display='none'; this.current=null; },
-  async toggleClose(id){
-    const p=id ? this.rows.find(x=>x.id===id) : this.current; if(!p) return;
-    const newStatus = p.status==='closed' ? 'open' : 'closed';
-    const r=await (window.Voting ? Voting.updatePoll(p.id, {status: newStatus}) : {error:'not implemented'});
-    if(r&&r.error){toast(r.error.message || r.error,'danger');return;}
-    toast('Poll ' + (newStatus==='closed'?'closed':'re-opened')+'.','success');
-    await VT.refresh();
-    if(this.current && this.current.id === p.id) VT.openResults(p.id);
-  },
-  renderResults(){
-    const p=this.current; if(!p) return;
-    const v=p.votes||[]; 
-    const opts=p.candidates ? (typeof p.candidates === 'string' ? JSON.parse(p.candidates) : p.candidates) : [];
-    const tally=opts.map((o,i)=>({id: o.id || 'c'+(i+1), label:o.label||o.name||o, idx:i, count:0}));
-    v.forEach(vote => {
-      const match = tally.find(t => t.id === vote.candidate_id || String(t.idx) === String(vote.candidate_id));
-      if(match) match.count++;
-    });
-    const totalVotes = v.length;
-    const uniqueVoters = new Set(v.map(x=>x.voter_id||x.id)).size;
-    const sorted = [...tally].sort((a,b)=>b.count-a.count);
-    const winner = sorted[0];
-    const barRows = sorted.map(t => {
-      const pct = totalVotes ? Math.round(t.count/totalVotes*100) : 0;
-      return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:3px"><span>'+this.esc(t.label)+(t.idx===winner?.idx && t.count > 0 ? ' 🏆' : '')+'</span><span style="color:var(--primary)">'+t.count+' ('+pct+'%)</span></div><div style="height:14px;background:#f1f5f9;border-radius:7px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,'+(t.idx===winner?.idx?'#fbbf24,#f59e0b':'#4f46e5,#7c3aed')+')"></div></div></div>';
-    }).join('');
-    const demoRows = '<tr><td>Authenticated Voters</td><td>'+uniqueVoters+'</td></tr>';
-    const body = '<div class="stats-grid" style="margin-bottom:14px"><div class="stat-card"><div class="stat-value">'+totalVotes+'</div><div class="stat-label">Ballots</div></div><div class="stat-card"><div class="stat-value">'+uniqueVoters+'</div><div class="stat-label">Voters</div></div><div class="stat-card"><div class="stat-value">'+tally.length+'</div><div class="stat-label">Candidates</div></div><div class="stat-card"><div class="stat-value">'+(p.status==='closed'?'Closed':'Open')+'</div><div class="stat-label">Status</div></div></div>'+(winner && totalVotes ? '<div class="card" style="margin-bottom:14px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-color:#fcd34d"><h4 style="margin:0">🏆 Current leader: <b>'+this.esc(winner.label)+'</b> with <b>'+winner.count+'</b> votes ('+(totalVotes?Math.round(winner.count/totalVotes*100):0)+'%)</h4></div>' : '')+'<div class="grid grid-2" style="margin-bottom:14px"><div class="card"><h4 style="margin:0 0 10px">📊 Tally</h4>'+(barRows || '<p>No votes yet.</p>')+'</div><div class="card"><h4 style="margin:0 0 10px">Visual Breakdown</h4><div style="height:240px"><canvas id="vt-pie"></canvas></div></div></div><div class="card" style="margin-bottom:14px"><h4 style="margin:0 0 8px">👥 Demographic breakdown</h4><div class="table-wrap"><table><thead><tr><th>Role</th><th>Votes</th></tr></thead><tbody>'+demoRows+'</tbody></table></div></div>';
-    document.getElementById('vt-results-body').innerHTML = body;
-    setTimeout(()=>{
-      const pie = document.getElementById('vt-pie');
-      if(pie && window.Chart){
-        new Chart(pie, {type:'doughnut', data:{labels:sorted.map(t=>t.label), datasets:[{data:sorted.map(t=>t.count), backgroundColor:['#4f46e5','#06b6d4','#10b981','#f59e0b','#ec4899','#8b5cf6','#ef4444','#a3a3a3']}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right'}}}});
-      }
-    }, 150);
-  },
-  exportCSV(){
-    const p=this.current; if(!p){toast('Open a poll first','warning');return;}
-    const v=p.votes||[]; const opts=p.options||[];
-    const headers = ['Vote #','Date','Role'].concat(opts.map((o,i)=>'Choice '+(i+1)+': '+(o.label||o)));
-    const rows = v.map((x,i) => [i+1,(x.created_at||'').slice(0,16).replace('T',' '),x.role||'-'].concat(opts.map((o,j)=> (x.choices||[]).includes(j)?'YES':'NO')));
-    const csv = [headers].concat(rows).map(row => row.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\\n');
-    const blob = new Blob([csv], {type:'text/csv'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'poll-'+p.id+'.csv'; a.click();
-    toast('CSV exported.','success');
-  },
-  exportResults(){
-    const p=this.current; if(!p){toast('Open a poll first','warning');return;}
-    const v=p.votes||[]; const opts=p.options||[];
-    const tally=opts.map((o,i)=>({label:o.label||o, count:0}));
-    v.forEach(vote => (vote.choices||[]).forEach(c => { if(tally[c]) tally[c].count++; }));
-    const totalVotes = tally.reduce((a,b)=>a+b.count,0);
-    const sorted = [...tally].sort((a,b)=>b.count-a.count);
-    let md = '# Poll Results: ' + p.title + '\\n\\nStatus: ' + (p.status||'-') + '\\nTotal ballots: ' + v.length + '\\n\\n## Tally\\n| Rank | Candidate | Votes | % |\\n|---|---|---|---|\\n';
-    sorted.forEach((t,i) => md += '| '+(i+1)+' | '+t.label+' | '+t.count+' | '+(totalVotes?Math.round(t.count/totalVotes*100):0)+'% |\\n');
-    const blob = new Blob([md], {type:'text/markdown'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'poll-results-'+p.id+'.md'; a.click();
-    toast('Report exported.','success');
-  }
-};
-document.addEventListener('DOMContentLoaded',()=>VT.refresh()); VT.refresh();
-
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(reg => { Notifications.init(sb, reg); Voting.init(sb); });
+  else { Notifications.init(sb); Voting.init(sb); }
+  PWAInstall.init();
+  if (window.Super) Super.init(sb, window.SCHOOL);
+  if (window.Enterprise) Enterprise.init(sb);
+  if (window.CRUD) CRUD.init(sb);
 </script>
-</body></html>
+<script>
+const TT={days:['Monday','Tuesday','Wednesday','Thursday','Friday'], async init(){ try{const {data}=await sb.from('classes').select('name').order('name'); const sel=document.getElementById('tt-class'); (function(){var seen=new Set();(data||[]).forEach(c=>{var v=String(c.name==null?'':c.name).trim(),k=v.toLowerCase();if(!v||seen.has(k))return;seen.add(k);var o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o);});})();}catch(e){} this.load();}, async load(){ if(!sb)return; let q=sb.from('timetable').select('*').limit(2000); const cls=document.getElementById('tt-class').value; if(cls)q=q.eq('class',cls); const {data,error}=await q; const box=document.getElementById('tt-view'); if(error){box.innerHTML='<div class="card">'+esc(error.message)+'</div>';return;} const rows=data||[]; if(!rows.length){box.innerHTML='<div class="card">No timetable has been published yet. Staff can add slots or use Auto-Timetable.</div>';return;} const periods=[...new Set(rows.map(r=>r.period||''))].sort(); let html='<div class="card"><div class="table-wrap"><table><thead><tr><th>Period</th>'+this.days.map(d=>'<th>'+d+'</th>').join('')+'</tr></thead><tbody>'; periods.forEach(p=>{html+='<tr><td><strong>'+esc(p)+'</strong></td>'+this.days.map(d=>{const cell=rows.filter(r=>(r.period||'')===p&&(r.day||'')===d).map(r=>'<div><strong>'+esc(r.class||'')+'</strong> · '+esc(r.subject||'')+'<br><small>'+esc(r.teacher||'')+' '+esc(r.room||'')+'</small></div>').join('<hr>'); return '<td>'+cell+'</td>';}).join('')+'</tr>';}); box.innerHTML=html+'</tbody></table></div></div>'; }}; document.addEventListener('DOMContentLoaded',()=>TT.init()); TT.init();
+</script></body></html>
