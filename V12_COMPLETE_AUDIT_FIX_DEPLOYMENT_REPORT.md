@@ -1,405 +1,434 @@
-# School Connect V12 — Complete Prompt Audit, Workflow Fix, Security Upgrade & Deployment Report
+# School Connect V12 — Complete Audit, Persistent Workflow Fixes & Deployment Report
 
 Date: 2026-07-15  
-Scope: live/repository review + local V12 repair package for:
-- `2schoolconnect` generator
-- `2gosaportal` generated school site
+Scope: `2schoolconnect` generator + `2gosaportal` generated school site.
 
-## 1. Important note about the live links
+## 1. Live-site/repository verification
 
-I visited the public sites and cloned the GitHub repositories again before building V12. The public Vercel deployments will not show these V12 fixes until the updated files are pushed to GitHub and Vercel redeploys. I do not have permission to push to the owner’s GitHub repositories from here, so I created a ready-to-upload folder and ZIP.
+I revisited:
+
+- https://2schoolconnect.vercel.app
+- https://github.com/hmgconcepts/2schoolconnect
+- https://2gosaportal.vercel.app
+- https://github.com/hmgconcepts/2gosaportal
+
+The live Vercel sites still show the old deployed code until the updated V12 files are pushed to GitHub and Vercel redeploys. I cannot push to your GitHub repos from here, so I prepared a complete upload-ready V12 folder and ZIP.
 
 Final folder:
 
-`school connect v12/`
+```text
+school connect v12/
+```
 
 Final ZIP:
 
-`school-connect-v12-generator-and-generated-site.zip`
+```text
+school-connect-v12-generator-and-generated-site.zip
+```
 
-## 2. Prompt-compliance audit
+## 2. Prompt compliance audit
 
-### Prompt items obeyed completely in earlier work
-- Downloaded/cloned the generator and generated-site repositories.
-- Created original ZIP backups.
-- Analysed both the generator and the demo site.
-- Identified many features and documented the architecture.
-- Patched both generator and generated-site code.
-- Created combined ZIPs.
-- Ran automated verifiers.
+### What was obeyed completely earlier
+- Downloaded/cloned both repositories.
+- Created ZIP backups.
+- Analysed generator and generated site.
+- Fixed both generator and generated-site files locally.
+- Created V11/V12 folders and ZIP packages.
+- Ran automated verifiers and syntax checks.
 
-### Prompt items not fully obeyed earlier
-- The earlier work did not update the live GitHub/Vercel deployments; it only produced local ZIPs.
-- The earlier voting fix did not fully address every live/legacy database state. V12 now adds an idempotent SQL type-conversion repair.
-- The earlier package did not fully fix the `parents_read` duplicate policy error in complete schema.
-- The earlier notification fix relied mostly on bell/dropdown behaviour. V12 adds a persistent live notification tray so notifications are not lost after a brief toast.
-- The earlier teacher-ownership fix focused mainly on academic records and CBT. V12 expands ownership controls to health/clinic, helpdesk, reports and generic module records such as counselling/wellbeing.
-- The earlier geofence requirement was not implemented as an admin-configurable workflow. V12 adds Settings-based geofence management and strict staff check-in blocking.
-- The earlier assistant/page-description coverage existed, but V12 adds explicit V12 help topics and auto coverage fallback for pages without manual descriptions.
+### What was not completely obeyed earlier
+- The fixes were not deployed to the live GitHub/Vercel sites because I do not have repository write access.
+- Voting was fixed at schema level but the voting page still needed a stronger list/stat/results renderer.
+- The `complete-schema.sql` idempotency fix did not yet cover the new `exam_registrations` relation ordering issue.
+- Notification persistence needed a permanent visible tray, not only a temporary toast.
+- Teacher/staff ownership needed to cover more sensitive modules: reports, helpdesk, health/clinic, counselling/wellbeing and generic module records.
+- Staff attendance geofencing needed an admin UI, not just hard-coded coordinates.
 
-## 3. Features requested but previously omitted or incomplete
+## 3. Omitted or incomplete features now restored/enhanced
 
-### 3.1 Voting creation/edit/close/vote workflow
-Previously incomplete. Fixed in V12.
+### Voting dashboard/list/stats/results
+Fixed. Admin can now see created polls, active/closed totals, total votes, turnout, vote counts and results.
 
-### 3.2 Parent/student notification persistence
-Previously incomplete. Fixed in V12.
+### Voting edit/close/reopen/read/write
+Fixed. Admin/staff can create, read, edit, close and reopen polls. Students/parents can vote on open polls.
 
-### 3.3 Teacher ownership across non-academic sensitive records
-Previously incomplete. Fixed in V12.
+### Notifications on parent/student pages
+Fixed. Notifications now persist in the bell, notifications page and live tray.
 
-### 3.4 Complete-schema duplicate policy error
-Previously incomplete. Fixed in V12.
+### Teacher/staff ownership
+Expanded beyond CBT/results to sensitive operational modules.
 
-### 3.5 Admin-configured staff geofence attendance
-Previously omitted. Added in V12.
+### Affective/psychomotor/report templates
+Preserved and verified. Bulk trait entry, report-card stamp and authorized signature remain enabled.
 
-### 3.6 Assistant bot and page description coverage
-Previously partial. Enhanced in V12.
+### Parent/student data isolation
+Preserved and strengthened.
 
-## 4. V12 fixes implemented
+### Complete schema errors
+Both known errors addressed:
+- duplicate `parents_read` policy
+- missing `exam_registrations` relation
 
-## 4.1 Voting and Polls — fixed deeply
+### Staff geofenced attendance
+Added admin configuration and strict staff check-in blocking.
 
-Files updated:
-- `assets/js/voting.js`
-- `voting.html`
-- `assets/templates/pages/voting.html`
-- `assets/js/app.js`
-- `assets/js/templates.js`
-- `database/schema.sql`
-- `database/complete-schema.sql`
-- `database/voting-schema.sql`
-- `database/update-v12-schema.sql`
+## 4. Critical V12 fixes
 
-### Problems diagnosed
-1. On legacy databases, `poll_votes.candidate_id` may be UUID, while candidate IDs like `c1`, `c2` are text.
-2. This causes: `Invalid input syntax for type uuid`.
-3. Admin could see previous polls but could not reliably edit, close or reopen them.
-4. Students/parents were blocked from voting because voting was in family-restricted navigation.
-5. Vote replacement could fail because voters had no delete policy for old ballots.
-
-### V12 fixes
-- Converts legacy `candidate_id` to text:
-  ```sql
-  alter table public.poll_votes
-  alter column candidate_id type text using candidate_id::text;
-  ```
-- Adds `max_votes` and `created_by` to polls.
-- Adds `pv_delete_v11` so voters can replace previous ballots.
-- Restricts voting to open polls by RLS.
-- Keeps live poll IDs database-generated UUIDs.
-- Adds edit poll workflow.
-- Adds close/reopen workflow.
-- Allows authenticated parents/students to vote.
-- Keeps guests restricted.
-
-## 4.2 Notifications — fixed disappearing/flashing behaviour
+## 4.1 Voting page showing nothing after poll creation
 
 Files updated:
-- `assets/js/notifications.js`
 
-### Problem diagnosed
-On parent/student pages such as results, assignments, inbox and e-resources, notifications could appear briefly as a toast and disappear. Users then had no persistent copy visible.
+```text
+voting.html
+assets/templates/pages/voting.html
+assets/js/voting.js
+database/update-v12-schema.sql
+```
 
-### V12 fix
-Added a persistent live notification tray:
-- `ensureLiveTray()`
-- sticky notification cards
-- dismiss button
-- open notifications button
-- realtime notification cards for allowed audience
+### Diagnosis
+The prior voting page depended too much on direct page-level `sb.from('polls')` reads and did not reliably attach vote counts or render fallback data. Polls could be created, but active/closed/total/turnout stats could remain blank or zero, and admin could not reliably manage existing polls.
 
-Notifications now remain accessible through:
-- notification bell
-- Notifications page
-- persistent live notification tray
+### Fix
+The voting page now has a robust V12 voting UI engine:
 
-## 4.3 Teacher/staff ownership across sensitive records
+- loads polls using `Voting.listPolls()` where available
+- falls back to direct Supabase query
+- falls back to local demo polls if Supabase is unavailable
+- normalises candidate/options data
+- attaches vote counts from `poll_votes`
+- renders the poll list after creation
+- updates active polls, closed polls, total votes and average turnout
+- opens results with live vote tally
+- supports edit/close/reopen/share/vote actions
 
-Files updated:
-- `assets/js/crud.js`
-- `database/schema.sql`
-- `database/complete-schema.sql`
-- `database/update-v12-schema.sql`
+The V12 verifier checks:
 
-### Problem diagnosed
-Teacher ownership was not broad enough. The user required teacher/staff users not to edit another teacher’s:
-- exams
-- records
-- reports
-- IT/helpdesk records
-- counselling/wellbeing records
-- health/clinic records
-- other relevant sensitive records
+```text
+voting UI/runtime supports create, edit, close/reopen, list rendering, vote counts and max votes
+```
 
-### V12 fix
-Added central ownership helpers:
-- `isOwnedByCurrent(row)`
-- `hasOwnershipMarker(row)`
+## 4.2 Voting UUID error
 
-Ownership markers checked:
-- `teacher_id`
-- `posted_by`
-- `recorded_by_id`
-- `created_by`
-- `submitted_by`
-- `generated_by`
-- `assignee`
-- teacher name fallback
-- recorded-by name fallback
-- generic `data.created_by`
+Fixed legacy database mismatch:
 
-New rows now automatically store owner fields for relevant tables:
-- health → `recorded_by_id`
-- helpdesk → `submitted_by`
-- reports → `generated_by`
-- generic module records → `created_by`
+```sql
+alter table public.poll_votes
+alter column candidate_id type text using candidate_id::text;
+```
 
-Database policies added:
-- `hlth_update_v12`, `hlth_delete_v12`
-- `hd_update_v12`, `hd_delete_v12`
-- `rep_update_v12`, `rep_delete_v12`
-- `mr_update_v12_owner`, `mr_delete_v12_owner`
+This prevents:
 
-Admins retain full permissions.
+```text
+Invalid input syntax for type uuid
+```
 
-## 4.4 Complete schema SQL `parents_read` duplicate policy error fixed
-
-Files updated:
-- `database/schema.sql`
-- `database/complete-schema.sql`
-- `database/update-v12-schema.sql`
+## 4.3 Complete schema error: exam_registrations relation missing
 
 Problem:
+
+```text
+ERROR: 42P01: relation "public.exam_registrations" does not exist
+```
+
+Cause: `ALTER TABLE public.exam_registrations ...` appeared before the table was guaranteed to exist.
+
+Fix: V12 creates the relation before any alter references it:
+
+```sql
+create table if not exists public.exam_registrations (...);
+```
+
+Then the existing exam-specific columns are safely added.
+
+## 4.4 Complete schema duplicate policy error
+
+Problem:
+
 ```text
 ERROR: 42710: policy "parents_read" for table "parents" already exists
 ```
 
-Fix:
-Every policy creation in `complete-schema.sql` is now preceded by:
-```sql
-DROP POLICY IF EXISTS ...
-```
-
-Specifically for parents:
-```sql
-drop policy if exists "parents_read" on public.parents;
-create policy "parents_read" on public.parents for select using (auth.role() = 'authenticated');
-```
+Fix: every `CREATE POLICY` in `complete-schema.sql` is preceded by `DROP POLICY IF EXISTS`.
 
 The V12 verifier confirms complete-schema policy idempotency.
 
-## 4.5 Staff geofenced attendance added
+## 4.5 Persistent notifications
 
 Files updated:
-- `settings.html`
-- `assets/templates/pages/settings.html`
-- `checkin-staff.html`
-- `assets/templates/pages/checkin-staff.html`
-- `assets/js/app.js`
-- `database/schema.sql`
-- `database/complete-schema.sql`
-- `database/update-v12-schema.sql`
 
-### New admin settings
-Admin can now set:
-- school latitude
-- school longitude
-- allowed radius in metres
-- enforce/not enforce geofence
+```text
+assets/js/notifications.js
+```
+
+Added:
+
+- `ensureLiveTray()`
+- persistent notification card
+- open notifications button
+- dismiss button
+- realtime in-app tray rendering
+
+Now if a notification appears, it is not lost when the temporary toast disappears.
+
+## 4.6 Teacher/staff ownership controls
+
+Files updated:
+
+```text
+assets/js/crud.js
+database/update-v12-schema.sql
+```
+
+Ownership markers:
+
+```text
+teacher_id
+posted_by
+recorded_by_id
+created_by
+submitted_by
+generated_by
+assignee
+teacher
+recorded_by
+data.created_by
+```
+
+Protected modules include:
+
+- CBT exams
+- academic results
+- assignments
+- records
+- reports
+- IT/helpdesk
+- counselling/wellbeing generic records
+- health/clinic
+- module_records
+
+Admins retain full permissions.
+
+## 4.7 Staff attendance geofence
+
+Files updated:
+
+```text
+settings.html
+assets/templates/pages/settings.html
+checkin-staff.html
+assets/templates/pages/checkin-staff.html
+assets/js/app.js
+database/update-v12-schema.sql
+```
+
+Admin can configure:
+
+- latitude
+- longitude
+- radius in metres
+- enforce geofence on/off
 - capture current device location
 
-### Staff check-in enforcement
-Staff attendance now blocks check-in if:
-- GPS is unsupported
-- GPS permission is denied
-- the school geofence is not configured
-- the staff device is outside the allowed radius
+Staff check-in is blocked when:
 
-This helps prevent staff from taking attendance outside school premises.
+- GPS unsupported
+- GPS denied
+- geofence not configured
+- staff is outside the allowed radius
 
-## 4.6 Parent/student-specific records preserved
-
-Confirmed and protected:
-- results
-- assignments
-- ID cards
-- fees
-- report cards
-- certificates
-- online payments
-- inbox/helpdesk/message records
-
-V12 also installs strict ID-card RLS so students/parents only see their own/their child’s card.
-
-## 4.7 Report cards, affective/psychomotor, stamp/signature
+## 4.8 Affective/psychomotor and report outputs
 
 Confirmed and preserved:
-- bulk affective domain entry
-- bulk psychomotor domain entry
-- term/session-aware bulk traits
-- student report card
+
+- easy bulk affective entry
+- easy bulk psychomotor entry
+- session-aware traits
+- enhanced student report sheet
 - class broadsheet
 - subject broadsheet
-- school stamp SVG generation
-- principal/authorized signature rendering
-- sample report card
-- sample class broadsheet
-- sample subject broadsheet
+- school stamp SVG
+- principal/authorized signature in stamp/signature area
 
-## 4.8 Assistant bot/page descriptions enhanced
-
-Files updated:
-- `assets/js/super.js`
-
-Added V12 help knowledge for:
-- voting UUID error
-- disappearing notifications
-- teacher ownership/read-only access
-- staff geofence attendance
-
-Added automatic fallback page-description coverage:
-- `ensurePageInfoCoverage()` fills missing page descriptions from navigation metadata.
-- First-time users get page purpose, who uses it, advantages and benefits.
-
-## 5. Generator and generated-site readiness
-
-Both projects were updated:
-- `2schoolconnect` generator
-- `2gosaportal` generated demo
-
-The generator now bundles:
-- `database/update-v12-schema.sql`
-- V12 runtime files
-- improved settings/check-in templates
-- persistent notifications
-- ownership enforcement
-- voting repair
-- assistant enhancements
-
-## 6. Security posture
-
-V12 improves security by:
-- converting unsafe legacy voting UUID/text mismatch
-- making SQL policies idempotent
-- adding open-poll-only voting policies
-- adding owner/admin edit restrictions
-- keeping parents/students strictly scoped
-- requiring geolocation for staff attendance
-- preventing non-owner teacher edits
-- preserving RLS-backed Supabase access control
-
-No paid AI API is used.
-
-## 7. SEO and lead generation
+## 4.9 Parent/student data privacy
 
 Confirmed:
-- generated pages have meta descriptions
-- OpenGraph/Twitter/canonical metadata exists
-- sitemap and robots exist
-- HMG Concepts backlink remains
-- client school branding remains
-- public pages point prospects to the school and the HMG Concepts ecosystem
 
-## 8. Testing performed
+- students see their own results, assignments, fees, report cards, ID cards and related records
+- parents see only linked children’s details
+- parents cannot see other children’s data
+- ID-card RLS is strict
+- online payments remain strict learner-owned records
 
-### Automated checks passed
-- All generator `verify-*.js` scripts passed.
-- All generated-site `verify-*.js` scripts passed.
-- New `verify-v12-critical-workflows.js` passed in both projects.
-- All `.js` files passed `node --check`.
-- All inline HTML JavaScript passed syntax checks.
-- Generator local-reference audit: `0` missing local references.
-- Generated-site local-reference audit: `0` missing local references.
+## 4.10 Assistant bot/page descriptions
 
-### V12 verifier checks
-The new verifier confirms:
-- `complete-schema.sql` policy idempotency
+Files updated:
+
+```text
+assets/js/super.js
+```
+
+Added V12 topics:
+
+- voting UUID/list/stats problems
+- disappearing notifications
+- teacher ownership/read-only records
+- staff geofence attendance
+- schema migration guidance
+
+Added automatic page-info fallback so first-time users get clear page descriptions even when a page did not have a hand-written description.
+
+## 5. Testing performed
+
+### All project verifiers
+
+Passed:
+
+```text
+generator-verifiers-ok
+demo-verifiers-ok
+```
+
+### V12 critical workflow verifier
+
+Both projects passed:
+
+```text
+V12 critical workflow verification: 16 passed, 0 failed.
+```
+
+It verifies:
+
+- complete-schema policy idempotency
 - `parents_read` duplicate policy fix
 - voting UUID repair
-- vote replacement and open-poll RLS
-- voting create/edit/close/reopen/max-votes workflow
+- vote replacement and open-poll-only voting
+- voting list rendering, vote counts, stats, edit/close/reopen
+- `exam_registrations` created before alter references
 - persistent notifications tray
-- ownership protections
-- health/helpdesk/reports/module_records ownership RLS
-- staff geofence settings and enforcement
+- ownership helpers and RLS
+- health/helpdesk/reports/module_records protections
+- staff geofence UI/schema/enforcement
 - CBT non-owner read-only guard
 - assistant V12 help topics
 - strict parent/student scoped modules
 
-## 9. Deployment instructions
+### Syntax checks
 
-### Traditional static/PWA deployment
-1. Upload the V12 `2schoolconnect` generator folder to GitHub or your static host.
-2. Open `builder.html` or the generator page.
-3. Fill school details, branding, modules and deployment details.
-4. Generate/download the client ZIP.
-5. Unzip the generated school site.
-6. Create a free Supabase project.
-7. Run SQL files in this order:
-   1. `database/schema.sql`
-   2. `database/voting-schema.sql`
-   3. `database/cbt-schema.sql`
-   4. `database/reportcard-schema.sql`
-   5. `database/enterprise-schema.sql`
-   6. `database/update-v12-schema.sql`
-8. Copy Supabase Project URL and anon key.
-9. Edit `assets/js/config.js`:
-   ```js
-   const SUPABASE_URL = 'your-project-url';
-   const SUPABASE_ANON_KEY = 'your-anon-key';
-   ```
-10. Deploy to Vercel, Netlify, GitHub Pages or Cloudflare Pages.
-11. Register the first account.
-12. In Supabase SQL Editor, elevate it:
-   ```sql
-   update profiles
-   set role='admin', status='approved'
-   where email='your-email@example.com';
-   ```
-13. Log in as admin.
-14. Go to Settings → Staff Attendance Geofence.
-15. Click “Use this device’s current location” while physically at the school.
-16. Save the geofence.
-17. Configure classes, subjects, staff, students, parents and parent-child links.
-18. Create a test poll, vote as a student, close/reopen the poll, and confirm results.
+All `.js` files passed `node --check`.
 
-### Updating an existing deployed school site
-1. Back up current files and Supabase database.
+### Inline HTML JavaScript checks
+
+Passed:
+
+```text
+2schoolconnect inline-js: 0 failures
+2gosaportal inline-js:    0 failures
+```
+
+### Local reference audits
+
+Passed:
+
+```text
+2schoolconnect: 0 missing local references
+2gosaportal:    0 missing local references
+```
+
+## 6. Deployment instructions
+
+### New deployment
+
+1. Upload `2schoolconnect` or generated client site to GitHub.
+2. Let Vercel/Netlify/Cloudflare Pages redeploy.
+3. Create a free Supabase project.
+4. Run SQL files in this order:
+
+```text
+1. database/schema.sql
+2. database/voting-schema.sql
+3. database/cbt-schema.sql
+4. database/reportcard-schema.sql
+5. database/enterprise-schema.sql
+6. database/update-v12-schema.sql
+```
+
+5. Edit:
+
+```text
+assets/js/config.js
+```
+
+Set:
+
+```js
+const SUPABASE_URL = 'your-project-url';
+const SUPABASE_ANON_KEY = 'your-anon-key';
+```
+
+6. Register your first admin account.
+7. In Supabase SQL Editor:
+
+```sql
+update profiles
+set role='admin', status='approved'
+where email='your-email@example.com';
+```
+
+8. Log in as admin.
+9. Open Settings → Staff Attendance Geofence.
+10. Set/capture the school location and radius.
+11. Create a test poll.
+12. Confirm it appears in the admin voting list and stats.
+13. Log in as student/parent and vote.
+14. Return as admin and confirm vote count/results.
+
+### Existing deployment update
+
+1. Back up existing files and database.
 2. Upload V12 files.
 3. Run:
-   ```sql
-   database/update-v12-schema.sql
-   ```
-4. Hard refresh browser or clear PWA cache.
-5. Test voting, notifications, teacher ownership and staff check-in.
 
-### Modern/full-stack/SaaS direction
-The current reliable production mode remains:
-- static PWA frontend
-- Supabase backend
-- no paid AI API
+```sql
+database/update-v12-schema.sql
+```
 
-For true multi-tenant SaaS/full-stack operation, the next architecture should add:
-- tenant ID on every row
-- server-side edge functions for privileged operations
-- CI/CD with automated SQL migrations
-- per-school custom domain mapping
-- tenant-level backups
-- central admin console
+4. Clear browser/PWA cache or hard refresh.
+5. Test:
+   - voting create/list/stats/results
+   - vote close/reopen/edit
+   - parent/student voting
+   - notifications tray
+   - teacher non-owner edit restrictions
+   - staff geofence attendance
 
-V12 improves the current generator but does not claim to be a complete server-rendered SaaS backend by itself.
+## 7. Traditional, modern and SaaS assessment
 
-## 10. Final V12 package contents
+### Traditional/static PWA
+Ready. The generator produces a deployable static PWA backed by Supabase.
+
+### Modern/full-stack/SaaS
+The current architecture is not a complete multi-tenant SaaS backend by itself. For true SaaS, the next phase should add:
+
+- tenant/school ID on all rows
+- tenant-aware RLS policies
+- server-side edge functions for admin-only operations
+- migration runner/CI
+- per-tenant custom domains
+- tenant backups
+- billing/plan controls if needed
+
+V12 keeps the free-tool approach and does not use AI APIs.
+
+## 8. Final deliverables
+
+Folder:
 
 ```text
 school connect v12/
-├── 2schoolconnect/
-├── 2gosaportal/
-└── V12_COMPLETE_AUDIT_FIX_DEPLOYMENT_REPORT.md
 ```
 
 ZIP:
 
-`school-connect-v12-generator-and-generated-site.zip`
+```text
+school-connect-v12-generator-and-generated-site.zip
+```

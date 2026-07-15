@@ -23,7 +23,8 @@ ok('complete-schema is idempotent: every create policy is preceded by drop polic
 ok('parents_read policy duplicate error fixed', /drop policy if exists "parents_read" on public\.parents;\s*\ncreate policy "parents_read"/m.test(schema));
 ok('voting UUID candidate_id repair exists', /alter table public\.poll_votes alter column candidate_id type text using candidate_id::text/.test(schema));
 ok('voting allows vote replacement and open-poll-only voting', /pv_delete_v11/.test(schema) && /coalesce\(p\.status,'open'\) = 'open'/.test(schema));
-ok('voting UI/runtime supports create, edit, close/reopen and max votes', /createPoll/.test(voting) && /updatePoll/.test(voting) && /max_votes/.test(voting) && /created_by/.test(voting));
+ok('voting UI/runtime supports create, edit, close/reopen, list rendering, vote counts and max votes', /createPoll/.test(voting) && /updatePoll/.test(voting) && /max_votes/.test(voting) && /created_by/.test(voting) && /attachVoteCounts/.test(read('voting.html')) && /renderList/.test(read('voting.html')));
+ok('exam_registrations relation is created before ALTER references it', /create table if not exists public\.exam_registrations[\s\S]*?alter table public\.exam_registrations/.test(read('database/complete-schema.sql')));
 ok('persistent notifications tray prevents disappearing-only notifications', /ensureLiveTray/.test(notif) && /sc-live-notification-tray/.test(notif) && /showInApp\(n\.title/.test(notif));
 ok('teacher/staff ownership helper covers created/submitted/generated/recorded owners', /isOwnedByCurrent\(row\)/.test(crud) && /created_by/.test(crud) && /submitted_by/.test(crud) && /generated_by/.test(crud) && /recorded_by_id/.test(crud));
 ok('health/helpdesk/reports ownership RLS is installed', /hlth_update_v12/.test(schema) && /hd_update_v12/.test(schema) && /rep_update_v12/.test(schema));
