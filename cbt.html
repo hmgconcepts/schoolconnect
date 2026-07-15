@@ -456,6 +456,7 @@ CBT.init(sb);
 if(window.CBTUI && window.CBTUI.loadPickers) window.CBTUI.loadPickers();
 window.CBTUI = {
   _filters: { q:'', class:'', subject:'', teacher:'', mode:'all', group:'all' },
+  canManageExam(e){ const r=String((window.App&&App.currentRole)||(window.SC_PROFILE&&SC_PROFILE.role)||'').toLowerCase(); const admin=['super_admin','admin','administrator','owner','director','principal','proprietor','head_teacher','bursar']; return admin.includes(r) || (['staff','teacher'].includes(r) && e && (!e.teacher_id || e.teacher_id === (window.SC_PROFILE&&SC_PROFILE.id))); },
   async refresh(){
     const box = document.getElementById('cbt-list');
     if(!sb){ box.innerHTML = '<div class="card">⚠️ Database not configured. Add your Supabase keys in assets/js/config.js.</div>'; return; }
@@ -509,11 +510,11 @@ window.CBTUI = {
           '<button class="btn btn-sm btn-outline" onclick="CBTUI.share(\''+esc(e.code)+'\')">Share</button> '+
           '<button class="btn btn-sm btn-outline" onclick="CBTUI.results(\''+e.id+'\',\''+esc(e.code)+'\')">Results</button> '+
           '<button class="btn btn-sm btn-outline" onclick="CBTUI.preview(\''+e.id+'\')">Preview</button> '+
-          '<button class="btn btn-sm btn-primary" onclick="CBTUI.edit(\''+e.id+'\')">✏️ Edit</button> '+
+          (CBTUI.canManageExam(e) ? '<button class="btn btn-sm btn-primary" onclick="CBTUI.edit(\''+e.id+'\')">✏️ Edit</button> '+
           '<button class="btn btn-sm btn-outline" onclick="CBTUI.editQuestions(\''+e.id+'\')">Edit Questions</button> '+
           '<button class="btn btn-sm btn-outline" onclick="CBTUI.appendCSV(\''+e.id+'\')">Attach CSV</button> '+
           '<button class="btn btn-sm btn-outline" onclick="CBTUI.repairTabs(\''+e.id+'\')">Repair Tabs</button> '+
-          '<button class="btn btn-sm btn-outline" data-admin-only onclick="CBTUI.del(\''+e.id+'\')">Delete</button>'+
+          '<button class="btn btn-sm btn-outline" data-admin-only onclick="CBTUI.del(\''+e.id+'\')">Delete</button>' : '<span class="badge" title="Only the creator teacher or an admin can edit this exam">Read-only</span>')+
         '</td></tr>').join('')+'</tbody></table></div>';
     box.innerHTML = controls + tableFor(ordinary,'📝 Ordinary CBT (single subject)') + tableFor(multi,'🧪 Multi-Subject / UTME packages','#ede9fe') + tableFor(open,'🙈 Anonymous / Open Exams','#fef3c7') + tableFor(registered,'🪪 Registered Exams','#dcfce7') +
       (rows.length? '' : '<div class="card">No CBT matches the current filters.</div>') +
