@@ -1245,6 +1245,15 @@ create table if not exists public.school_settings (
   principal_name text default '',
   role_access jsonb,
   role_write jsonb,
+  -- FIX GEO-02 (#8): geofence columns declared on the base table so they are
+  -- ALWAYS present. Previously they were added later in a DO block that some
+  -- deployments skipped, causing "Could not find the 'enforce_geofence' column
+  -- of 'school_settings' in the schema cache" when saving the staff geofence.
+  latitude numeric,
+  longitude numeric,
+  geo_radius_m integer default 200,
+  enforce_geofence boolean default true,
+  geo_updated_at timestamptz,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
