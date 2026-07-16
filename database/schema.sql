@@ -56,13 +56,14 @@ alter table public.profiles add column if not exists dob_month text;
 
 -- =====================================================================
 -- ENTERPRISE V3 EARLY HELPERS (must exist before any RLS policy uses them)
+-- FIXED v15: is_admin no longer includes 'teacher' (privilege escalation fix)
 -- =====================================================================
 create or replace function public.is_admin(uid uuid)
 returns boolean language sql security definer stable as $$
   select exists (
     select 1 from public.profiles
     where id = uid
-      and role in ('super_admin','admin','administrator','owner','director','principal','proprietor','head_teacher','teacher','bursar')
+      and role in ('super_admin','admin','administrator','owner','director','principal','proprietor','head_teacher','bursar')
       and status in ('approved','active')
   );
 $$;
@@ -550,17 +551,52 @@ create table if not exists public.admissions (
 );
 alter table public.admissions enable row level security;
 
+-- FIXED v15: payroll now includes bonus/overtime/tax/pension/loan columns
+-- and net_pay is computed via trigger (not generated column) to handle all fields
 create table if not exists public.payroll (
   id uuid primary key default uuid_generate_v4(),
   staff_id uuid references public.staff(id) on delete cascade,
+  staff_name text,
   month text, year int,
-  basic numeric, allowances numeric, deductions numeric,
-  net_pay numeric generated always as
-    (coalesce(basic,0)+coalesce(allowances,0)-coalesce(deductions,0)) stored,
+  basic numeric default 0,
+  allowances numeric default 0,
+  bonus numeric default 0,
+  overtime numeric default 0,
+  tax numeric default 0,
+  pension numeric default 0,
+  loan_deduction numeric default 0,
+  other_deductions numeric default 0,
+  deductions numeric default 0, -- legacy compat
+  net_pay numeric default 0,
+  method text default 'bank transfer',
   status text default 'draft' check (status in ('draft','approved','paid')),
   created_at timestamptz default now()
 );
 alter table public.payroll enable row level security;
+-- Ensure new columns exist on legacy databases
+alter table public.payroll add column if not exists staff_name text;
+alter table public.payroll add column if not exists bonus numeric default 0;
+alter table public.payroll add column if not exists overtime numeric default 0;
+alter table public.payroll add column if not exists tax numeric default 0;
+alter table public.payroll add column if not exists pension numeric default 0;
+alter table public.payroll add column if not exists loan_deduction numeric default 0;
+alter table public.payroll add column if not exists other_deductions numeric default 0;
+alter table public.payroll add column if not exists method text default 'bank transfer';
+
+-- Trigger to compute net_pay correctly
+create or replace function public.compute_payroll_net()
+returns trigger language plpgsql as $$
+begin
+  new.net_pay := greatest(0,
+    coalesce(new.basic,0)+coalesce(new.allowances,0)+coalesce(new.bonus,0)+coalesce(new.overtime,0)
+    - coalesce(new.tax,0)-coalesce(new.pension,0)-coalesce(new.loan_deduction,0)-coalesce(new.other_deductions,0)-coalesce(new.deductions,0)
+  );
+  return new;
+end $$;
+drop trigger if exists trg_compute_payroll_net on public.payroll;
+create trigger trg_compute_payroll_net
+before insert or update of basic, allowances, bonus, overtime, tax, pension, loan_deduction, other_deductions, deductions on public.payroll
+for each row execute function public.compute_payroll_net();
 
 create table if not exists public.hostel_allocations (
   id uuid primary key default uuid_generate_v4(),
@@ -1202,6 +1238,13 @@ group by p.id, p.title;
 --      set role = 'admin', status = 'approved'
 --    where email = 'your-email@example.com';
 -- =====================================================================
+
+-- FIX V2.1 Issue #17: next term fees bill on report card
+alter table public.school_settings add column if not exists next_term_fees numeric default 0;
+alter table public.school_settings add column if not exists next_term_fees_currency text default '₦';
+alter table public.school_settings add column if not exists next_term_begins date;
+alter table public.school_settings add column if not exists next_term_fees_note text default 'Payable before resumption';
+
 select 'School Connect schema v8 installed successfully ✅' as status;
 
 
@@ -1554,13 +1597,31 @@ create policy "rep_delete_v12" on public.reports for delete using (public.is_adm
 
 -- Generic module records (reports, counselling, wellbeing, etc.): staff can read,
 -- creator/admin can modify; family users only modify their own allowed family records.
+-- FIXED v15: Added missing SELECT and INSERT policies (previous version only had update/delete)
+drop policy if exists "mr_select_v15" on public.module_records;
+drop policy if exists "mr_insert_v15" on public.module_records;
 drop policy if exists "mr_update_family" on public.module_records;
 drop policy if exists "mr_update_v12_owner" on public.module_records;
 drop policy if exists "mr_delete_v12_owner" on public.module_records;
+
+create policy "mr_select_v15" on public.module_records for select using (
+  public.is_staff(auth.uid())
+  or created_by = auth.uid()
+  or recipient_id = auth.uid()
+  or audience in ('all','public')
+  or (audience = 'parent' and exists (select 1 from public.profiles where id=auth.uid() and role='parent'))
+  or (audience = 'student' and exists (select 1 from public.profiles where id=auth.uid() and role='student'))
+);
+
+create policy "mr_insert_v15" on public.module_records for insert with check (
+  auth.role() = 'authenticated'
+);
+
 drop policy if exists "mr_update_v12_owner" on public.module_records;
 create policy "mr_update_v12_owner" on public.module_records for update using (
   public.is_admin(auth.uid()) or created_by = auth.uid()
 ) with check (public.is_admin(auth.uid()) or created_by = auth.uid());
+
 drop policy if exists "mr_delete_v12_owner" on public.module_records;
 create policy "mr_delete_v12_owner" on public.module_records for delete using (public.is_admin(auth.uid()) or created_by = auth.uid());
 
