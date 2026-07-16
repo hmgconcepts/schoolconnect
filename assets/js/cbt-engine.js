@@ -10,7 +10,12 @@ const CBT = {
 
   init(supabaseClient) {
     this._sb = supabaseClient || (typeof sb !== 'undefined' ? sb : null);
-    if (this._sb && (location.pathname.includes('cbt') || document.getElementById('exam-root') || document.querySelector('[data-cbt-action]'))) this.bindFloatingToolbar();
+    // FIX V2.1 Issue #11: Calculator and math keyboard ONLY on CBT exam taking page (cbt-exam.html), not on manager pages
+    const page = (location.pathname.split('/').pop() || '').toLowerCase();
+    const isExamPage = page === 'cbt-exam.html' || page.startsWith('cbt-exam') || !!document.getElementById('exam-root') || !!document.getElementById('cbt-exam-root') || !!document.querySelector('[data-cbt-exam]');
+    if (this._sb && isExamPage) {
+      try { this.bindFloatingToolbar(); } catch(e) {}
+    }
     if (document.getElementById('cbt-list') && window.CBTUI) { try { CBTUI.refresh(); } catch(e) { console.warn('CBTUI.refresh failed:', e); } }
   },
 

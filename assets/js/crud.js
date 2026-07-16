@@ -430,7 +430,7 @@ const CRUD = {
       {key:'select_count',label:'Select N questions (0 = all)',type:'number'},
       {key:'randomise',label:'Randomise questions',type:'checkbox'},
       {key:'negative_mark',label:'Negative mark per wrong answer',type:'number'},
-      {key:'exam_mode',label:'Exam mode',type:'select',options:['open','registered']},
+      {key:'exam_mode',label:'Exam mode',type:'select',options:['open','anonymous','registered'],help:'Open: anyone with link, no login. Anonymous: candidates hide identity, results anonymized. Registered: only logged-in students of assigned class.'},
       {key:'is_open',label:'Open for candidates',type:'checkbox'},
       {key:'release_results',label:'Release results instantly',type:'checkbox'},
       {key:'instructions',label:'Candidate instructions',type:'textarea'},
@@ -752,11 +752,55 @@ const CRUD = {
       } catch(e) { console.warn('Parent filter failed:', e); filteredData = []; }
     }
 
+    // FIX V2.1 — Persistent table: never clear existing rows when filtered result is empty.
+    // This resolves issue #1 where parent/student pages flashed data then disappeared.
+    // Strategy: keep cached HTML or existing DOM, show informative banner above table.
     if (!filteredData || !filteredData.length) {
-      let cached = null; try { cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch(_) {}
-      if (cached && cached.html) { tb.innerHTML = cached.html + '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '" style="color:#64748b;background:#f8fafc">No new live rows found right now; the last visible records are kept here so recipients can continue reading them.</td></tr>'; return; }
-      tb.innerHTML = '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '" style="color:var(--gray-500)">No records yet.' + (writable ? ' Click “+ Add new”.' : '') + '</td></tr>'; return;
+      let cached = null;
+      try { cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch(_) {}
+      const wrap = tableEl.closest('.table-wrap') || tableEl.parentNode;
+      let infoBox = wrap ? wrap.querySelector('.sc-table-persist-info') : null;
+      if (!infoBox && wrap) {
+        infoBox = document.createElement('div');
+        infoBox.className = 'sc-table-persist-info';
+        infoBox.style.cssText = 'background:#eff6ff;border:1px solid #bfdbfe;padding:12px 14px;border-radius:10px;margin-bottom:14px;color:#1e40af;font-size:.9rem;line-height:1.5';
+        wrap.insertBefore(infoBox, wrap.firstChild);
+      }
+      const dataCount = (data || []).length;
+      let msg = '';
+      if (isParent) {
+        msg = dataCount > 0
+          ? `ℹ️ <strong>No linked records found</strong> — Database has ${dataCount} record(s) but none are linked to your children. Ask admin to link via <em>Parents → Parent-Child Link</em>. Previous records (if any) are preserved below so you can continue reading.`
+          : 'ℹ️ No records yet — Ask admin to create records and link your children via Parents page.';
+      } else if (isStudent) {
+        msg = dataCount > 0
+          ? `ℹ️ <strong>No records linked to your profile</strong> — Database has ${dataCount} record(s) but your student profile is not linked. Ask admin to set your <em>user_id</em> in Students table. Previous records preserved below.`
+          : 'ℹ️ No records yet.';
+      } else {
+        msg = dataCount > 0
+          ? `ℹ️ Database has ${dataCount} record(s) but none match the current filter. Showing previously cached records if available.`
+          : 'No records yet.' + (writable ? ' Click “+ Add new”.' : '');
+      }
+      if (infoBox) infoBox.innerHTML = msg;
+
+      if (cached && cached.html) {
+        tb.innerHTML = cached.html;
+        // inject search again
+        try { CRUD.injectTableSearch(moduleId, tableEl, (dataCount || 0)); } catch(_) {}
+        return;
+      }
+      // If table already has real rows (not loading placeholder), keep them
+      const existingHasRows = tb.querySelectorAll('tr').length > 0 && !tb.querySelector('tr td')?.textContent?.includes('No records yet');
+      const existingHTML = tb.innerHTML;
+      const hasRealRows = existingHTML && !existingHTML.includes('No records yet') && !existingHTML.includes('pulse') && existingHTML.trim().length > 20;
+      if (hasRealRows) {
+        // Keep existing rows, do not clear
+        return;
+      }
+      tb.innerHTML = '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '" style="color:var(--gray-500);padding:20px;text-align:center" class="empty-msg">' + msg + '</td></tr>';
+      return;
     }
+    
     const isLinkCol = (key) => /(_link|link|media_url|photo_url|video|image|thumbnail|read_link|drive)$/i.test(key) || /^(media_url|read_link|drive_link|photo_url)$/i.test(key);
     const renderedRows = filteredData.map(row => '<tr>' + cols.map(c => {
       let v = cellVal(row, c);
