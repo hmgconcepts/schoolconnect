@@ -598,7 +598,7 @@ ${Generator.bellAndBanner(cfg)}
   </nav>
 
   <div class="hero">
-    <div class="hero-badge">🏫 Free &amp; Open Source</div>
+    <div class="hero-badge">🏫 HMG Concepts Ecosystem Tool</div>
     <h1>Welcome to <span class="highlight">${name}</span></h1>
     <p class="hero-sub">${motto || 'A modern school management portal — built free with Supabase + GitHub Pages.'}</p>
     <div class="hero-actions">
@@ -1053,7 +1053,7 @@ ${(Array.isArray(cfg.modules) ? cfg.modules : []).map(m => `- ${m.replace(/_/g, 
 - GitHub: https://github.com/hmgconcepts/schoolconnect15
 
 ---
-*Built with ❤️ by HMG Concepts — 100% free, open-source school management.*
+*Built with ❤️ by HMG Concepts — HMG Concepts Ecosystem enterprise school platform.*
 `;
   },
 
