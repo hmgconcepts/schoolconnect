@@ -168,7 +168,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
         </a><a href="flyer.html" data-module-id="flyer" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
           <span class="app-nav-icon">📰</span>
           <span>Flyer</span>
-        </a><a href="report-cards.html" data-module-id="report-cards" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
+        </a><a href="report-cards.html" data-module-id="report-cards" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="">
           <span class="app-nav-icon">🧾</span>
           <span>Report Cards</span>
         </a><a href="analytics.html" data-module-id="analytics" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
@@ -246,7 +246,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
         </a><a href="parents.html" data-module-id="parents" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
           <span class="app-nav-icon">👨‍👩‍👧</span>
           <span>Parent–Child</span>
-        </a><a href="idcards.html" data-module-id="idcards" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
+        </a><a href="idcards.html" data-module-id="idcards" data-role-allow="super_admin admin principal proprietor head_teacher bursar parent student" class="">
           <span class="app-nav-icon">🪪</span>
           <span>ID Cards</span>
         </a><a href="directory.html" data-module-id="directory" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
@@ -544,7 +544,41 @@ const ST={
   async loadGeofence(){ try{ let data=null; if(sb){ const r=await sb.from('school_settings').select('latitude,longitude,geo_radius_m,enforce_geofence').eq('id',1).maybeSingle(); data=r.data; } data=data||window.SC_SETTINGS||{}; const lat=document.getElementById('st-lat'), lng=document.getElementById('st-lng'), rad=document.getElementById('st-radius'), enf=document.getElementById('st-enforce-geo'); if(lat&&data.latitude!=null)lat.value=data.latitude; if(lng&&data.longitude!=null)lng.value=data.longitude; if(rad&&data.geo_radius_m!=null)rad.value=data.geo_radius_m; if(enf)enf.checked=data.enforce_geofence!==false; ST.renderGeoPreview(); }catch(e){ ST.renderGeoPreview('Could not load geofence: '+(e.message||e)); } },
   renderGeoPreview(msg){ const box=document.getElementById('st-geo-preview'); if(!box)return; if(msg){box.textContent=msg;return;} const lat=document.getElementById('st-lat')?.value, lng=document.getElementById('st-lng')?.value, rad=document.getElementById('st-radius')?.value||200, enf=document.getElementById('st-enforce-geo')?.checked; box.textContent=(lat&&lng)?('Current geofence: '+lat+', '+lng+' within '+rad+'m · '+(enf?'enforced':'not enforced')):'No geofence set. Staff check-in will ask admin to configure location.'; },
   async useCurrentLocation(){ if(!navigator.geolocation){toast('GPS is not supported on this device/browser.','danger');return;} navigator.geolocation.getCurrentPosition(pos=>{ document.getElementById('st-lat').value=pos.coords.latitude.toFixed(6); document.getElementById('st-lng').value=pos.coords.longitude.toFixed(6); ST.renderGeoPreview(); toast('Current location captured. Click Save geofence.','success'); }, err=>toast('Could not capture location: '+err.message,'danger'), {enableHighAccuracy:true,timeout:15000,maximumAge:0}); },
-  async saveGeofence(){ const latitude=Number(document.getElementById('st-lat').value), longitude=Number(document.getElementById('st-lng').value), geo_radius_m=Math.max(20,Number(document.getElementById('st-radius').value)||200), enforce_geofence=document.getElementById('st-enforce-geo').checked; if(!isFinite(latitude)||!isFinite(longitude)){toast('Enter valid latitude and longitude, or use current location.','warning');return;} try{ if(sb){ const {error}=await sb.from('school_settings').upsert({id:1,latitude,longitude,geo_radius_m,enforce_geofence,geo_updated_at:new Date().toISOString()},{onConflict:'id'}); if(error)throw error; } window.SC_SETTINGS=Object.assign(window.SC_SETTINGS||{},{latitude,longitude,geo_radius_m,enforce_geofence}); window.SCHOOL=Object.assign(window.SCHOOL||{},{latitude,longitude,geoRadius:geo_radius_m,enforceGeofence:enforce_geofence}); ST.renderGeoPreview(); toast('Staff attendance geofence saved.','success'); }catch(e){toast('Could not save geofence: '+(e.message||e),'danger',8000);} }
+  async saveGeofence(){
+    const latitude=Number(document.getElementById('st-lat').value), longitude=Number(document.getElementById('st-lng').value), geo_radius_m=Math.max(20,Number(document.getElementById('st-radius').value)||200), enforce_geofence=document.getElementById('st-enforce-geo').checked;
+    if(!isFinite(latitude)||!isFinite(longitude)){toast('Enter valid latitude and longitude, or use current location.','warning');return;}
+    try{
+      if(sb){
+        // FIX V2 for issue #8: if enforce_geofence column missing in older DBs, self-heal with fallback
+        let payload={id:1,latitude,longitude,geo_radius_m,enforce_geofence,geo_updated_at:new Date().toISOString()};
+        let res=await sb.from('school_settings').upsert(payload,{onConflict:'id'});
+        if(res.error && /enforce_geofence/i.test(res.error.message||'')){
+          // Column missing — save without it and instruct admin to run fix file
+          console.warn('[Geofence] enforce_geofence column missing, saving basic coords');
+          const fallback={id:1,latitude,longitude,geo_radius_m,geo_updated_at:new Date().toISOString()};
+          const res2=await sb.from('school_settings').upsert(fallback,{onConflict:'id'});
+          if(res2.error) throw res2.error;
+          toast('Geofence location saved, but enforcement toggle requires DB update. Please run database/fix-geofence-schema.sql in Supabase SQL Editor, then refresh.','warning',10000);
+          window.SC_SETTINGS=Object.assign(window.SC_SETTINGS||{},{latitude,longitude,geo_radius_m});
+          window.SCHOOL=Object.assign(window.SCHOOL||{},{latitude,longitude,geoRadius:geo_radius_m});
+          ST.renderGeoPreview();
+          return;
+        }
+        if(res.error) throw res.error;
+      }
+      window.SC_SETTINGS=Object.assign(window.SC_SETTINGS||{},{latitude,longitude,geo_radius_m,enforce_geofence});
+      window.SCHOOL=Object.assign(window.SCHOOL||{},{latitude,longitude,geoRadius:geo_radius_m,enforceGeofence:enforce_geofence});
+      ST.renderGeoPreview();
+      toast('Staff attendance geofence saved.','success');
+    }catch(e){
+      // FIX V2 self-heal: detailed guidance
+      let msg=e.message||e;
+      if(/enforce_geofence/i.test(msg)){
+        msg+=' — Run database/fix-geofence-schema.sql in Supabase, then run NOTIFY pgrst, \'reload schema\'; or wait 1 minute for cache auto-reload, then retry.';
+      }
+      toast('Could not save geofence: '+msg,'danger',10000);
+    }
+  }
 };
 document.addEventListener('DOMContentLoaded',ST.init); ST.init();
 </script></body></html>
