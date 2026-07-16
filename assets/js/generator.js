@@ -131,6 +131,12 @@ const Generator = {
       email:         config.email        || '',
       currency:      config.currency     || '₦',
       siteUrl:       config.siteUrl      || '',
+      // FIX ADM-01 (#5): automated admission numbers must start with the school's
+      // acronym (entered in the wizard). Falls back to the short name so it is
+      // always populated. This flows into config.js (admissionAcronym) and is
+      // stamped into every SQL file by schoolSQL().
+      admissionAcronym: (config.admissionAcronym || config.shortName || config.schoolName || 'SCH')
+                         .toString().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'SCH',
       modules:       Array.isArray(config.modules) ? config.modules : []
     };
 
@@ -392,7 +398,10 @@ const Generator = {
   },
 
   schoolSQL(content, cfg) {
-    const acronym = (cfg.shortName || cfg.schoolName || 'SCH').toString().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8) || 'SCH';
+    // FIX ADM-01 (#5): use the dedicated admissionAcronym (entered in the wizard)
+    // so generated admission numbers always begin with the school's acronym.
+    const acronym = (cfg.admissionAcronym || cfg.shortName || cfg.schoolName || 'SCH').toString().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8) || 'SCH';
+    const staffAcronym = (cfg.staffAcronym || acronym).toString().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8) || acronym;
     return String(content || '')
       .replace(/admission_prefix text default 'STD'/g, "admission_prefix text default '" + acronym + "'")
       .replace(/admission_prefix text default 'SCH'/g, "admission_prefix text default '" + acronym + "'")
@@ -470,7 +479,8 @@ window.SCHOOL = {
   logoExt: ${JSON.stringify(cfg.logoExt || 'svg')},
   primary: ${JSON.stringify(cfg.themePrimary || '#4f46e5')},
   accent: ${JSON.stringify(cfg.themeAccent || '#06b6d4')},
-  currency: ${JSON.stringify(cfg.currency || '₦')}
+  currency: ${JSON.stringify(cfg.currency || '₦')},
+  admissionAcronym: ${JSON.stringify(cfg.admissionAcronym || 'SCH')}
 };
 window.SC.THEMES = ${JSON.stringify(typeof SC !== 'undefined' && SC.THEMES ? SC.THEMES : [])};
 window.SC.MODULES = ${JSON.stringify(typeof SC !== 'undefined' && SC.MODULES ? SC.MODULES : [])};
@@ -573,12 +583,34 @@ if (window.CRUD) CRUD.init(sb);
     const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     const name = esc(cfg.schoolName);
     const motto = esc(cfg.schoolMotto);
+    const acronym = (cfg.admissionAcronym || cfg.shortName || 'SCH').toString().toUpperCase().replace(/[^A-Z0-9]/g,'');
+    const base = String(cfg.siteUrl || '').replace(/\/+$/,'');
+    const orgLD = {
+      "@context":"https://schema.org",
+      "@type":"EducationalOrganization",
+      "name": cfg.schoolName,
+      "alternateName": cfg.shortName,
+      "slogan": cfg.schoolMotto,
+      ...(base ? {"url": base} : {}),
+      ...(cfg.phone ? {"telephone": cfg.phone} : {}),
+      ...(cfg.email ? {"email": cfg.email} : {}),
+      ...(cfg.address ? {"address":{"@type":"PostalAddress","streetAddress": cfg.address}} : {}),
+      "application": {
+        "@type":"SoftwareApplication",
+        "name":"School Connect",
+        "applicationCategory":"EducationApplication",
+        "operatingSystem":"Web, Android, iOS (PWA)",
+        "offers":{"@type":"Offer","price":"0","priceCurrency": cfg.currency || 'NGN'},
+        "publisher":{"@type":"Organization","name":"HMG Concepts","url":"https://hmgconcepts.pages.dev/"}
+      }
+    };
     const contactBits = [
       cfg.address ? `<li>📍 ${esc(cfg.address)}</li>` : '',
       cfg.phone ? `<li>📞 <a href="tel:${esc(cfg.phone)}">${esc(cfg.phone)}</a></li>` : '',
       cfg.email ? `<li>✉️ <a href="mailto:${esc(cfg.email)}">${esc(cfg.email)}</a></li>` : ''
     ].join('');
     return `
+<script type="application/ld+json">${JSON.stringify(orgLD)}</script>
 ${Generator.bellAndBanner(cfg)}
 <div style="min-height:100vh;display:flex;flex-direction:column">
   <nav class="nav">
@@ -971,7 +1003,7 @@ ${publicPages.map(u => `  <url><loc>${base}${u.p}</loc><changefreq>${u.cf}</chan
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(self), microphone=(), geolocation=()
+  Permissions-Policy: camera=(self), microphone=(self), geolocation=(self)
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.supabase.io wss://*.supabase.co
 
 /_headers
@@ -981,6 +1013,10 @@ ${publicPages.map(u => `  <url><loc>${base}${u.p}</loc><changefreq>${u.cf}</chan
 
   /** Generate vercel.json */
   generateVercelConfig() {
+    // FIX GEO-01: Permissions-Policy now ALLOWS geolocation=(self) and camera=(self)
+    // so staff geofenced check-in and the "capture school GPS" buttons work.
+    // Previously geolocation=() hard-blocked them ("Geolocation has been disabled
+    // in this document by permission policy").
     return JSON.stringify({
       headers: [
         {
@@ -988,7 +1024,14 @@ ${publicPages.map(u => `  <url><loc>${base}${u.p}</loc><changefreq>${u.cf}</chan
           headers: [
             { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
             { key: 'X-Content-Type-Options', value: 'nosniff' },
-            { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' }
+            { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+            { key: 'Permissions-Policy', value: 'geolocation=(self), camera=(self), microphone=(self), payment=(), usb=(), bluetooth=()' }
+          ]
+        },
+        {
+          source: '/sw.js',
+          headers: [
+            { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }
           ]
         }
       ]
@@ -1048,7 +1091,7 @@ ${(Array.isArray(cfg.modules) ? cfg.modules : []).map(m => `- ${m.replace(/_/g, 
 ## 📞 Support
 - Feature Guide: \`feature-guide.html\`
 - Developer: Adewale Samson Adeagbo (HMG Concepts)
-- GitHub: https://github.com/hmgconcepts/schoolconnect15
+- GitHub: https://github.com/hmgconcepts/schoolconnect
 
 ---
 *Built with ❤️ by HMG Concepts — 100% free, open-source school management.*

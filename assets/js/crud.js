@@ -696,7 +696,7 @@ const CRUD = {
     tableEl.querySelector('thead').innerHTML = head;
     const tb = tableEl.querySelector('tbody');
     if (error) {
-      let cached = null; try { cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null'); } catch(_) {}
+      let cached = null; try { cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch(_) {}
       if (cached && cached.html) { tb.innerHTML = cached.html + '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '" style="color:#b45309;background:#fffbeb">Live refresh failed; showing the last visible records so they do not disappear. ' + esc(error.message) + '</td></tr>'; return; }
       tb.innerHTML = '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '">' + esc(error.message) + '</td></tr>'; return;
     }
@@ -753,7 +753,7 @@ const CRUD = {
     }
 
     if (!filteredData || !filteredData.length) {
-      let cached = null; try { cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null'); } catch(_) {}
+      let cached = null; try { cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch(_) {}
       if (cached && cached.html) { tb.innerHTML = cached.html + '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '" style="color:#64748b;background:#f8fafc">No new live rows found right now; the last visible records are kept here so recipients can continue reading them.</td></tr>'; return; }
       tb.innerHTML = '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '" style="color:var(--gray-500)">No records yet.' + (writable ? ' Click “+ Add new”.' : '') + '</td></tr>'; return;
     }
@@ -785,9 +785,49 @@ const CRUD = {
         '<button class="btn btn-sm btn-outline" onclick="CRUD.remove(\'' + moduleId + '\',\'' + row.id + '\')">Delete</button>' +
       '</td>') + '</tr>').join('');
     tb.innerHTML = renderedRows;
-    try { sessionStorage.setItem(cacheKey, JSON.stringify({ at: Date.now(), html: renderedRows })); } catch(_) {}
+    try { localStorage.setItem(cacheKey, JSON.stringify({ at: Date.now(), html: renderedRows })); } catch(_) {}
     // re-apply role visibility to the freshly-rendered action buttons
     if (window.App && App.applyVisibilityTokens) try { App.applyVisibilityTokens(App.currentRole || (window.SC_PROFILE && SC_PROFILE.role) || ''); } catch (e) {}
+    // ENHANCEMENT (#2): inject a live instant-search box above every module
+    // table so recipients can find any record instantly. Persists the query.
+    CRUD.injectTableSearch(moduleId, tableEl, filteredData.length);
+  },
+
+  /** Instant per-table search — enhances EVERY CRUD module page at once. */
+  injectTableSearch(moduleId, tableEl, rowCount) {
+    if (!tableEl) return;
+    const wrap = tableEl.closest('.table-wrap') || tableEl.parentNode;
+    if (!wrap || wrap.querySelector('.sc-table-search')) {
+      // already injected — just refresh the count
+      const count = wrap.querySelector('.sc-table-count');
+      if (count) count.textContent = rowCount + ' record' + (rowCount === 1 ? '' : 's');
+      return;
+    }
+    const box = document.createElement('div');
+    box.className = 'sc-table-search';
+    box.style.cssText = 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px';
+    const saved = '';
+    try { /* q lives for the session per module */ } catch(_) {}
+    box.innerHTML =
+      '<input class="form-input sc-table-q" placeholder="🔍 Search this table…" ' +
+      'style="flex:1;min-width:200px;max-width:420px;padding:9px 12px;border:1px solid var(--gray-200,#e2e8f0);border-radius:10px;font-size:.9rem" ' +
+      'data-module="' + moduleId + '">' +
+      '<span class="sc-table-count" style="font-size:.8rem;color:var(--gray-500,#64748b);font-weight:700">' + rowCount + ' record' + (rowCount === 1 ? '' : 's') + '</span>';
+    wrap.insertBefore(box, wrap.firstChild === tableEl ? tableEl : (wrap.querySelector('table') || tableEl));
+    const q = box.querySelector('.sc-table-q');
+    q.addEventListener('input', function () {
+      const term = this.value.trim().toLowerCase();
+      const rows = tableEl.querySelectorAll('tbody tr');
+      let shown = 0;
+      rows.forEach(function (r) {
+        if (r.querySelector('.pulse')) return;            // skip loading / error rows
+        const match = !term || r.textContent.toLowerCase().indexOf(term) !== -1;
+        r.style.display = match ? '' : 'none';
+        if (match) shown++;
+      });
+      const count = box.querySelector('.sc-table-count');
+      if (count) count.textContent = term ? (shown + ' of ' + rows.length + ' match') : (rowCount + ' record' + (rowCount === 1 ? '' : 's'));
+    });
   },
 
   /* Open the add/edit modal with a REAL form */

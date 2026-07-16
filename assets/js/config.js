@@ -32,7 +32,7 @@ window.SCHOOL = {
   themeId: 'theme15',
   campuses: [],
   hmgLink: 'https://hmgconcepts.pages.dev/',
-  siteUrl: 'https://1gosaportal.vercel.app',
+  siteUrl: 'https://hmgschoolconnect.vercel.app',
   currency: '\u20A6'
 };
 

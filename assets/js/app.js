@@ -341,7 +341,7 @@ const App = {
     'lesson-plans','behaviour','support_plans','support-plans',
     'cafeteria','menu','hostel','broadcast','document_builder',
     'document-builder','helpdesk','visitors','leave','checkin',
-    'book_request','book-request','idcards','reports',
+    'book_request','book-request','reports',
     // v4: user explicitly said these should NOT be in parent or student nav.
     // Parents/students have alternative pages for their data
     // (student-profile.html, fees.html, results.html, report-cards.html, etc.)
@@ -371,7 +371,7 @@ const App = {
     'student-profile','student_profile',
     'results','report-cards','report_cards',
     'attendance','timetable','assignments',
-    'fees',
+    'fees','idcards',
     'voting',
     'announcements','events','school_calendar','school-calendar',
     'gallery','helpdesk','lost_found','lost-found',
@@ -395,7 +395,7 @@ const App = {
   PARENT_WHITELIST: new Set([
     'dashboard','profile','change-password','notifications',
     'student-profile','student_profile',
-    'fees',
+    'fees','idcards',
     'results','report-cards','report_cards',
     'academic-records','academic_records',
     'attendance','assignments','timetable',
