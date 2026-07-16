@@ -203,7 +203,7 @@
         </a><a href="parents.html" data-module-id="parents" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
           <span class="app-nav-icon">👨‍👩‍👧</span>
           <span>Parent–Child</span>
-        </a><a href="idcards.html" data-module-id="idcards" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
+        </a><a href="idcards.html" data-module-id="idcards" data-role-allow="super_admin admin principal proprietor head_teacher bursar parent student" class="">
           <span class="app-nav-icon">🪪</span>
           <span>ID Cards</span>
         </a><a href="directory.html" data-module-id="directory" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
@@ -426,6 +426,18 @@
         </p>
       </div>
       <div id="cbt-list"><span class="pulse">Loading exams…</span></div>
+    
+      <div class="card" style="margin-top:16px;background:#f0fdf4;border:1px solid #bbf7d0">
+        <h3 style="margin-top:0">📊 CBT → Report Card Mapping (Mid-Term & Terminal)</h3>
+        <p style="color:var(--gray-700)">CBT is used for <strong>mid-term tests (CA1/CA2)</strong> and <strong>terminal examination objectives (Exam)</strong>. After students submit, push scores into Results table with column selection (CA1, CA2, CA3, CBT Exam, Exam, Project, etc). Then generate <strong>class broadsheet, subject broadsheet and report card</strong> from Report Cards page — all automatically.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="ReportEngine.openCBTExportModal()">🚀 Push CBT Scores → Report Card (choose column)</button>
+          <a class="btn btn-outline btn-sm" href="report-cards.html">📄 Open Report Cards</a>
+          <a class="btn btn-outline btn-sm" href="academic-records.html">📊 Broadsheets</a>
+        </div>
+        <p style="font-size:.82rem;color:var(--gray-500);margin-top:8px">Tip: When creating a CBT exam, set <em>Report-card column</em> (e.g. CA1 for mid-term, Exam for terminal) and <em>Max score contribution</em> (e.g. 20). Scores are scaled accordingly.</p>
+      </div>
+
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
       © 2026 School Connect Demo School · Built by <a href="https://cssadewale.pages.dev" target="_blank" rel="noopener">Adewale Samson Adeagbo</a> · Powered by <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener">HMG Concepts</a> · <a href="developer.html">About the developer</a>
