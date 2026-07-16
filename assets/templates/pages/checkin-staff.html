@@ -37,7 +37,7 @@ video{width:100%;height:100%;object-fit:cover}
       <img src="assets/img/logo.png" alt="" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{textContent:('S'),style:'width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900'}))">
       <div>
         <strong id="sidebar-school-name">School Portal</strong>
-        <div style="font-size:0.7rem;color:var(--gray-500)">GOSA Staff</div>
+        <div style="font-size:0.7rem;color:var(--gray-500)">SCD Staff</div>
       </div>
     </div>
     <nav class="app-nav">
@@ -177,8 +177,16 @@ const CK = {
           }
         },
         (err) => {
-          CK.updateLocationBadge(false, '❌ GPS permission/error: ' + err.message + '. Staff check-in blocked because on-premises attendance is enforced.');
-          resolve(false); 
+          // FIX GEO-01 (#7): actionable guidance. The root cause (geolocation
+          // disabled by Permissions-Policy) is fixed by deploying with
+          // geolocation=(self) in _headers / vercel.json. If it STILL fails
+          // it means the browser-level permission was denied — guide the user.
+          let hint = err.message || 'Geolocation unavailable';
+          if (/permission|policy|denied/i.test(hint)) {
+            hint = 'GPS permission was blocked. On the server, ensure _headers / vercel.json set geolocation=(self). On your device, tap the lock/ⓘ icon next to the address bar → Site settings → Location → Allow, then reload.';
+          }
+          CK.updateLocationBadge(false, '❌ GPS: ' + hint + (enforce ? ' Staff check-in is blocked while on-premises attendance is enforced.' : ' Geofence is off — you can still check in.'));
+          resolve(!enforce);
         },
         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
       );
