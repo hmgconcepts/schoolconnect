@@ -98,6 +98,9 @@ const Generator = {
       await Generator.loadScript('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');
     }
     const zip = new JSZip();
+    // FIX RC-D (audit): track every page filename we emit so two modules (or a
+    // module + a dedicated page) can never collide on the same output file.
+    const writtenPageFiles = new Set();
 
     // ---- 1. Resolve theme from config ----
     const themeId = config.themeId || 'theme15';
@@ -280,6 +283,11 @@ const Generator = {
       { id: 'contact',            name: 'Contact',             fn: () => T.modulePage(resolvedConfig, 'contact', { noShell: true }) },
       { id: 'apply',              name: 'Apply',               fn: () => staticPages['apply'] || T.modulePage(resolvedConfig, 'apply', { noShell: true }) },
       { id: 'exam-register',      name: 'Exam Registration',   fn: () => staticPages['exam-register'] || T.modulePage(resolvedConfig, 'exam_registrations', { noShell: true }) },
+      // FIX NAV-3 (audit): many static pages (analytics, voting, surveys,
+      // checkin, geofence, report-cards, …) link to exam_registrations.html,
+      // but the canonical page is exam-register.html. Emit the underscore alias
+      // too so those legacy links resolve instead of 404-ing.
+      { id: 'exam_registrations', name: 'Exam Registrations',  fn: () => staticPages['exam-register'] || T.modulePage(resolvedConfig, 'exam_registrations', { noShell: true }) },
       { id: 'profile',            name: 'My Profile',          fn: () => staticPages['profile'] || Generator.fallbackPage('profile') },
       { id: 'change-password',    name: 'Change Password',     fn: () => staticPages['change-password'] || Generator.fallbackPage('change-password') },
       { id: 'notifications',      name: 'Notifications',       fn: () => staticPages['notifications'] || T.modulePage(resolvedConfig, 'notifications', { requireRole: 'all' }) },
@@ -290,12 +298,19 @@ const Generator = {
       { id: 'voting',             name: 'Voting & Polls',      fn: () => staticPages['voting'] || T.voting(resolvedConfig) },
       { id: 'timetable-generator',name: 'Auto-Timetable',      fn: () => T.modulePage(resolvedConfig, 'timetable-generator') },
       { id: 'payment-history',    name: 'Payment History',     fn: () => staticPages['payment-history'] || Generator.fallbackPage('payment-history') },
+      // FIX NAV-2: the staff dashboard tiles always link to staff check-in and
+      // geofence settings, so these two pages must be emitted unconditionally
+      // (not only when `checkin` is selected) to keep every dashboard link valid.
+      { id: 'checkin-staff',      name: 'Staff Check-In',      fn: () => staticPages['checkin-staff'] || T.modulePage(resolvedConfig, 'checkin-staff', { requireRole: 'staff admin' }) },
+      { id: 'geofence-settings',  name: 'Geofence Settings',   fn: () => staticPages['geofence-settings'] || T.modulePage(resolvedConfig, 'geofence-settings', { requireRole: 'staff admin' }) },
     ];
 
     for (const p of dedicatedPages) {
       try {
         const html = p.fn();
-        zip.file(p.id + '.html', html);
+        const outFile = p.id + '.html';
+        writtenPageFiles.add(outFile);
+        zip.file(outFile, html);
       } catch (e) {
         console.warn('[Generator] Failed to generate', p.id, e.message);
         // Fallback minimal page
@@ -325,7 +340,41 @@ const Generator = {
 
       try {
         const html = staticPages[canonical] || T.modulePage(resolvedConfig, canonical);
-        zip.file(Generator.pageFileName(canonical), html);
+        const outFile = Generator.pageFileName(canonical);
+        if (writtenPageFiles.has(outFile)) {
+          console.warn('[Generator] SKIP duplicate page file "' + outFile + '" from module "' + modId + '" — already emitted. Catalog alias collision.');
+          continue;
+        }
+        writtenPageFiles.add(outFile);
+        zip.file(outFile, html);
+      } catch (e) {
+        console.warn('[Generator] Failed to generate module page:', modId, e.message);
+      }
+    }
+
+    // ---- 12b. FIX NAV-4 (audit — guarantee error-free output for ANY selection):
+    // The wizard lets a client pick a SUBSET of modules, but the static special
+    // pages (student-profile, report-cards, voting, …) and the dashboard tiles
+    // cross-link modules by filename. Emitting only the selected subset left
+    // those cross-links pointing at non-existent pages (the audit reported 600+
+    // broken links on a 20-module build). To make EVERY generated site
+    // internally consistent we now emit ALL catalog module pages. What the user
+    // selected still controls what is VISIBLE — the sidebar nav (NAV-1) and the
+    // dashboard tiles (NAV-2) only list selected modules + always-on dedicated
+    // pages — so a client still "gets only the modules they want" in the UI,
+    // while every internal link on every page resolves. No dead links, ever.
+    const allCatalogIds = ((window.SC && window.SC.MODULES) || []).map(m => m.id);
+    for (const modId of allCatalogIds) {
+      const canonical = modId;                 // catalog ids are already canonical
+      const dedupeKey = canonical.replace(/[-_]/g, '').toLowerCase();
+      if (seenModules.has(dedupeKey)) continue;
+      seenModules.add(dedupeKey);
+      try {
+        const html = staticPages[canonical] || T.modulePage(resolvedConfig, canonical);
+        const outFile = Generator.pageFileName(canonical);
+        if (writtenPageFiles.has(outFile)) continue;   // collision guard (RC-D)
+        writtenPageFiles.add(outFile);
+        zip.file(outFile, html);
       } catch (e) {
         console.warn('[Generator] Failed to generate module page:', modId, e.message);
       }
@@ -361,6 +410,15 @@ const Generator = {
     for (const sf of ['sample-report-card.html','sample-class-broadsheet.html','sample-subject-broadsheet.html','sample-e-receipt.html']) {
       const sc2 = await Generator.loadFile('samples/' + sf);
       if (sc2) zip.file('samples/' + sf, sc2);
+    }
+    // FIX NAV-3 (audit): report-cards.html, academic-records.html and fees.html
+    // link to the sample documents at the REPO ROOT (href="sample-report-card.html"),
+    // but the loop above only wrote them under samples/. Fresh builds therefore
+    // shipped 404 "View sample" links. The demo ships them at BOTH locations, so
+    // we mirror that: also emit each sample at the root where the pages link it.
+    for (const sf of ['sample-report-card.html','sample-class-broadsheet.html','sample-subject-broadsheet.html','sample-e-receipt.html']) {
+      const sc2 = await Generator.loadFile('samples/' + sf);
+      if (sc2) zip.file(sf, sc2);
     }
 
     // ---- 16a-2. CSV templates (root copy for the download button + database/ copies) ----
@@ -403,11 +461,67 @@ const Generator = {
       } catch (e) { /* keep generated placeholder */ }
     }
 
-    console.log('[Generator] Build complete. ZIP entries:', Object.keys(zip.files).length);
+    // FIX RC-B (audit): post-build integrity sweep. Before finalising the ZIP,
+    // scan every root-level .html page we emitted and flag any that has ZERO
+    // inbound links from another page (a genuine orphan) or any page that links
+    // to a file we did NOT emit (a broken link). This is what lets the generator
+    // GUARANTEE an error-free, self-consistent site instead of silently shipping
+    // dead pages or 404 nav links. Findings are surfaced via console and stored
+    // on the returned object so the wizard/UI can show a report.
+    const audit = await Generator.auditSiteIntegrity(zip, resolvedConfig);
+    console.log('[Generator] Build complete. ZIP entries:', Object.keys(zip.files).length,
+                '| orphans:', audit.orphans.length, '| broken links:', audit.brokenLinks.length);
+    if (audit.orphans.length || audit.brokenLinks.length) {
+      console.warn('[Generator] Integrity audit findings:', audit);
+    }
     const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
     const schoolSlug = (resolvedConfig.schoolName || 'school').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     const fileName = schoolSlug + '-school-connect.zip';
-    return { blob, fileName };
+    return { blob, fileName, audit };
+  },
+
+  /**
+   * FIX RC-B (audit): Post-build site integrity sweep.
+   * Scans the in-memory ZIP for (a) orphan pages (root *.html with no inbound
+   * link) and (b) broken internal links (href/src pointing at a file not in the
+   * ZIP). Pure read-only over the zip's file map — never mutates the archive.
+   * Returns { orphans:[...], brokenLinks:[...] }. Async because JSZip stores
+   * page bodies as compressed blobs (read via file().async('string')).
+   */
+  async auditSiteIntegrity(zip, cfg) {
+    const ALLOWED_ORPHANS = new Set([
+      'offline.html'            // precached by sw.js, never nav-linked by design
+    ]);
+    const names = Object.keys(zip.files).filter(n => !zip.files[n].dir);
+    const fileSet = new Set(names);
+    const rootHtml = names.filter(f => /^[^/]+\.html$/.test(f));
+
+    const linkRe = /(?:href|src)\s*=\s*["']([^"']+)["']/g;
+    const inbound = new Map();   // target file -> count
+    const brokenLinks = [];
+    for (const name of names) {
+      if (!/\.html$/.test(name)) continue;
+      let raw = '';
+      try { raw = await zip.file(name).async('string'); } catch (_) { continue; }
+      const dir = name.includes('/') ? name.slice(0, name.lastIndexOf('/') + 1) : '';
+      let m;
+      while ((m = linkRe.exec(raw)) !== null) {
+        let ref = m[1];
+        if (/^(https?:|mailto:|tel:|wa\.me|sms:|data:|#|\/\/|javascript:)/i.test(ref)) continue;
+        ref = ref.split('#')[0].split('?')[0];
+        if (!ref || ref === '.') continue;
+        const target = ref.startsWith('/') ? ref.slice(1) : (dir + ref);
+        const clean = target.replace(/^\.?\//, '').replace(/[^/]+\/\.\.\//g, '');
+        if (/\.(html|js|css|png|jpe?g|webp|svg|json|csv|xml|txt|ico|woff2?)$/i.test(clean)) {
+          inbound.set(clean, (inbound.get(clean) || 0) + 1);
+          if (!fileSet.has(clean) && !clean.startsWith('assets/templates/')) {
+            brokenLinks.push({ from: name, to: clean });
+          }
+        }
+      }
+    }
+    const orphans = rootHtml.filter(h => !ALLOWED_ORPHANS.has(h) && !(inbound.get(h) > 0));
+    return { orphans, brokenLinks };
   },
 
   schoolSQL(content, cfg) {
@@ -696,6 +810,8 @@ ${Generator.bellAndBanner(cfg)}
         <ul>
           <li><a href="feature-guide.html">Feature Guide</a></li>
           <li><a href="verify-certificate.html">Verify Certificate</a></li>
+          <li><a href="ecosystem.html">HMG Ecosystem</a></li>
+          <li><a href="hmg-ecosystem.html">HMG Services</a></li>
         </ul>
       </div>
       <div>

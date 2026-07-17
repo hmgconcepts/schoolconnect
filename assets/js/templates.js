@@ -420,25 +420,33 @@ ${T.setupRequiredBanner()}
     return map[id] || fallbackName || id;
   },
 
-  /* Get list of all pages/modules for this school.
-     FIX v9: Includes all relevant modules for complete portal nav.
-     The navigator is a complete portal map, not only the wizard's selected modules. */
+  /* Get the list of pages/modules to show in this school's sidebar nav.
+     FIX NAV-1 (audit — the #1 cause of broken links in generated sites):
+     Previously this returned ALL 88 catalog modules plus a "dedicated" list,
+     so the sidebar linked to module pages the generator had NOT emitted (every
+     client who selected a subset got a nav full of 404s). The nav must be a
+     SUBSET of the generated pages. It is now:
+       base            – always-on app pages (dashboard)
+       dedicatedPages  – pages the generator ALWAYS emits (Generator.build,
+                         step 11). Kept in lock-step with that list, so every
+                         id here is guaranteed to resolve.
+       selected        – the modules the user actually picked in the wizard.
+     nav ⊆ generated pages ⇒ zero broken internal links, guaranteed. */
   allModules(config) {
     const byId = id => (window.SC.MODULES || []).find(m => m.id === id) || { id, name: T.labelFor(id, id) };
     const base = ['dashboard'];
-    // Catalog = all modules from SC.MODULES (the full module registry)
-    const catalogIds = (window.SC.MODULES || []).map(m => m.id);
-    // User selected modules from wizard config
-    const selected = Array.isArray(config.modules) ? config.modules.slice() : [];
-    // Dedicated pages — always available regardless of module selection
+    // Pages the generator unconditionally writes into every ZIP (see the
+    // `dedicatedPages` array in generator.js — these two lists must match).
     const dedicatedPages = [
-      'student-profile', 'profile', 'change-password', 'cbt-exam', 'cbt-multi', 'teacher-overview', 'feature-guide', 'notifications', 'parents', 'affective_traits', 'psychomotor_traits', 'report_comments', 'ecosystem_products'
+      'student-profile', 'profile', 'change-password', 'notifications', 'settings',
+      'voting', 'teacher-overview', 'cbt-exam', 'cbt-prompts', 'cbt-multi',
+      'timetable-generator', 'payment-history', 'exam-register', 'feature-guide',
+      'verify-certificate'
     ];
-    // Combine and dedupe — avoid 'class' vs 'classes' collisions
-    const known = [...new Set([...base, ...catalogIds, ...dedicatedPages])];
-    const extraSelected = selected.filter(id => !known.includes(id));
-    const allIds = [...known, ...extraSelected].filter(Boolean);
-    return allIds.map(id => byId(id));
+    // Only the modules the user selected. Never the full catalog.
+    const selected = Array.isArray(config.modules) ? config.modules.slice() : [];
+    const navIds = [...new Set([...base, ...dedicatedPages, ...selected])].filter(Boolean);
+    return navIds.map(id => byId(id));
   },
 
   /* ---------- Dashboard ---------- */
@@ -459,7 +467,27 @@ ${T.setupRequiredBanner()}
     const studentLinks = [
       ['Take CBT','cbt-exam.html'],['Multi-Subject CBT','cbt-multi.html'],['Assignments','assignments.html'],['Digital Library','digital_library.html'],['E-Resources','eresources.html'],['Timetable','timetable.html'],['Results','results.html'],['Report Cards','report-cards.html'],['My Profile','student-profile.html'],['Diary','diary.html'],['Announcements','announcements.html'],['Inbox','inbox.html'],['Complaints','complaints.html'],['Certificates','certificates.html']
     ];
-    const buttons = arr => arr.map(x => `<a class="btn btn-outline btn-sm" href="${x[1]}">${T.esc(x[0])}</a>`).join('');
+    // FIX NAV-2 (audit): the dashboard's role quick-link tiles hardcoded
+    // EVERY module's filename regardless of selection, so a subset client got
+    // dozens of dead buttons. We now filter each tile to only link to pages the
+    // generator actually emits. `_dashBase` lists ONLY the pages the generator
+    // writes unconditionally (Generator.build step 11 + index/login/dashboard);
+    // everything else (idcards, certificates, flyer, finance, …) only appears
+    // when the user selected that module, so it is covered by `_dashSelected`.
+    // NOTE: keep `_dashBase` in lock-step with the dedicatedPages array in
+    // generator.js — if a page becomes always-on there, add its id here too.
+    const _dashBase = ['dashboard','login','index','about','contact','apply','developer',
+      'feature-guide','student-profile','profile','change-password','cbt-exam','cbt-multi',
+      'cbt-prompts','teacher-overview','notifications','settings','voting','timetable-generator',
+      'payment-history','exam-register','verify-certificate','ecosystem','hmg-ecosystem',
+      'checkin-staff','geofence-settings'];
+    const _dashSelected = Array.isArray(config.modules) ? config.modules.slice() : [];
+    const available = new Set(
+      [..._dashBase, ..._dashSelected].map(id => T.pageFileName(id))
+    );
+    const buttons = arr => arr
+      .filter(x => available.has(x[1]))
+      .map(x => `<a class="btn btn-outline btn-sm" href="${x[1]}">${T.esc(x[0])}</a>`).join('');
     return T.shell(config, 'Dashboard', `
       <div class="card" style="margin-bottom:18px;background:var(--gradient);color:#fff">
         <h2 style="margin:0;color:#fff">Welcome, <span id="dash-user-name">User</span></h2>

@@ -1,55 +1,28 @@
-// ====================================================================
-// School Connect Gen v9 — Generated School Site Config
-// ====================================================================
+// =============================================================
+// School Connect — Builder Tool Config (THIS REPO / generator)
+// -------------------------------------------------------------
+// FIX S1 (audit): This file is the config for the GENERATOR TOOL
+// itself (the public builder at builder.html). It is NOT a client
+// school config. A previous build had committed a generated client
+// config (God of Seed Academy) complete with a live Supabase key
+// and a wrong siteUrl into this file — contaminating the builder.
+//
+// The builder runs 100% in the browser and needs NO backend of its
+// own. Per-school Supabase keys belong ONLY in the generated
+// assets/js/config.js that the wizard writes into each client ZIP
+// (see Generator.generateConfigJS), never here.
+// =============================================================
 
-// Supabase credentials
-window.SUPABASE_URL = 'https://dgarrlzbmscpgtefdupm.supabase.co';
-window.SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnYXJybHpibXNjcGd0ZWZkdXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMzc0MTYsImV4cCI6MjA5NzkxMzQxNn0.7CNB3KcQD3NHr6ENDGb7gRX_ld_xjgpQeL_YVuLRW_A';
+const BUILDER_VERSION = '8.0.0';
+const BUILDER_PRODUCT = 'School Connect Gen v8';
 
-// Initialize Supabase client (guarded so public/offline pages do not crash if the CDN is unavailable)
-window.sb = null;
-var sb = null;
-if (window.supabase && window.SUPABASE_URL && window.SUPABASE_KEY) {
-  window.sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY, {
-    auth: { persistSession: true, autoRefreshToken: true }
-  });
-  sb = window.sb;
-} else {
-  console.warn('[School Connect] Supabase client unavailable. Check network/CDN or assets/js/config.js.');
-}
+// Lead-generation / brand link (shown on generated sites).
+const HMG_LINK = 'https://hmgconcepts.pages.dev/';
 
-// School configuration
-window.SCHOOL = {
-  name: 'God of Seed Academy',
-  shortName: 'GoSA',
-  motto: 'Excellence in Learning and Character',
-  address: '',
-  phone: '',
-  email: '',
-  logoExt: 'png',
-  primary: '#0506ae',
-  accent: '#964eec',
-  themeId: 'theme15',
-  campuses: [],
-  hmgLink: 'https://hmgconcepts.pages.dev/',
-  siteUrl: 'https://hmgschoolconnect.vercel.app',
-  currency: '\u20A6'
-};
-
-console.log('[School Connect] Config loaded — Supabase: ' + window.SUPABASE_URL);
-
-// === Missing utility functions (FIX: added by audit) ===
+// Builder globals. The wizard/catalog populate SC.THEMES & SC.MODULES
+// at runtime; we only guarantee the namespaces exist here.
 window.SC = window.SC || {};
-if (!window.SC.esc) {
-  window.SC.esc = function(s) {
-    return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-  };
-}
-if (!window.SC.jsStr) {
-  window.SC.jsStr = function(s) { return JSON.stringify(String(s==null?'':s)); };
-}
-if (!window.SC.slugify) {
-  window.SC.slugify = function(s) { return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); };
-}
-if (!window.SC.THEMES) window.SC.THEMES = [];
-if (!window.SC.MODULES) window.SC.MODULES = [];
+window.SC.THEMES = window.SC.THEMES || [];
+window.SC.MODULES = window.SC.MODULES || [];
+
+console.log('%c[School Connect v8 Builder] ready — generate a school platform in minutes.', 'color:#4f46e5;font-weight:bold;font-size:13px');

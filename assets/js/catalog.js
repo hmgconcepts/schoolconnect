@@ -373,7 +373,7 @@ const CHATBOT_KB = [
   { match: ['teacher','other','edit','access'], reply: 'School Connect v9 implements **Teacher Isolation**. Subject teachers can only edit or delete records they personally created. Administrators retain full oversight.' },
   { match: ['parent','student','child','own'], reply: 'Parents and Students see only data relevant to them. Parents see linked children\'s results, fees, and attendance. Students see their own personal academic records.' },
   { match: ['cost','price','free','pay'], reply: 'The platform is **free forever**. We use free hosting (GitHub) and free backend (Supabase). No monthly subscriptions. Human deployment assistance is available for a one-time fee.' },
-  { match: ['feature','module','what'], reply: 'You get up to **89 modules** covering every aspect of school management: Academics, CBT, Finance, HR, Payroll, Communication, and more. See **FEATURES.md**.' },
+  { match: ['feature','module','what'], reply: 'You get up to **88 modules** covering every aspect of school management: Academics, CBT, Finance, HR, Payroll, Communication, and more. See **FEATURES.md**.' },
   { match: ['seo','google','lead','hmg'], reply: 'Each site is SEO-optimized with automated sitemaps and robots.txt. Footers link to the **HMG Concepts Ecosystem** to help your school grow and generate leads.' },
   { match: ['exam','registration','external'], reply: 'The **Exam Registrations** module (v9) provides detailed, exam-specific forms for WAEC, NECO, JAMB, IGCSE, and more. Collect NIN, subjects, and course choices efficiently.' }
 ];
@@ -385,4 +385,4 @@ window.SC = {
   esc, jsStr, tplStr, slugify, attr, jsonSafe
 };
 
-console.log('%c[School Connect Gen v3] catalog loaded — 86 themes, 42 fonts, 7 presets, 88 modules (CBT engine + super features: chatbot, command palette, ID cards, certificates, flyer).', 'color:#4f46e5;font-weight:bold;font-size:13px');
+console.log('%c[School Connect Gen v3] catalog loaded — 86 themes, 45 fonts, 7 presets, 88 modules (CBT engine + super features: chatbot, command palette, ID cards, certificates, flyer).', 'color:#4f46e5;font-weight:bold;font-size:13px');
