@@ -2062,7 +2062,7 @@ create table if not exists public.report_scores (
   updated_by uuid references public.profiles(id),
   updated_at timestamptz default now(),
   created_at timestamptz default now(),
-  unique(column_id, student_id_ref, student_name)
+  unique(column_id, student_id_ref, student_name, subject)
 );
 alter table public.report_scores enable row level security;
 create index if not exists report_scores_lookup_idx
@@ -4745,3 +4745,59 @@ create policy "read_idcards" on public.idcards for select using (
 );
 drop policy if exists "write_idcards" on public.idcards;
 create policy "write_idcards" on public.idcards for all using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
+
+
+-- =====================================================================
+-- V3 FINAL: SCHOOL-WIDE REPORT-CARD COLUMN TEMPLATE
+-- Run automatically as part of complete-schema.sql.  Assessment columns
+-- use subject='*' once per class/term/session and are reused by every
+-- subject. Scores retain their subject so one learner can have CA1 in
+-- Mathematics and English without a uniqueness collision.
+-- =====================================================================
+do $$ begin
+  if exists (select 1 from pg_constraint where conname='report_scores_column_id_student_id_ref_student_name_key') then
+    alter table public.report_scores drop constraint report_scores_column_id_student_id_ref_student_name_key;
+  end if;
+exception when undefined_table then null; end $$;
+create unique index if not exists report_scores_column_student_subject_uq
+  on public.report_scores(column_id, student_id_ref, student_name, subject);
+create index if not exists assessment_columns_global_template_idx
+  on public.assessment_columns(class, term, session, position) where subject='*';
+comment on table public.assessment_columns is 'V3: Create shared school-wide report columns once using subject=*; they are reused for all subjects in a class/term/session.';
+notify pgrst, 'reload schema';
+
+-- =====================================================================
+-- V3 COMPLETE-SCHEMA CLOSURE: report-card trait and comment relations.
+-- These are included here so a new deployment runs ONE file only.
+-- =====================================================================
+create table if not exists public.affective_traits (
+  id uuid primary key default uuid_generate_v4(), student_id uuid references public.students(id) on delete cascade,
+  term text, session text, ratings jsonb default '{}'::jsonb,
+  teacher_id uuid references public.profiles(id), created_at timestamptz default now(), unique(student_id,term,session)
+);
+alter table public.affective_traits enable row level security;
+drop policy if exists "read_affective" on public.affective_traits;
+create policy "read_affective" on public.affective_traits for select using (auth.role() = 'authenticated');
+drop policy if exists "write_affective" on public.affective_traits;
+create policy "write_affective" on public.affective_traits for all using (public.is_staff(auth.uid()));
+create table if not exists public.psychomotor_traits (
+  id uuid primary key default uuid_generate_v4(), student_id uuid references public.students(id) on delete cascade,
+  term text, session text, ratings jsonb default '{}'::jsonb,
+  teacher_id uuid references public.profiles(id), created_at timestamptz default now(), unique(student_id,term,session)
+);
+alter table public.psychomotor_traits enable row level security;
+drop policy if exists "read_psychomotor" on public.psychomotor_traits;
+create policy "read_psychomotor" on public.psychomotor_traits for select using (auth.role() = 'authenticated');
+drop policy if exists "write_psychomotor" on public.psychomotor_traits;
+create policy "write_psychomotor" on public.psychomotor_traits for all using (public.is_staff(auth.uid()));
+create table if not exists public.report_comments (
+  id uuid primary key default uuid_generate_v4(), student_id uuid references public.students(id) on delete cascade,
+  term text, session text, class_teacher_comment text, principal_comment text, next_term_begins date,
+  created_at timestamptz default now(), unique(student_id,term,session)
+);
+alter table public.report_comments enable row level security;
+drop policy if exists "read_comments" on public.report_comments;
+create policy "read_comments" on public.report_comments for select using (auth.role() = 'authenticated');
+drop policy if exists "write_comments" on public.report_comments;
+create policy "write_comments" on public.report_comments for all using (public.is_staff(auth.uid()));
+notify pgrst, 'reload schema';
