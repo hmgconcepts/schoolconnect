@@ -83,7 +83,10 @@ const CRUD = {
       {key:'arm',label:'Arm',type:'text'},
       {key:'level',label:'Level',type:'select',options:['Pre-Nursery','Nursery','Primary','JSS','SSS','Other']},
       {key:'class_teacher',label:'Class teacher (pick from staff)',type:'ref',refTable:'staff',refValue:'full_name',refStore:'value',refFilter:{staff_type:'teaching'}},
-      {key:'capacity',label:'Capacity',type:'number'}
+      {key:'capacity',label:'Capacity',type:'number'},
+      {key:'next_term_fees',label:'Next term fee bill amount',type:'number'},
+      {key:'next_term_fees_currency',label:'Currency',type:'select',options:['₦', '$', '£', '€']},
+      {key:'next_term_fees_note',label:'Next term fees payment note',type:'text'}
     ]},
     subjects: { table:'subjects', title:'Subject', cols:[
       {key:'name',label:'Subject',type:'text',required:true},
@@ -403,9 +406,12 @@ const CRUD = {
       {key:'priority',label:'Priority',type:'select',options:['low','normal','high','urgent']},
       {key:'status',label:'Status',type:'select',options:['open','in_progress','resolved','closed']}
     ]},
-    directory: { table:'profiles', title:'Person', readOnly:true, cols:[
-      {key:'full_name',label:'Name',type:'text'},{key:'email',label:'Email',type:'email'},
-      {key:'role',label:'Role',type:'text'},{key:'status',label:'Status',type:'text'}
+    directory: { table:'profiles', title:'Person', cols:[
+      {key:'full_name',label:'Name',type:'text',required:true},
+      {key:'email',label:'Email',type:'email',readonly:true,help:'Email login address (cannot be edited)'},
+      {key:'role',label:'Role',type:'select',options:['super_admin','admin','principal','proprietor','head_teacher','bursar','staff','teacher','parent','student'],required:true},
+      {key:'status',label:'Status',type:'select',options:['pending','approved','suspended','rejected'],required:true},
+      {key:'phone',label:'Phone',type:'text'}
     ]},
     activity_log: { table:'activity_log', title:'Activity', readOnly:true, cols:[
       {key:'created_at',label:'When',type:'text'},

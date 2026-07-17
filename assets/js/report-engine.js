@@ -116,9 +116,27 @@ const ReportEngine = {
     return out;
   },
 
-  async loadNextTermFees(){
+  async loadNextTermFees(className){
     const db = this.sb || (typeof sb !== 'undefined' ? sb : null);
     if(!db) return {fees:0, currency:'₦', begins:'', note:'Payable before resumption'};
+    if (className) {
+      try {
+        const { data: clData } = await db.from('classes').select('next_term_fees,next_term_fees_currency,next_term_fees_note').eq('name', className).maybeSingle();
+        if (clData && Number(clData.next_term_fees) > 0) {
+          let begins = '';
+          try {
+            const { data: sData } = await db.from('school_settings').select('next_term_begins').eq('id',1).maybeSingle();
+            if (sData) begins = sData.next_term_begins || '';
+          } catch (_) {}
+          return {
+            fees: Number(clData.next_term_fees),
+            currency: clData.next_term_fees_currency || '₦',
+            begins: begins,
+            note: clData.next_term_fees_note || 'Payable before resumption'
+          };
+        }
+      } catch (_) {}
+    }
     try{
       const {data}=await db.from('school_settings').select('next_term_fees,next_term_fees_currency,next_term_begins,next_term_fees_note').eq('id',1).maybeSingle();
       if(data) return {fees:Number(data.next_term_fees)||0, currency:data.next_term_fees_currency||'₦', begins:data.next_term_begins||'', note:data.next_term_fees_note||'Payable before resumption'};
@@ -189,7 +207,16 @@ const ReportEngine = {
     const avg = obtainable ? (total/obtainable*100) : 0;
     const bal = data.feeBalances[first.student_id] ?? data.feeBalances[String(first.student_name||'').toLowerCase()] ?? 0;
     const logo='assets/img/logo.'+sc.logoExt;
-    const scoreRows = list.map(r=>`<tr><td class="left">${this.esc(r.subject)}</td><td>${this.fmt(r.ca1)}</td><td>${this.fmt(r.ca2)}</td><td>${this.fmt(r.cbt)}</td><td>${this.fmt(r.project)}</td><td>${this.fmt(r.paper)}</td><td><b>${this.fmt(r.total)}</b></td><td class="grade">${this.grade(r.total)}</td><td>${this.remark(r.total)}</td></tr>`).join('');
+    const subjectClassAvg = (sub) => {
+      const subRows = rows.filter(r => r.class === first.class && r.subject === sub);
+      if (!subRows.length) return '—';
+      const sum = subRows.reduce((acc, r) => acc + Number(r.total || 0), 0);
+      return (sum / subRows.length).toFixed(1);
+    };
+    const scoreRows = list.map(r => {
+      const classAvg = subjectClassAvg(r.subject);
+      return `<tr><td class="left">${this.esc(r.subject)}</td><td>${this.fmt(r.ca1)}</td><td>${this.fmt(r.ca2)}</td><td>${this.fmt(r.cbt)}</td><td>${this.fmt(r.project)}</td><td>${this.fmt(r.paper)}</td><td><b>${this.fmt(r.total)}</b></td><td style="color:#475569;font-weight:700">${classAvg}</td><td class="grade">${this.grade(r.total)}</td><td>${this.remark(r.total)}</td></tr>`;
+    }).join('');
 
     // v5: Compute class position
     let classPosition = '—'; let classSize = '—';
@@ -249,7 +276,7 @@ const ReportEngine = {
 
     // V2.1 Issue #17: Load next term fees bill for report card
     let nextTermBill = {fees:0, currency:'₦', begins:'', note:''};
-    try{ nextTermBill = await this.loadNextTermFees(); }catch(_){}
+    try{ nextTermBill = await this.loadNextTermFees(first.class || first.class_name); }catch(_){}
 
     // v5: Get comments from report_comments table (v9)
     let classTeacherComment = '';
@@ -300,7 +327,7 @@ const ReportEngine = {
       <text x="60" y="88" text-anchor="middle" font-family="Arial, sans-serif" font-size="4" font-weight="700" fill="${stampColor}">${new Date().toLocaleDateString()}</text>
     </svg>`;
 
-    return `<div class="report-sheet sample-report"><div class="head"><img class="logo" src="${logo}" onerror="this.style.display='none'"><div class="school"><h1>${this.esc(sc.name)}</h1><p>📍 ${this.esc(sc.address)} · 📞 ${this.esc(sc.phone)} · ✉️ ${this.esc(sc.email)}</p><p style="font-style:italic;color:#7c2d12">Motto: ${this.esc(sc.motto)}</p></div><div class="photo">${first.photo_url ? `<img src="${this.esc(first.photo_url)}" onerror="this.parentNode.innerHTML='Photo'">` : 'Student<br>Photo'}</div></div><div class="title">TERMINAL REPORT SHEET — ${this.esc(ctx.term||first.term||'TERM')}, ${this.esc(ctx.session||first.session||'SESSION')}</div><table class="info"><tr><td><b>Name:</b> ${this.esc(first.student_name)}</td><td><b>Admission No:</b> ${this.esc(first.admission_no)}</td><td><b>Class:</b> ${this.esc(first.class)}</td></tr><tr><td><b>No. in Class:</b> ${classSize}</td><td><b>Attendance:</b> ${this.esc(attendanceStr)}</td><td><b>Position:</b> <b style="color:#16a34a">${classPosition}</b></td></tr></table><table class="scores" style="margin-top:8px"><thead><tr><th class="left">SUBJECT</th><th>CA1<br>(10)</th><th>CA2<br>(10)</th><th>CA3/CBT<br>(10)</th><th>PROJECT<br>(10)</th><th>EXAM<br>(60)</th><th>TOTAL<br>(100)</th><th>GRADE</th><th>REMARK</th></tr></thead><tbody>${scoreRows}</tbody></table><table class="info" style="margin-top:8px"><tr><td><b>Total Score:</b> ${this.fmt(total)} / ${this.fmt(obtainable)}</td><td><b>Average:</b> ${this.fmt(avg,1)}%</td><td><b>Fees Balance:</b> ${bal===0?'₦0 (FULLY PAID)':'₦'+Number(bal).toLocaleString()}</td><td><b>Grade:</b> <span class="grade">${this.grade(avg)}</span></td></tr></table>
+    return `<div class="report-sheet sample-report"><div class="head"><img class="logo" src="${logo}" onerror="this.style.display='none'"><div class="school"><h1>${this.esc(sc.name)}</h1><p>📍 ${this.esc(sc.address)} · 📞 ${this.esc(sc.phone)} · ✉️ ${this.esc(sc.email)}</p><p style="font-style:italic;color:#7c2d12">Motto: ${this.esc(sc.motto)}</p></div><div class="photo">${first.photo_url ? `<img src="${this.esc(first.photo_url)}" onerror="this.parentNode.innerHTML='Photo'">` : 'Student<br>Photo'}</div></div><div class="title">TERMINAL REPORT SHEET — ${this.esc(ctx.term||first.term||'TERM')}, ${this.esc(ctx.session||first.session||'SESSION')}</div><table class="info"><tr><td><b>Name:</b> ${this.esc(first.student_name)}</td><td><b>Admission No:</b> ${this.esc(first.admission_no)}</td><td><b>Class:</b> ${this.esc(first.class)}</td></tr><tr><td><b>No. in Class:</b> ${classSize}</td><td><b>Attendance:</b> ${this.esc(attendanceStr)}</td><td><b>Position:</b> <b style="color:#16a34a">${classPosition}</b></td></tr></table><table class="scores" style="margin-top:8px"><thead><tr><th class="left">SUBJECT</th><th>CA1<br>(10)</th><th>CA2<br>(10)</th><th>CA3/CBT<br>(10)</th><th>PROJECT<br>(10)</th><th>EXAM<br>(60)</th><th>TOTAL<br>(100)</th><th>CLASS<br>AVG</th><th>GRADE</th><th>REMARK</th></tr></thead><tbody>${scoreRows}</tbody></table><table class="info" style="margin-top:8px"><tr><td><b>Total Score:</b> ${this.fmt(total)} / ${this.fmt(obtainable)}</td><td><b>Average:</b> ${this.fmt(avg,1)}%</td><td><b>Fees Balance:</b> ${bal===0?'₦0 (FULLY PAID)':'₦'+Number(bal).toLocaleString()}</td><td><b>Grade:</b> <span class="grade">${this.grade(avg)}</span></td></tr></table>
 <table class="info" style="margin-top:6px;background:#fffbeb;border:1px solid #fcd34d"><tr><td><b>Next Term Begins:</b> ${this.esc(nextTermBill.begins ? this.fmtDMY(nextTermBill.begins) : (nextTermBegins||'—'))}</td><td><b>Next Term Bill:</b> <span style="color:#b45309;font-weight:900">${nextTermBill.fees ? (nextTermBill.currency + Number(nextTermBill.fees).toLocaleString()) : '—'} </span> <small style="color:#92400e">${this.esc(nextTermBill.note||'')}</small></td><td><b>Payable Before:</b> ${this.esc(nextTermBill.begins ? this.fmtDMY(nextTermBill.begins) : 'Resumption')}</td></tr></table><div class="traits re-traits"><div><table><tr><th colspan="2">⭐ AFFECTIVE DOMAIN</th></tr>${affectiveRows}</table></div><div><table><tr><th colspan="2">🏃 PSYCHOMOTOR DOMAIN</th></tr>${psychomotorRows}</table></div></div><table class="comments" style="margin-top:10px"><tr><td>Class Teacher's Comment</td><td>${this.esc(classTeacherComment)}</td></tr><tr><td>Principal's Comment</td><td>${this.esc(principalComment)}</td></tr><tr><td>Next Term Begins</td><td>${this.esc(nextTermBegins || sc.next_term_begins || 'See school calendar')} &nbsp;·&nbsp; <b>Fees Balance:</b> ${bal===0?'₦0 (FULLY PAID)':'₦'+Number(bal).toLocaleString()}</td></tr></table><div class="sig re-sig"><div><div class="re-sig-script">${this.signatureBlock('teacher')}</div><div class="re-sig-line">Class Teacher's Signature</div></div><div style="position:relative"><div class="re-stamp-wrap">${stampSvg}</div><div class="re-sig-line" style="margin-top:6px">Principal's Signature &amp; Official Stamp</div></div></div><p class="note">This is the report card the platform prints. Generated by School Connect · HMG Concepts.</p></div>`;
   },
 

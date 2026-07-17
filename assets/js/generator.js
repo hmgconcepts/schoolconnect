@@ -159,7 +159,7 @@ const Generator = {
     // ---- 2b. Load specialised page templates when available ----
     // These pages have richer workflows than generic CRUD pages (CBT taking,
     // certificate printing, admissions links, inbox workflow and teacher overview).
-    const specialIds = ['payment-history', 'cbt','cbt-prompts','cbt-exam','certificates','admissions','entrance','teacher-overview','inbox','messages','notifications','voting','academic_records','report-cards','idcards','analytics','academic_setup','apply','exam-register','profile','change-password','cbt-multi', 'surveys', 'checkin', 'checkin-staff', 'geofence-settings', 'settings', 'ecosystem', 'hmg-ecosystem'];
+    const specialIds = ['payment-history', 'cbt','cbt-prompts','cbt-exam','certificates','admissions','entrance','teacher-overview','inbox','messages','notifications','voting','academic_records','report-cards','idcards','analytics','academic_setup','apply','exam-register','profile','change-password','cbt-multi', 'surveys', 'checkin', 'checkin-staff', 'geofence-settings', 'settings', 'ecosystem', 'hmg-ecosystem', 'ecosystem_products'];
     const staticPages = {};
     for (const sid of specialIds) {
       try {
@@ -417,6 +417,8 @@ const Generator = {
       .replace(/s\.admission_prefix := 'SCH'/g, "s.admission_prefix := '" + acronym + "'")
       .replace(/coalesce\(s\.admission_prefix,'STD'\)/g, "coalesce(s.admission_prefix,'" + acronym + "')")
       .replace(/coalesce\(s\.admission_prefix,'SCH'\)/g, "coalesce(s.admission_prefix,'" + acronym + "')")
+      .replace(/staff_prefix text default 'STF'/g, "staff_prefix text default '" + staffAcronym + "'")
+      .replace(/coalesce\(pfx,'STF'\)/g, "coalesce(pfx,'" + staffAcronym + "')")
       // ENTERPRISE V11 (issue 8): make the v11 row-backfill install the school acronym directly
       .replace(/update public\.school_settings\s+set admission_prefix = v_default/g, "update public.school_settings set admission_prefix = '" + acronym + "'");
   },

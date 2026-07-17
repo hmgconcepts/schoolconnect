@@ -215,7 +215,8 @@ ${T.modal()}
       timetable_generator: 'timetable-generator.html',
       student_profile: 'student-profile.html',
       verify_certificate: 'verify-certificate.html',
-      feature_guide: 'feature-guide.html', profile:'profile.html', change_password:'change-password.html', cbt_multi:'cbt-multi.html'
+      feature_guide: 'feature-guide.html', profile:'profile.html', change_password:'change-password.html', cbt_multi:'cbt-multi.html',
+      ecosystem_products: 'ecosystem-products.html'
     };
     return map[id] || (id + '.html');
   },
@@ -346,17 +347,17 @@ ${T.setupRequiredBanner()}
       'cbt','cbt_prompts','entrance','assignments','timetable','timetable_generator','sow',
       'lesson_plans','library','digital_library','eresources','announcements','events','messages','inbox',
       'complaints','broadcast','diary','checkin','checkin_staff','checkin-staff','behaviour','conduct','health','support_plans',
-      'certificates','reports','directory','rubrics','counselling','substitutions','helpdesk','book_request'
+      'certificates','reports','directory','rubrics','counselling','substitutions','helpdesk','book_request', 'ecosystem_products'
     ]);
     const parentSet = new Set([
       'dashboard','profile','change_password','notifications','feature_guide','student_profile','fees','payments_online','results',
       'report_cards','attendance','assignments','diary','timetable','announcements','events','messages','inbox',
-      'complaints','eresources','certificates','school_calendar','voting','idcards'
+      'complaints','eresources','certificates','school_calendar','voting','idcards', 'ecosystem_products'
     ]);
     const studentSet = new Set([
       'dashboard','profile','change_password','notifications','feature_guide','student_profile','cbt_exam','assignments','digital_library',
       'eresources','timetable','results','report_cards','attendance','announcements','events','messages','inbox',
-      'complaints','certificates','diary','school_calendar','voting','idcards'
+      'complaints','certificates','diary','school_calendar','voting','idcards', 'ecosystem_products'
     ]);
 
     const roles = [admin];
@@ -381,7 +382,7 @@ ${T.setupRequiredBanner()}
       activity_log:'🧮', lesson_plans:'🗒️', behaviour:'🏅', support_plans:'🧩',
       donations:'💝', substitutions:'🔁', helpdesk:'🆘', payments_online:'💳', notifications:'🔔',
       'report_cards':'🧾', 'admin-data':'🗄️', flyer:'📰', approvals:'✅', 'timetable-generator':'🗓️', checkin:'📲', 'checkin-staff':'⏰', 'checkin_staff':'⏰', diary:'📔', surveys:'🗒️', menu:'🍽️', settings:'⚙️',
-      digital_library:'📚', 'cbt-prompts':'🧩', entrance:'🎯', storage:'🗄️', developer:'👨‍💻',
+      digital_library:'📚', 'cbt-prompts':'🧩', entrance:'🎯', storage:'🗄️', developer:'👨‍💻', ecosystem_products:'🌐'
       payroll:'🧾', staff_loans:'🏦', staff_bonus:'🎁', appraisals:'⭐', 'student-profile':'👤', academic_records:'📄',
       affective_traits:'⭐', psychomotor_traits:'🏃', report_comments:'💬',
       rubrics:'📐', transcripts:'🎓', transfer_cert:'📄', counselling:'💬'
@@ -394,6 +395,7 @@ ${T.setupRequiredBanner()}
   labelFor(id, fallbackName) {
     const map = {
       dashboard:'Dashboard', about:'About', contact:'Contact', apply:'Apply', 'feature-guide':'Feature Guide', 'verify-certificate':'Verify Certificate', 'teacher-overview':'Teacher Overview', 'cbt-exam':'Take Exam', 'cbt-multi':'Multi-Subject CBT', profile:'My Profile', 'change-password':'Change Password', 'student-profile':'Student Profile', academic_records:'Academic Records', academic_setup:'Academic Setup', students:'Students', staff:'Staff', classes:'Classes',
+      ecosystem_products:'HMG Products',
       attendance:'Attendance', results:'Results', timetable:'Timetable',
       'timetable-generator':'Auto-Timetable', sow:'Scheme', cbt:'CBT', assignments:'Assignments',
       library:'Library', conduct:'Conduct', health:'Health', promotion:'Promotion',
@@ -430,7 +432,7 @@ ${T.setupRequiredBanner()}
     const selected = Array.isArray(config.modules) ? config.modules.slice() : [];
     // Dedicated pages — always available regardless of module selection
     const dedicatedPages = [
-      'student-profile', 'profile', 'change-password', 'cbt-exam', 'cbt-multi', 'teacher-overview', 'feature-guide', 'notifications', 'parents', 'affective_traits', 'psychomotor_traits', 'report_comments'
+      'student-profile', 'profile', 'change-password', 'cbt-exam', 'cbt-multi', 'teacher-overview', 'feature-guide', 'notifications', 'parents', 'affective_traits', 'psychomotor_traits', 'report_comments', 'ecosystem_products'
     ];
     // Combine and dedupe — avoid 'class' vs 'classes' collisions
     const known = [...new Set([...base, ...catalogIds, ...dedicatedPages])];
