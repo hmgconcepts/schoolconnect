@@ -350,12 +350,11 @@ const App = {
     'cbt','cbt-multi','cbt_multi',
     // 'cbt-exam' is intentionally NOT blacklisted — students/parents
     // enter an exam code to take a CBT (see STUDENT/PARENT_WHITELIST).
-    'inbox','messages',
+    'messages',
     'digital_library','digital-library',
     'surveys',
     'lms','gamification',
-    'eresources','e-resources',
-    'complaints','broadcast','document_builder','document-builder'
+    'broadcast','document_builder','document-builder'
   ]),
 
   /* Role-friendly modules that STUDENTS can see (separate from allow list) */
@@ -363,14 +362,13 @@ const App = {
      A student is allowed to see their own dashboard, their profile,
      their own results, their own report card (read-only), their
      attendance, their timetable, their assignments, their fees, and
-     basic public pages. They CANNOT see CBT manager, online pay,
-     voting, inbox, messages, e-resources, surveys, etc.
+     basic public pages. They cannot manage CBT or school administration; family-safe pages remain read-only.
      Students CAN take a CBT exam (cbt-exam) by entering the code. */
   STUDENT_WHITELIST: new Set([
     'dashboard','profile','change-password','notifications',
     'student-profile','student_profile',
     'results','report-cards','report_cards',
-    'attendance','timetable','assignments',
+    'attendance','timetable','assignments','idcards','inbox','complaints','eresources','e-resources','certificates',
     'fees','idcards',
     'voting',
     'announcements','events','school_calendar','school-calendar',
@@ -389,8 +387,7 @@ const App = {
      their children's results, their children's report card (read-only),
      their children's attendance, the announcements, events, and basic
      public pages. They CANNOT see CBT manager, multi-subject CBT,
-     online pay (payments_online), voting, inbox, messages, e-resources,
-     surveys, digital_library, etc. Parents CAN take a CBT exam
+     online pay (payments_online) or administrative modules. Family-safe pages are read-only. Parents CAN take a CBT exam
      (cbt-exam) by entering the code. */
   PARENT_WHITELIST: new Set([
     'dashboard','profile','change-password','notifications',
@@ -398,7 +395,7 @@ const App = {
     'fees','idcards',
     'results','report-cards','report_cards',
     'academic-records','academic_records',
-    'attendance','assignments','timetable',
+    'attendance','assignments','timetable','idcards','inbox','complaints','eresources','e-resources','certificates',
     'announcements','events','school_calendar','school-calendar',
     'gallery','helpdesk','lost_found','lost-found',
     'diary','parent_meeting','parent-meeting',
@@ -676,7 +673,8 @@ const App = {
       //  1. data-role-allow: explicit role list
       //  2. App.canAccessAllowList: expands role inheritance (admin -> staff -> teacher etc.)
       //  3. App.moduleAllowedForRole: family blacklist/whitelist + page-specific deny
-      const allowOk = App.canAccessAllowList(App.allowTextForElement(el), role) && App.moduleAllowedForRole(moduleId, role);
+      const familyReadOnly = ['parent','student'].includes(String(role||'').toLowerCase()) && App.moduleAllowedForRole(moduleId, role);
+      const allowOk = familyReadOnly || (App.canAccessAllowList(App.allowTextForElement(el), role) && App.moduleAllowedForRole(moduleId, role));
       let ok = allowOk;
       /* v5: if the page is in the nav-show map and the role is NOT in it, hide it (even if allowOk=true) */
       if (ok && navShowMap[moduleId] && Array.isArray(navShowMap[moduleId]) && !isAdmin) {
@@ -842,7 +840,8 @@ const App = {
     const required = active ? App.allowTextForElement(active) : shell.getAttribute('data-require-role');
     const blockedByNav = active && active.style.display === 'none';
     const activeId = active ? (active.getAttribute('data-module-id') || active.getAttribute('href') || '') : currentPage();
-    const blockedByRole = (required && !App.canAccessAllowList(required, role)) || !App.moduleAllowedForRole(activeId, role);
+    const familyReadOnly = ['parent','student'].includes(String(role||'').toLowerCase()) && App.moduleAllowedForRole(activeId, role);
+    const blockedByRole = (!familyReadOnly && required && !App.canAccessAllowList(required, role)) || !App.moduleAllowedForRole(activeId, role);
 
     if (!blockedByNav && !blockedByRole && !(active && active.classList.contains('nav-locked'))) return;
 

@@ -352,7 +352,7 @@ const ReportEngine = {
     const db = this.sb || (typeof sb !== 'undefined' ? sb : null);
     if(!db){ toast('Database not configured','warning'); return; }
     if(!examId){ toast('Select an exam','warning'); return; }
-    column = column || 'cbt';
+    if(!column){ toast('Select the report-card column created for this assessment.','warning'); return; }
     const {data: exam, error: eErr} = await db.from('cbt_exams').select('*').eq('id', examId).maybeSingle();
     if(eErr || !exam){ toast('Exam not found: '+(eErr?.message||''),'danger'); return; }
     const {data: results, error} = await db.from('cbt_results').select('*').eq('exam_id', examId).limit(5000);
@@ -389,20 +389,30 @@ const ReportEngine = {
     if(window.App && App.logActivity) App.logActivity('push-cbt-to-results', 'results', `${ok} rows from exam ${examId} → ${column}`);
   },
 
+  async reportPickerOptions(){
+    const db=this.sb || (typeof sb!=='undefined'?sb:null); const empty={terms:[],sessions:[],columns:[]}; if(!db)return empty;
+    try { const [{data:lookups},{data:columns}]=await Promise.all([db.from('lookups').select('kind,value').in('kind',['term','session']),db.from('assessment_columns').select('name,max_mark,position,subject').eq('subject','*').order('position')]);
+      const unique=(a)=>[...new Set(a.filter(Boolean))]; return {terms:unique((lookups||[]).filter(x=>x.kind==='term').map(x=>x.value)),sessions:unique((lookups||[]).filter(x=>x.kind==='session').map(x=>x.value)),columns:(columns||[])};
+    } catch(_){return empty;}
+  },
+  _options(values, selected='', label='— select —'){return '<option value="">'+this.esc(label)+'</option>'+values.map(v=>{const value=typeof v==='string'?v:(v.name||''); const text=typeof v==='string'?v:(v.name+(v.max_mark!=null?' (max '+v.max_mark+')':'')); return '<option value="'+this.esc(String(value).toLowerCase().replace(/[^a-z0-9]+/g,'_'))+'" '+(String(value).toLowerCase().replace(/[^a-z0-9]+/g,'_')===selected?'selected':'')+'>'+this.esc(text)+'</option>';}).join('');},
   async openCBTExportModal(){
     const db = this.sb || (typeof sb !== 'undefined' ? sb : null);
     if(!db){ toast('Database not configured','warning'); return; }
     const {data: exams} = await db.from('cbt_exams').select('id,title,subject,class,term,session,report_column,max_score').order('created_at',{ascending:false}).limit(100);
     if(!exams || !exams.length){ toast('No CBT exams found','warning'); return; }
     const examOpts = exams.map(e=>`<option value="${e.id}">${this.esc(e.title)} — ${this.esc(e.subject||'')} (${this.esc(e.class||'')}) [${this.esc(e.report_column||'CBT Exam')}]</option>`).join('');
-    const colOpts = ['ca1','ca2','ca3','cbt','project','exam','practical'].map(c=>`<option value="${c}" ${c==='cbt'?'selected':''}>${c.toUpperCase()}</option>`).join('');
+    const picker = await this.reportPickerOptions();
+    const colOpts = this._options(picker.columns, '', '— select report-card column —');
+    const termOpts = this._options(picker.terms, '', '— select term —');
+    const sessionOpts = this._options(picker.sessions, '', '— select session —');
     openModal('📊 Push CBT Results → Report Card',
       `<p style="color:var(--gray-600)">Select the CBT exam and which report sheet column its scores should fill. CBT is used for <strong>mid-term tests (CA1/CA2)</strong> and <strong>terminal exams (Exam)</strong> — mapping is now easy.</p>
        <div class="form-group"><label>CBT Exam</label><select id="cbt-exp-exam" class="form-select">${examOpts}</select></div>
        <div class="grid grid-3">
          <div class="form-group"><label>Target Column</label><select id="cbt-exp-col" class="form-select">${colOpts}</select><small style="color:var(--gray-500)">Where scores go in report card</small></div>
-         <div class="form-group"><label>Term</label><input id="cbt-exp-term" class="form-input" placeholder="First Term"></div>
-         <div class="form-group"><label>Session</label><input id="cbt-exp-sess" class="form-input" placeholder="2025/2026"></div>
+         <div class="form-group"><label>Term</label><select id="cbt-exp-term" class="form-select">${termOpts}</select></div>
+         <div class="form-group"><label>Session</label><select id="cbt-exp-sess" class="form-select">${sessionOpts}</select></div>
        </div>
        <p style="font-size:.85rem;color:var(--gray-500)">Scores are scaled to the exam's max_score (e.g. 20) and upserted into Results table. Then open <strong>Report Cards</strong> to generate broadsheet and report card — broadsheet, subject broadsheet and report card are prepared automatically.</p>`,
       `<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="ReportEngine.doCBTExport()">🚀 Push to Report Card</button>`

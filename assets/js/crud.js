@@ -631,6 +631,7 @@ const CRUD = {
      - Parents see only their linked children's data
      - Staff/Admin see all data (no filter)
   */
+  // The last visible records are session-scoped by user/role/module; never use a shared cache.
   stableTableCacheKey(moduleId, suffix='') {
     const uid = (window.SC_PROFILE && SC_PROFILE.id) || 'guest';
     const role = (window.SC_PROFILE && SC_PROFILE.role) || (window.App && App.currentRole) || 'guest';
@@ -696,7 +697,7 @@ const CRUD = {
     tableEl.querySelector('thead').innerHTML = head;
     const tb = tableEl.querySelector('tbody');
     if (error) {
-      let cached = null; try { cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch(_) {}
+      let cached = null; try { cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null'); } catch(_) {}
       if (cached && cached.html) { tb.innerHTML = cached.html + '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '" style="color:#b45309;background:#fffbeb">Live refresh failed; showing the last visible records so they do not disappear. ' + esc(error.message) + '</td></tr>'; return; }
       tb.innerHTML = '<tr><td colspan="' + (cols.length + (writable ? 1 : 0)) + '">' + esc(error.message) + '</td></tr>'; return;
     }
@@ -757,7 +758,7 @@ const CRUD = {
     // Strategy: keep cached HTML or existing DOM, show informative banner above table.
     if (!filteredData || !filteredData.length) {
       let cached = null;
-      try { cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch(_) {}
+      try { cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null'); } catch(_) {}
       const wrap = tableEl.closest('.table-wrap') || tableEl.parentNode;
       let infoBox = wrap ? wrap.querySelector('.sc-table-persist-info') : null;
       if (!infoBox && wrap) {
@@ -829,7 +830,7 @@ const CRUD = {
         '<button class="btn btn-sm btn-outline" onclick="CRUD.remove(\'' + moduleId + '\',\'' + row.id + '\')">Delete</button>' +
       '</td>') + '</tr>').join('');
     tb.innerHTML = renderedRows;
-    try { localStorage.setItem(cacheKey, JSON.stringify({ at: Date.now(), html: renderedRows })); } catch(_) {}
+    try { sessionStorage.setItem(cacheKey, JSON.stringify({ at: Date.now(), html: renderedRows })); } catch(_) {}
     // re-apply role visibility to the freshly-rendered action buttons
     if (window.App && App.applyVisibilityTokens) try { App.applyVisibilityTokens(App.currentRole || (window.SC_PROFILE && SC_PROFILE.role) || ''); } catch (e) {}
     // ENHANCEMENT (#2): inject a live instant-search box above every module

@@ -159,7 +159,7 @@ const Generator = {
     // ---- 2b. Load specialised page templates when available ----
     // These pages have richer workflows than generic CRUD pages (CBT taking,
     // certificate printing, admissions links, inbox workflow and teacher overview).
-    const specialIds = ['payment-history', 'cbt','cbt-prompts','cbt-exam','certificates','admissions','entrance','teacher-overview','inbox','messages','notifications','voting','academic_records','report-cards','idcards','analytics','academic_setup','apply','exam-register','profile','change-password','cbt-multi', 'surveys', 'checkin', 'checkin-staff', 'geofence-settings', 'geofence-settings'];
+    const specialIds = ['payment-history', 'cbt','cbt-prompts','cbt-exam','certificates','admissions','entrance','teacher-overview','inbox','messages','notifications','voting','academic_records','report-cards','idcards','analytics','academic_setup','apply','exam-register','profile','change-password','cbt-multi', 'surveys', 'checkin', 'checkin-staff', 'geofence-settings', 'settings', 'ecosystem', 'hmg-ecosystem'];
     const staticPages = {};
     for (const sid of specialIds) {
       try {
@@ -194,6 +194,7 @@ const Generator = {
 
     // ---- 5. Fetch SQL files ----
     const sqlFiles = [
+      'database/complete-schema.sql',
       'database/schema.sql',
       'database/voting-schema.sql',
       'database/cbt-schema.sql',
@@ -208,7 +209,8 @@ const Generator = {
       'database/update-v9-schema.sql',
       'database/update-v11-schema.sql',
       'database/update-v11-voting-security.sql',
-      'database/update-v12-schema.sql'
+      'database/update-v12-schema.sql',
+      'database/fix-geofence-schema.sql'
     ];
     const sqlContents = {};
     for (const f of sqlFiles) {
@@ -234,6 +236,9 @@ const Generator = {
       if (content) zip.file(f, content);
     }
     if (CSS) zip.file('assets/css/style.css', CSS);
+    const hmgLogo=await Generator.loadFile('assets/img/hmg-technologies.svg'); if(hmgLogo) zip.file('assets/img/hmg-technologies.svg',hmgLogo);
+    // HMG Ecosystem service flyers are first-party marketing assets used by the generated client page.
+    for (let i=1;i<=8;i++){ const flyer=await Generator.loadFile('assets/img/ecosystem-flyers/flyer-'+i+'.png'); if(flyer) zip.file('assets/img/ecosystem-flyers/flyer-'+i+'.png',flyer); }
 
     // ---- 7. Generate config.js ----
     const configJS = Generator.generateConfigJS(resolvedConfig, config);
@@ -273,6 +278,9 @@ const Generator = {
       { id: 'profile',            name: 'My Profile',          fn: () => staticPages['profile'] || Generator.fallbackPage('profile') },
       { id: 'change-password',    name: 'Change Password',     fn: () => staticPages['change-password'] || Generator.fallbackPage('change-password') },
       { id: 'notifications',      name: 'Notifications',       fn: () => staticPages['notifications'] || T.modulePage(resolvedConfig, 'notifications', { requireRole: 'all' }) },
+      { id: 'settings',           name: 'Settings',            fn: () => staticPages['settings'] || T.modulePage(resolvedConfig, 'settings') },
+      { id: 'hmg-ecosystem',      name: 'HMG Services',        fn: () => staticPages['hmg-ecosystem'] || Generator.fallbackPage('HMG Services') },
+      { id: 'ecosystem',          name: 'HMG Ecosystem',       fn: () => staticPages['ecosystem'] || T.modulePage(resolvedConfig, 'ecosystem', { requireRole: 'all' }) },
       { id: 'developer',          name: 'Developer',           fn: () => T.modulePage(resolvedConfig, 'developer', { requireRole: 'all' }) },
       { id: 'voting',             name: 'Voting & Polls',      fn: () => staticPages['voting'] || T.voting(resolvedConfig) },
       { id: 'timetable-generator',name: 'Auto-Timetable',      fn: () => T.modulePage(resolvedConfig, 'timetable-generator') },
@@ -459,7 +467,7 @@ const Generator = {
  * SETUP: Replace YOUR_SUPABASE_URL and YOUR_SUPABASE_ANON_KEY
  * with your actual Supabase project credentials.
  * Enable Row-Level Security (RLS) on all tables in Supabase.
- * Run database/schema.sql in your Supabase SQL editor first.
+ * Run database/complete-schema.sql once in your Supabase SQL Editor. It is the self-contained fresh-install schema, including RLS, report cards, CBT, voting, enterprise modules and V3 enhancements.
  * ============================================================
  */
 window.SC = window.SC || {};
@@ -532,7 +540,7 @@ window.SC_CONFIRM_FREE_SMS = true;
 // IMPORTANT: Row-Level Security (RLS)
 // The Supabase anon key is public by design — this is safe.
 // BUT you MUST enable RLS on ALL tables in your Supabase project.
-// The schema.sql file enables RLS and creates appropriate policies.
+// The complete-schema.sql file enables RLS and creates appropriate policies.
 // Without RLS, anyone can read/write any data.
 // To verify RLS is on: Supabase Dashboard → Table Editor → select table → check "RLS" toggle
 // ============================================================
@@ -988,7 +996,8 @@ Sitemap: ${base ? base + '/sitemap.xml' : '/sitemap.xml'}
       { p: '/login.html',         cf: 'monthly', pr: '0.5' },
       { p: '/feature-guide.html', cf: 'monthly', pr: '0.5' },
       { p: '/verify-certificate.html', cf: 'monthly', pr: '0.4' },
-      { p: '/entrance.html',      cf: 'weekly',  pr: '0.6' }
+      { p: '/entrance.html',      cf: 'weekly',  pr: '0.6' },
+      { p: '/hmg-ecosystem.html', cf: 'monthly', pr: '0.5' }
     ];
     return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -1056,15 +1065,10 @@ Generated by [School Connect](https://hmgconcepts.pages.dev/) by HMG Concepts.
 2. Replace \`YOUR_SUPABASE_URL\` with your Project URL
 3. Replace \`YOUR_SUPABASE_ANON_KEY\` with your anon key
 
-### 3. Run the Database Schema
-1. In Supabase, go to **SQL Editor**
-2. Copy-paste the contents of each file below and run in order:
-   - \`database/schema.sql\` (main tables + RLS + V9 enhancements)
-   - \`database/voting-schema.sql\` (polls & voting)
-   - \`database/cbt-schema.sql\` (CBT exams)
-   - \`database/reportcard-schema.sql\` (report cards)
-   - \`database/enterprise-schema.sql\` (enterprise features)
-   - \`database/enhancements-schema.sql\` (additional tables)
+### 3. Run the Complete Database Schema
+1. In Supabase, go to **SQL Editor**.
+2. Copy-paste and run **\`database/complete-schema.sql\` once**.
+3. Wait for completion, then refresh the portal. This self-contained fresh-install file includes the tables, RLS policies, CBT, voting, report cards, enterprise modules, geofence fields, report traits/comments and V3 school-wide assessment-column support. The other SQL files are retained only as reference/upgrade artifacts; do not run them one by one on a new deployment.
 
 ### 4. Enable Row-Level Security (RLS)
 All tables have RLS policies enabled. Each role sees only their data:
