@@ -484,7 +484,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       if (!this.ctx.class || !this.ctx.subject) { toast('Choose a class and subject first.', 'warning'); return; }
       try {
         const { data: cols } = await window.sb.from('assessment_columns').select('*')
-          .eq('class', this.ctx.class).eq('subject', this.ctx.subject)
+          .eq('class', this.ctx.class).eq('subject', '*')
           .eq('term', this.ctx.term).eq('session', this.ctx.session)
           .order('position');
         this.cols = cols || [];
@@ -499,7 +499,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 
     renderCols(){
       $('rc-cols').innerHTML =
-        '<div class="card"><h3>Assessment columns</h3>' +
+        '<div class="card"><h3>School-wide assessment columns</h3><p style="color:var(--gray-600);font-size:.86rem">Create CA1, CA2, CBT, project and examination columns once. The same template is reused for every subject; scores stay separated by subject.</p>' +
         '<div class="table-wrap"><table><thead><tr><th>Name</th><th>Max mark</th><th>Source</th><th></th></tr></thead><tbody>' +
         (this.cols.length ? this.cols.map(c => '<tr><td>' + esc(c.name) + '</td><td>' + c.max_mark + '</td><td>' + (c.source === 'cbt' ? '<span class="badge">From CBT</span>' : 'Manual') + '</td><td><button type="button" class="btn btn-sm btn-outline" data-del-col="' + c.id + '">✕</button></td></tr>').join('') : '<tr><td colspan="4">No columns yet — add your first one below.</td></tr>') +
         '</tbody></table></div>' +
@@ -514,10 +514,10 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       const name = ($('rc-cn') || {}).value ? $('rc-cn').value.trim() : '';
       const max = parseFloat(($('rc-cm') || {}).value) || 10;
       if (!name) { toast('Enter a column name.', 'warning'); return; }
-      const { error } = await window.sb.from('assessment_columns').insert({ ...this.ctx, name, max_mark: max, position: this.cols.length });
+      const { error } = await window.sb.from('assessment_columns').insert({ ...this.ctx, subject: '*', name, max_mark: max, position: this.cols.length });
       if (error) { toast(error.message, 'danger'); return; }
       if (window.App) App.logActivity('create', 'assessment_column', name);
-      toast('Column added.', 'success');
+      toast('School-wide column added once for every subject in this class, term and session.', 'success');
       this.load();
     },
 
@@ -552,7 +552,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
         const cells = this.cols.map(c => {
           const v = map[ref + '|' + c.id];
           if (v != null) tot += Number(v);
-          return '<td><input style="width:64px" class="form-input" type="number" data-ref="' + esc(ref) + '" data-name="' + esc(st.full_name) + '" data-col="' + c.id + '" data-max="' + c.max_mark + '" value="' + (v != null ? v : '') + '"' + (canWrite ? '' : ' readonly') + '></td>';
+          return '<td><input style="width:64px" class="form-input" type="number" data-ref="' + esc(ref) + '" data-name="' + esc(st.full_name) + '" data-student-id="' + esc(st.id||'') + '" data-col="' + c.id + '" data-max="' + c.max_mark + '" value="' + (v != null ? v : '') + '"' + (canWrite ? '' : ' readonly') + '></td>';
         }).join('');
         const pct = totalMax ? ((tot / totalMax) * 100).toFixed(1) : 0;
         const g = RC.grade(pct);
@@ -572,10 +572,23 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       if (this._familyMode) { toast('Read-only: parents and students cannot edit report cards.', 'warning'); return; }
       const max = Number(el.dataset.max); let v = parseFloat(el.value); if (isNaN(v)) v = 0; if (v > max) { v = max; el.value = max; toast('Capped at max ' + max, 'warning'); }
       const row = { column_id: el.dataset.col, student_id_ref: el.dataset.ref, student_name: el.dataset.name, class: this.ctx.class, subject: this.ctx.subject, term: this.ctx.term, session: this.ctx.session, score: v, source: 'manual' };
-      const { error } = await window.sb.from('report_scores').upsert(row, { onConflict: 'column_id,student_id_ref,student_name' });
+      const { error } = await window.sb.from('report_scores').upsert(row, { onConflict: 'column_id,student_id_ref,student_name,subject' });
       if (error) { toast(error.message, 'danger'); return; }
+      // Mirror standard assessment columns into Results immediately. This is the one-way bridge that makes a subject-broadsheet entry available to the class broadsheet and student report card without retyping.
+      await this.syncScoreToResults(el, v);
       if (window.App) App.logActivity('update', 'report_score', el.dataset.ref);
       this.renderGrid();
+    },
+
+    async syncScoreToResults(el, score){
+      const col=(this.cols||[]).find(c=>String(c.id)===String(el.dataset.col)); if(!col) return;
+      const token=String(col.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_');
+      // Results has standard reporting fields. Other configured columns remain safely stored in report_scores and still appear in the subject sheet.
+      const field=({ca1:'ca1',ca_1:'ca1',ca2:'ca2',ca_2:'ca2',ca3:'ca3',ca_3:'ca3',cbt:'ca3',cbt_exam:'ca3',mid_term:'ca3',midterm:'ca3',exam:'exam',paper_exam:'exam',terminal_exam:'exam'})[token];
+      if(!field) return;
+      const identity={student_id:el.dataset.studentId||null,student_name:el.dataset.name,subject:this.ctx.subject,class:this.ctx.class,term:this.ctx.term,session:this.ctx.session};
+      try { const q=window.sb.from('results').select('id').eq('student_name',identity.student_name).eq('subject',identity.subject).eq('class',identity.class).eq('term',identity.term).eq('session',identity.session).limit(1); const {data}=await q; const payload=Object.assign({},identity,{[field]:score,assessment_source:'report_sheet'}); if(data&&data[0]) await window.sb.from('results').update(payload).eq('id',data[0].id); else await window.sb.from('results').insert(payload); }
+      catch(e){ console.warn('Results mirror failed; report score was saved safely.',e); }
     },
 
     exportCSV() {
