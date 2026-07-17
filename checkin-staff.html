@@ -185,8 +185,10 @@ const CK = {
           if (/permission|policy|denied/i.test(hint)) {
             hint = 'GPS permission was blocked. On the server, ensure _headers / vercel.json set geolocation=(self). On your device, tap the lock/ⓘ icon next to the address bar → Site settings → Location → Allow, then reload.';
           }
-          CK.updateLocationBadge(false, '❌ GPS: ' + hint + (enforce ? ' Staff check-in is blocked while on-premises attendance is enforced.' : ' Geofence is off — you can still check in.'));
-          resolve(!enforce);
+          CK.updateLocationBadge(false, '❌ GPS permission/error: ' + hint + (enforce ? ' Staff check-in is blocked while on-premises attendance is enforced.' : ' Geofence is off — you can still check in.'));
+          // Fail closed whenever the school has enabled on-premises attendance.
+          if (enforce) { resolve(false); return; }
+          resolve(true);
         },
         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
       );

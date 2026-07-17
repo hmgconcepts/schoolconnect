@@ -543,7 +543,8 @@ window.CBTUI = {
         <div class="form-group"><label>Term</label><select class="form-select" id="ex-term"><option value="">— select term —</option></select></div>
         <div class="form-group"><label>Session</label><select class="form-select" id="ex-session"><option value="">— select session —</option></select></div>
         <div class="form-group"><label>UTME / multi-subject package (optional)</label><input class="form-input" id="ex-package" placeholder="e.g. UTME 2026: English, Maths, Physics, Chemistry"></div><div class="form-group"><label>Assessment type</label><select class="form-select" id="ex-type"><option value="exam">Exam</option><option value="test">Test</option><option value="ca">CA</option><option value="assignment">Assignment</option><option value="project">Project</option><option value="quiz">Quiz</option><option value="practical">Practical</option></select></div>
-        <div class="form-group"><label>Report-card column (auto-maps result)</label><input class="form-input" id="ex-col" placeholder="e.g. CA1 or Exam"></div>
+        <div class="form-group"><label>Report-card column (auto-maps results)</label><select class="form-select" id="ex-col"><option value="">— select a report-card column —</option></select><small>Only columns configured in Report Cards for the selected class, subject, term and session are shown.</small></div>
+        <div class="form-group"><label>Exam access mode</label><select class="form-select" id="ex-mode"><option value="registered">Registered students only — identity required</option><option value="open">Open / anonymous candidates — public code access</option></select><small>Use Registered for school tests; Open for entrance or anonymous assessments.</small></div>
         <div class="form-group"><label>Max score in report card</label><input class="form-input" type="number" id="ex-max" value="100"></div>
         <div class="form-group"><label>Duration (minutes)</label><input class="form-input" type="number" id="ex-dur" value="45"></div>
         <div class="form-group"><label>Negative mark / wrong</label><input class="form-input" type="number" step="0.01" id="ex-neg" value="0"></div>
@@ -634,6 +635,7 @@ window.CBTUI = {
       term: document.getElementById('ex-term').value,
       session: document.getElementById('ex-session').value,
       assessment_type: document.getElementById('ex-type').value,
+      exam_mode: document.getElementById('ex-mode')?.value || 'registered',
       topic: document.getElementById('ex-package').value,
       report_column: document.getElementById('ex-col').value,
       max_score: parseFloat(document.getElementById('ex-max').value)||0,
@@ -795,7 +797,19 @@ document.addEventListener('DOMContentLoaded', CBTUI.refresh); CBTUI.refresh();
       this._subjects=uniq((sub.data||[]).map(x=>x.name)); this._classes=uniq((cls.data||[]).map(x=>x.name)); this._terms=uniq((term.data||[]).map(x=>x.value)); this._sessions=uniq((ses.data||[]).map(x=>x.value));
       const fill=(id,arr)=>{const el=document.getElementById(id); if(el) el.innerHTML='<option value="">— select —</option>'+arr.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');};
       fill('ex-subject',this._subjects); fill('ex-class',this._classes); fill('ex-term',this._terms); fill('ex-session',this._sessions);
+      ;['ex-subject','ex-class','ex-term','ex-session'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>CBTUI.loadReportColumns?.()));
+      await CBTUI.loadReportColumns?.();
     }catch(e){ console.warn('CBT dropdown load failed',e); }
+  };
+  CBTUI.loadReportColumns = async function(){
+    const out=document.getElementById('ex-col'); if(!out) return;
+    const cls=document.getElementById('ex-class')?.value||'', sub=document.getElementById('ex-subject')?.value||'', term=document.getElementById('ex-term')?.value||'', session=document.getElementById('ex-session')?.value||'';
+    out.innerHTML='<option value="">— select a report-card column —</option>';
+    if(!window.sb || !cls || !sub || !term || !session) return;
+    try { const {data,error}=await window.sb.from('assessment_columns').select('name,max_mark,position').eq('class',cls).in('subject',['*',sub]).eq('term',term).eq('session',session).order('position'); if(error) throw error;
+      (data||[]).forEach(c=>{const o=document.createElement('option');o.value=String(c.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_');o.textContent=c.name+(c.max_mark!=null?' (max '+c.max_mark+')':'');out.appendChild(o);});
+      if(!(data||[]).length) out.innerHTML+='<option value="" disabled>No report-card columns yet — create them in Report Cards first</option>';
+    } catch(e){ console.warn('Report-card column lookup failed',e); }
   };
   CBTUI._oldNewExam = CBTUI.newExam;
   CBTUI.newExam = function(){
@@ -854,7 +868,7 @@ document.addEventListener('DOMContentLoaded', CBTUI.refresh); CBTUI.refresh();
     if(!questions.length){ const csv=document.getElementById('ex-csv').value.trim(); questions=csv?CBT.parseCSV(csv):[]; const sub=document.getElementById('ex-subject').value; questions.forEach(q=>{ if(!q.section){ q.section=sub; q.subject=sub; q.subject_section=sub; q.exam_subject=sub; } }); if(sub && questions.length) subject_breakdown=[{name:sub,start:0,count:questions.length,end:questions.length-1}]; }
     if(!questions.length){ toast('Add at least one question CSV.','warning'); return; }
     const multiSubjects=[...new Set(questions.map(q=>q.section||q.subject).filter(Boolean))];
-    const exam={ title:document.getElementById('ex-title').value, subject:multiSubjects.length>1?('MULTI-SUBJECT: '+multiSubjects.join(', ')):(document.getElementById('ex-subject').value||multiSubjects[0]||'General'), class:document.getElementById('ex-class').value, term:document.getElementById('ex-term').value, session:document.getElementById('ex-session').value, assessment_type:document.getElementById('ex-type').value, topic:document.getElementById('ex-package').value || (multiSubjects.length>1?multiSubjects.join(', '):''), report_column:document.getElementById('ex-col').value, max_score:parseFloat(document.getElementById('ex-max').value)||0, duration:parseInt(document.getElementById('ex-dur').value)||45, negative_mark:parseFloat(document.getElementById('ex-neg').value)||0, select_count:parseInt(document.getElementById('ex-sel').value)||0, instructions:document.getElementById('ex-instr').value, is_open:true, anti_cheat_config:{tab_switch:document.getElementById('ac-tab')?.checked!==false,window_blur:document.getElementById('ac-blur')?.checked!==false,copy_paste:document.getElementById('ac-copy')?.checked!==false,right_click:document.getElementById('ac-right')?.checked!==false,fullscreen:document.getElementById('ac-full')?.checked!==false,watermark:document.getElementById('ac-watermark')?.checked!==false,devtools:true,max_violations:parseInt(document.getElementById('ac-max')?.value||'5'),subject_breakdown:subject_breakdown,subjects:multiSubjects,multi_subject:multiSubjects.length>1}, csv_data:questions };
+    const exam={ title:document.getElementById('ex-title').value, subject:multiSubjects.length>1?('MULTI-SUBJECT: '+multiSubjects.join(', ')):(document.getElementById('ex-subject').value||multiSubjects[0]||'General'), class:document.getElementById('ex-class').value, term:document.getElementById('ex-term').value, session:document.getElementById('ex-session').value, assessment_type:document.getElementById('ex-type').value, exam_mode:document.getElementById('ex-mode')?.value||'registered', topic:document.getElementById('ex-package').value || (multiSubjects.length>1?multiSubjects.join(', '):''), report_column:document.getElementById('ex-col').value, max_score:parseFloat(document.getElementById('ex-max').value)||0, duration:parseInt(document.getElementById('ex-dur').value)||45, negative_mark:parseFloat(document.getElementById('ex-neg').value)||0, select_count:parseInt(document.getElementById('ex-sel').value)||0, instructions:document.getElementById('ex-instr').value, is_open:true, anti_cheat_config:{tab_switch:document.getElementById('ac-tab')?.checked!==false,window_blur:document.getElementById('ac-blur')?.checked!==false,copy_paste:document.getElementById('ac-copy')?.checked!==false,right_click:document.getElementById('ac-right')?.checked!==false,fullscreen:document.getElementById('ac-full')?.checked!==false,watermark:document.getElementById('ac-watermark')?.checked!==false,devtools:true,max_violations:parseInt(document.getElementById('ac-max')?.value||'5'),subject_breakdown:subject_breakdown,subjects:multiSubjects,multi_subject:multiSubjects.length>1}, csv_data:questions };
     const {data,error}=await CBT.createExam(exam); if(error){toast('Could not create: '+error.message,'danger');return;} if(typeof App!=='undefined'&&App.logActivity)App.logActivity('create','cbt_exam',data&&data.code); closeModal(); toast('✅ Exam created. Code: '+(data&&data.code),'success',6000); CBTUI.refresh();
   };
 })();
