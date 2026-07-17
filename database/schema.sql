@@ -124,6 +124,9 @@ create table if not exists public.classes (
   level text,
   class_teacher text,
   capacity int default 40,
+  next_term_fees numeric default 0,
+  next_term_fees_currency text default '₦',
+  next_term_fees_note text default 'Payable before resumption',
   created_at timestamptz default now()
 );
 alter table public.classes enable row level security;
