@@ -508,7 +508,15 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
           <p style="color:var(--gray-600);font-size:.9rem">Paste a Google Drive/direct image link for the principal/admin signature. It will appear on receipts, certificates, admission letters and academic records printed from this browser/site.</p>
           <div class="form-group"><label>Principal / signatory name</label><input class="form-input" id="st-principal" placeholder="Principal name"></div>
           <div class="form-group"><label>Signature image link</label><input class="form-input" id="st-signature" placeholder="https://drive.google.com/... or image URL"></div>
-          <button class="btn btn-primary btn-sm" onclick="ST.saveSignature()">Save signature</button>
+          <div style="margin:14px 0;border:1px dashed var(--gray-300);border-radius:8px;padding:12px;background:var(--gray-50)">
+            <label style="font-weight:700;display:block;margin-bottom:6px">Or Draw Signature Directly on this Pad:</label>
+            <canvas id="sig-pad" width="300" height="120" style="border:1px solid var(--gray-300);background:#fff;border-radius:4px;cursor:crosshair;touch-action:none;display:block;max-width:100%"></canvas>
+            <div style="margin-top:8px;display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" onclick="ST.clearSigPad()">Clear Pad</button>
+              <button class="btn btn-primary btn-sm" onclick="ST.saveSigPad()">Save Drawn Signature</button>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="ST.saveSignature()">Save signature details</button>
           <div id="st-sign-preview" style="margin-top:8px"></div>
         </div>
       </div>
@@ -542,7 +550,43 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <script>
 const ST={
   async init(){ try{ const p=await Enterprise.security.getPrefs(); const c=document.getElementById('st-2fa'); if(c)c.checked=!!p.two_factor; }catch(e){}
-    const l=document.getElementById('st-lang'); if(l) l.value=Enterprise.i18n.lang; const sig=document.getElementById('st-signature'), pn=document.getElementById('st-principal'); if(sig) sig.value=localStorage.getItem('sc-signature-url')||''; if(pn) pn.value=localStorage.getItem('sc-principal-name')||''; await ST.loadGeofence(); await ST.loadNextTermFees(); ST.preview(); },
+    const l=document.getElementById('st-lang'); if(l) l.value=Enterprise.i18n.lang; const sig=document.getElementById('st-signature'), pn=document.getElementById('st-principal'); if(sig) sig.value=localStorage.getItem('sc-signature-url')||''; if(pn) pn.value=localStorage.getItem('sc-principal-name')||''; await ST.loadGeofence(); await ST.loadNextTermFees(); ST.preview(); ST.initSigPad(); },
+  initSigPad() {
+    const canvas = document.getElementById('sig-pad');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    ctx.strokeStyle = '#1e3a8a'; // Stamp blue color
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    const getPos = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    };
+    canvas.onmousedown = (e) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+    canvas.onmousemove = (e) => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+    window.onmouseup = () => drawing = false;
+    canvas.ontouchstart = (e) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); };
+    canvas.ontouchmove = (e) => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
+    canvas.ontouchend = () => drawing = false;
+  },
+  clearSigPad() {
+    const canvas = document.getElementById('sig-pad');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  },
+  async saveSigPad() {
+    const canvas = document.getElementById('sig-pad');
+    if (!canvas) return;
+    const url = canvas.toDataURL('image/png');
+    const sig = document.getElementById('st-signature');
+    if (sig) sig.value = url;
+    await ST.saveSignature();
+    toast('Signature drawn and saved! It is now embedded into the official stamp.','success');
+  },
   async toggle2fa(on){ const r=await Enterprise.security.setTwoFactor(on); if(r&&r.error){toast(r.error.message||r.error,'danger');return;} toast(on?'2FA enabled':'2FA disabled','success'); },
   lang(l){ Enterprise.i18n.setLang(l); toast('Language set','success'); },
   preview(){ const box=document.getElementById('st-sign-preview'); const raw=localStorage.getItem('sc-signature-url')||''; const url=(window.Super&&Super.idcard&&Super.idcard.driveDirect)?Super.idcard.driveDirect(raw):raw; if(box) box.innerHTML=url?'<img src="'+esc(url)+'" referrerpolicy="no-referrer" style="max-width:180px;max-height:80px;object-fit:contain;mix-blend-mode:multiply;filter:contrast(1.3) brightness(1.05)" onerror="this.replaceWith(document.createTextNode(&quot;Signature link saved; preview unavailable — check the Drive link is public.&quot;))">':''; },

@@ -510,6 +510,14 @@ const ICUI={ cur:{}, all:[], kind:'student', loaded:false,
       } else {
         const {data,error}=await sb.from('students').select('id,full_name,class,arm,admission_no,gender,photo_url,date_of_birth').order('full_name').limit(5000); if(error)throw error;
         ICUI.all=data||[]; const seen=new Set(); (data||[]).forEach(s=>{ const key=String(s.id||s.admission_no||s.full_name||'').toLowerCase(); if(!key||seen.has(key))return; seen.add(key); const o=document.createElement('option'); o.value=JSON.stringify(s); o.textContent=(s.full_name||'Unnamed')+' ('+(s.class||'student')+')'; sel.appendChild(o); });
+        // Auto-select first student/child for parents or students
+        const role = (window.SC_PROFILE && SC_PROFILE.role) || (window.SCHOOL_USER && SCHOOL_USER.role) || '';
+        if (ICUI.all.length > 0 && (role === 'parent' || role === 'student')) {
+          setTimeout(() => {
+            sel.value = JSON.stringify(ICUI.all[0]);
+            ICUI.pick(sel.value);
+          }, 100);
+        }
       }
     }catch(e){ console.warn('ID-card list load failed:', e); if(typeof toast==='function')toast('Could not load list. You can still type details manually and print.', 'warning', 7000); }
     this.loaded=true; this.render();

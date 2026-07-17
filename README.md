@@ -4,7 +4,7 @@
 
 > **This is the definitive, cumulative enterprise build.** Following a highly rigorous expert architectural audit, every prior prompt, workflow, database schema, and runtime module has been verified, enhanced, and perfected. It is a strict superset of all previous editions — **nothing removed, everything additive**.
 
-## 🌟 The Ultimate Open-Source School Management PWA Generator
+## 🌟 The Ultimate Proprietary HMG Concepts Ecosystem School Management PWA Generator
 
 **School Connect** is an advanced, free, no-code static site generator engineered to build complete, fully interconnected school management Progressive Web App (PWA) platforms. With **89 total modules**, it provides institutional oversight for Super Admins/Proprietors, academic workflows for Staff/Teachers, transparent monitoring for Parents, and interactive learning for Students.
 
