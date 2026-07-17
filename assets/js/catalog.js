@@ -385,4 +385,4 @@ window.SC = {
   esc, jsStr, tplStr, slugify, attr, jsonSafe
 };
 
-console.log('%c[School Connect Gen v3] catalog loaded — 86 themes, 42 fonts, 7 presets, 65 modules (CBT engine + super features: chatbot, command palette, ID cards, certificates, flyer).', 'color:#4f46e5;font-weight:bold;font-size:13px');
+console.log('%c[School Connect Gen v3] catalog loaded — 86 themes, 42 fonts, 7 presets, 88 modules (CBT engine + super features: chatbot, command palette, ID cards, certificates, flyer).', 'color:#4f46e5;font-weight:bold;font-size:13px');
