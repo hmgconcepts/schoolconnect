@@ -299,7 +299,11 @@ const App = {
       'student-profile':'student_profile', 'student_profile':'student_profile',
       'feature-guide':'feature_guide', 'feature_guide':'feature_guide',
       'verify-certificate':'verify_certificate', 'verify_certificate':'verify_certificate',
-      'payment-history':'payment_history', 'payment-history':'payment_history'
+      'payment-history':'payment_history',
+      'school-fees':'school_fees', 'school-products':'school_products', 'status-manager':'status_manager',
+      'payment-history':'payment_history',
+      'school-fees':'school_fees', 'school-products':'school_products', 'status-manager':'status_manager',
+      'hmg-digital-products':'hmg_digital_products', 'ecosystem-products':'ecosystem_products'
     };
     return map[id] || id.replace(/-/g,'_');
   },
@@ -378,7 +382,7 @@ const App = {
     'flyer',
     'feature-guide','feature_guide','about','contact',
     'index','login','apply','verify-certificate','verify_certificate',
-    'cbt-exam','cbt_exam'
+    'cbt-exam','cbt_exam','ecosystem','ecosystem_products','hmg_digital_products'
   ]),
 
   /* Role-friendly modules that PARENTS can see (no admin/finance/HR) */
@@ -403,7 +407,7 @@ const App = {
     'voting',
     'feature-guide','feature_guide','about','contact',
     'index','login','apply','verify-certificate','verify_certificate',
-    'cbt-exam','cbt_exam'
+    'cbt-exam','cbt_exam','ecosystem','ecosystem_products','hmg_digital_products'
   ]),
 
   /* denyParent ... financial_aid, denyStudent ... transport — second safety net
@@ -603,7 +607,32 @@ const App = {
   /* =================================================================
      NAVIGATION
      ================================================================= */
-  NAV_ORDER: ['dashboard','profile','student-profile','change-password','notifications','academic_setup','students','staff','parents','classes','subjects','departments','attendance','timetable','timetable-generator','sow','lesson_plans','results','report-cards','affective_traits','psychomotor_traits','report_comments','academic-records','transcripts','rubrics','cbt','cbt-prompts','cbt-multi','cbt-exam','entrance','assignments','digital_library','library','book_request','eresources','lms','announcements','events','school_calendar','messages','inbox','broadcast','complaints','voting','surveys','gallery','birthdays','fees','payment-history','payments_online','finance','financial_aid','donations','hr','payroll','staff_loans','staff_bonus','appraisals','leave','substitutions','admissions','exam_registrations','promotion','alumni','certificates','transfer_cert','idcards','flyer','document_builder','conduct','behaviour','health','counselling','support_plans','diary','gamification','hostel','cafeteria','menu','transport','fleet_tracking','visitors','checkin','front_desk','lost_found','parent_meeting','facility_booking','library_borrowers','career_counseling','helpdesk','directory','reports','analytics','inventory','storage','compliance','activity_log','admin-data','approvals','settings','teacher-overview','feature-guide','developer'],
+  NAV_ORDER: ['dashboard','profile','student-profile','change-password','notifications','academic_setup','students','staff','parents','classes','subjects','departments','attendance','timetable','timetable-generator','sow','lesson_plans','results','report-cards','affective_traits','psychomotor_traits','report_comments','academic-records','transcripts','rubrics','cbt','cbt-prompts','cbt-multi','cbt-exam','entrance','assignments','digital_library','library','book_request','eresources','lms','announcements','events','school_calendar','messages','inbox','broadcast','complaints','voting','surveys','gallery','birthdays','fees','school_fees','school-fees','school_products','school-products','payment-history','payments_online','finance','financial_aid','donations','hr','payroll','staff_loans','staff_bonus','appraisals','leave','substitutions','admissions','exam_registrations','promotion','alumni','certificates','transfer_cert','idcards','flyer','document_builder','conduct','behaviour','health','counselling','support_plans','diary','gamification','hostel','cafeteria','menu','transport','fleet_tracking','visitors','checkin','front_desk','lost_found','parent_meeting','facility_booking','library_borrowers','career_counseling','helpdesk','directory','reports','analytics','inventory','storage','compliance','activity_log','admin-data','approvals','settings','teacher-overview','feature-guide','hmg_digital_products','hmg-digital-products','status_manager','status-manager','developer'],
+
+  // v2 NAV-01: Pages may be generated from older static templates whose
+  // hand-written sidebars do not contain later modules. Inject these canonical
+  // links at runtime so navigation is complete, then apply the normal role/RLS
+  // visibility rules. This avoids relying on one stale page template.
+  ESSENTIAL_NAV: [
+    ['affective_traits','⭐','Affective Domain','affective_traits.html','super_admin admin principal proprietor head_teacher bursar staff teacher'],
+    ['psychomotor_traits','🏃','Psychomotor Domain','psychomotor_traits.html','super_admin admin principal proprietor head_teacher bursar staff teacher'],
+    ['report_comments','💬','Report Card Comments','report_comments.html','super_admin admin principal proprietor head_teacher bursar staff teacher'],
+    ['school_fees','💳','School Fee Structure','school-fees.html','super_admin admin principal proprietor head_teacher bursar'],
+    ['school_products','🛍️','School Products','school-products.html','super_admin admin principal proprietor head_teacher bursar'],
+    ['status_manager','🔐','Role & Status Manager','status-manager.html','super_admin admin principal proprietor head_teacher bursar'],
+    ['ecosystem','🌐','HMG Ecosystem','ecosystem.html','super_admin admin principal proprietor head_teacher bursar staff teacher parent student'],
+    ['ecosystem_products','🌐','Ecosystem Products','ecosystem-products.html','super_admin admin principal proprietor head_teacher bursar staff teacher parent student'],
+    ['hmg_digital_products','🏢','HMG Digital Products','hmg-digital-products.html','super_admin admin principal proprietor head_teacher bursar staff teacher parent student']
+  ],
+  ensureEssentialNav() {
+    const nav=document.querySelector('.app-nav'); if(!nav) return;
+    this.ESSENTIAL_NAV.forEach(([id,icon,label,href,allow]) => {
+      if(nav.querySelector('[data-module-id="'+id+'"]')) return;
+      const a=document.createElement('a'); a.href=href; a.dataset.moduleId=id; a.dataset.roleAllow=allow;
+      a.innerHTML='<span class="app-nav-icon">'+icon+'</span><span>'+label+'</span>';
+      nav.appendChild(a);
+    });
+  },
 
   injectNavSearch() {
     try {
@@ -659,6 +688,7 @@ const App = {
   applyRoleNav(role) {
     document.body.dataset.roleReady = '1';
     document.body.dataset.currentRole = String(role || '').toLowerCase();
+    App.ensureEssentialNav();
     App.normalizeNavOrder();
     App.injectNavSearch();
     const links = [...document.querySelectorAll('[data-role-allow]')];

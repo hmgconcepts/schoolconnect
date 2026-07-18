@@ -216,7 +216,7 @@ ${T.modal()}
       student_profile: 'student-profile.html',
       verify_certificate: 'verify-certificate.html',
       feature_guide: 'feature-guide.html', profile:'profile.html', change_password:'change-password.html', cbt_multi:'cbt-multi.html',
-      ecosystem_products: 'ecosystem-products.html'
+      ecosystem_products: 'ecosystem-products.html', hmg_digital_products:'hmg-digital-products.html', school_fees:'school-fees.html', school_products:'school-products.html', status_manager:'status-manager.html'
     };
     return map[id] || (id + '.html');
   },
@@ -395,7 +395,7 @@ ${T.setupRequiredBanner()}
   labelFor(id, fallbackName) {
     const map = {
       dashboard:'Dashboard', about:'About', contact:'Contact', apply:'Apply', 'feature-guide':'Feature Guide', 'verify-certificate':'Verify Certificate', 'teacher-overview':'Teacher Overview', 'cbt-exam':'Take Exam', 'cbt-multi':'Multi-Subject CBT', profile:'My Profile', 'change-password':'Change Password', 'student-profile':'Student Profile', academic_records:'Academic Records', academic_setup:'Academic Setup', students:'Students', staff:'Staff', classes:'Classes',
-      ecosystem_products:'HMG Products',
+      ecosystem_products:'Ecosystem Products', hmg_digital_products:'HMG Digital Products', school_fees:'School Fee Structure', school_products:'School Products', status_manager:'Role & Status Manager',
       attendance:'Attendance', results:'Results', timetable:'Timetable',
       'timetable-generator':'Auto-Timetable', sow:'Scheme', cbt:'CBT', assignments:'Assignments',
       library:'Library', conduct:'Conduct', health:'Health', promotion:'Promotion',
