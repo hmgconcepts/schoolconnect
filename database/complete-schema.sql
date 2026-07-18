@@ -4804,3 +4804,192 @@ create policy "read_comments" on public.report_comments for select using (auth.r
 drop policy if exists "write_comments" on public.report_comments;
 create policy "write_comments" on public.report_comments for all using (public.is_staff(auth.uid()));
 notify pgrst, 'reload schema';
+
+
+-- =====================================================================
+-- V15 fresh-install additions (kept in sync with update-v15-schema.sql)
+-- =====================================================================
+-- =====================================================================
+-- School Connect v1 — Schema Update v15  (HMG CONCEPTS proprietary)
+-- =====================================================================
+-- Idempotent. Run on top of v1..v14 to add the v1 feature tables:
+--   * class_fee_structure  -> per-class / per-arm fees (item 2 / 13)
+--   * school_products      -> required school products store (item 14)
+--   * role_status_log      -> role & status change audit trail (item 10)
+--   * staff_clock          -> staff clock-in / clock-out (item 15)
+--   * student_clock        -> student clock-in / clock-out (item 15)
+-- All tables are tenant-scoped via school_id and protected by RLS.
+-- =====================================================================
+
+-- 1. Per-class / per-arm fee structure ----------------------------------
+create table if not exists public.class_fee_structure (
+  id uuid primary key default gen_random_uuid(),
+  school_id uuid references public.schools(id) on delete cascade,
+  class text not null,
+  arm text default '',
+  term text not null default 'Current Term'
+        check (term in ('Current Term','Next Term')),
+  tuition numeric(12,2) default 0,
+  exam_fee numeric(12,2) default 0,
+  development numeric(12,2) default 0,
+  transport numeric(12,2) default 0,
+  boarding numeric(12,2) default 0,
+  total numeric(12,2) default 0,
+  due_date date,
+  discount numeric(12,2) default 0,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index if not exists class_fee_structure_school_idx on public.class_fee_structure(school_id);
+
+-- 2. School products store ----------------------------------------------
+create table if not exists public.school_products (
+  id uuid primary key default gen_random_uuid(),
+  school_id uuid references public.schools(id) on delete cascade,
+  name text not null,
+  category text default 'Other'
+           check (category in ('Uniform','Textbook','Exercise Book','Stationery','Bag','Other')),
+  price numeric(12,2) default 0,
+  size_option text default '',
+  stock_note text default '',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index if not exists school_products_school_idx on public.school_products(school_id);
+
+-- 3. Role & status change audit log -------------------------------------
+create table if not exists public.role_status_log (
+  id uuid primary key default gen_random_uuid(),
+  school_id uuid references public.schools(id) on delete cascade,
+  person_name text not null,
+  current_role text default '',
+  new_role text not null,
+  action text default 'convert'
+          check (action in ('promote','demote','convert','suspend','reactivate','deactivate')),
+  reason text default '',
+  changed_by text default '',
+  changed_at timestamptz default now()
+);
+create index if not exists role_status_log_school_idx on public.role_status_log(school_id);
+
+-- 4. Staff clock-in / clock-out -----------------------------------------
+create table if not exists public.staff_clock (
+  id uuid primary key default gen_random_uuid(),
+  school_id uuid references public.schools(id) on delete cascade,
+  staff_id uuid references public.staff(id) on delete cascade,
+  clock_in timestamptz,
+  clock_out timestamptz,
+  date date default current_date,
+  note text default '',
+  created_at timestamptz default now()
+);
+create index if not exists staff_clock_school_idx on public.staff_clock(school_id);
+create index if not exists staff_clock_staff_idx on public.staff_clock(staff_id);
+
+-- 5. Student clock-in / clock-out ---------------------------------------
+create table if not exists public.student_clock (
+  id uuid primary key default gen_random_uuid(),
+  school_id uuid references public.schools(id) on delete cascade,
+  student_id uuid references public.students(id) on delete cascade,
+  clock_in timestamptz,
+  clock_out timestamptz,
+  date date default current_date,
+  note text default '',
+  created_at timestamptz default now()
+);
+create index if not exists student_clock_school_idx on public.student_clock(school_id);
+create index if not exists student_clock_student_idx on public.student_clock(student_id);
+
+-- 6. Row Level Security --------------------------------------------------
+alter table public.class_fee_structure enable row level security;
+alter table public.school_products enable row level security;
+alter table public.role_status_log enable row level security;
+alter table public.staff_clock enable row level security;
+alter table public.student_clock enable row level security;
+
+-- Read: any authenticated member of the school
+drop policy if exists "class_fee_structure_school_read" on public.class_fee_structure;
+create policy "class_fee_structure_school_read" on public.class_fee_structure for select
+  using (public.is_member(school_id));
+drop policy if exists "school_products_school_read" on public.school_products;
+create policy "school_products_school_read" on public.school_products for select
+  using (public.is_member(school_id));
+drop policy if exists "role_status_log_school_read" on public.role_status_log;
+create policy "role_status_log_school_read" on public.role_status_log for select
+  using (public.is_member(school_id));
+drop policy if exists "staff_clock_school_read" on public.staff_clock;
+create policy "staff_clock_school_read" on public.staff_clock for select
+  using (public.is_member(school_id));
+drop policy if exists "student_clock_school_read" on public.student_clock;
+create policy "student_clock_school_read" on public.student_clock for select
+  using (public.is_member(school_id));
+
+-- Write: admin / super-admin only
+drop policy if exists "class_fee_structure_admin_write" on public.class_fee_structure;
+create policy "class_fee_structure_admin_write" on public.class_fee_structure for all
+  using (public.is_admin(auth.uid())) with check (public.is_admin(auth.uid()));
+drop policy if exists "school_products_admin_write" on public.school_products;
+create policy "school_products_admin_write" on public.school_products for all
+  using (public.is_admin(auth.uid())) with check (public.is_admin(auth.uid()));
+drop policy if exists "role_status_log_admin_write" on public.role_status_log;
+create policy "role_status_log_admin_write" on public.role_status_log for all
+  using (public.is_admin(auth.uid())) with check (public.is_admin(auth.uid()));
+drop policy if exists "staff_clock_admin_write" on public.staff_clock;
+create policy "staff_clock_admin_write" on public.staff_clock for all
+  using (public.is_admin(auth.uid())) with check (public.is_admin(auth.uid()));
+drop policy if exists "student_clock_admin_write" on public.student_clock;
+create policy "student_clock_admin_write" on public.student_clock for all
+  using (public.is_admin(auth.uid())) with check (public.is_admin(auth.uid()));
+
+-- 7. updated_at trigger (reuse existing helper if present) --------------
+do $$
+begin
+  if exists (select 1 from pg_proc where proname = 'set_updated_at') then
+    -- PostgreSQL does not support CREATE TRIGGER IF NOT EXISTS. Drop first so
+    -- the migration remains genuinely safe to re-run.
+    drop trigger if exists class_fee_structure_updated on public.class_fee_structure;
+    create trigger class_fee_structure_updated before update on public.class_fee_structure
+      for each row execute function public.set_updated_at();
+    drop trigger if exists school_products_updated on public.school_products;
+    create trigger school_products_updated before update on public.school_products
+      for each row execute function public.set_updated_at();
+  end if;
+end $$;
+
+
+-- V16 ownership/family-read hardening
+-- School Connect v16 — ownership and family-read hardening
+-- Apply to an existing database after v15. Fresh installs include it via complete-schema.sql.
+
+-- Teachers may create only records attributed to themselves; an administrator keeps override.
+drop policy if exists "results_insert_v5" on public.results;
+create policy "results_insert_v16_owner" on public.results for insert with check (public.is_admin(auth.uid()) or (public.is_staff(auth.uid()) and teacher_id = auth.uid()));
+drop policy if exists "results_update_v5" on public.results;
+create policy "results_update_v16_owner" on public.results for update using (public.is_admin(auth.uid()) or teacher_id = auth.uid()) with check (public.is_admin(auth.uid()) or teacher_id = auth.uid());
+drop policy if exists "results_delete_v5" on public.results;
+create policy "results_delete_v16_owner" on public.results for delete using (public.is_admin(auth.uid()) or teacher_id = auth.uid());
+
+-- module_records backs several enterprise pages. The old broad staff ALL policy
+-- allowed one teacher to modify another teacher's record. Keep creation and own-record editing only.
+drop policy if exists "mr_write_staff" on public.module_records;
+drop policy if exists "mr_delete_v12_owner" on public.module_records;
+create policy "mr_insert_v16_owner" on public.module_records for insert with check (public.is_admin(auth.uid()) or (public.is_staff(auth.uid()) and created_by = auth.uid()));
+create policy "mr_update_v16_owner" on public.module_records for update using (public.is_admin(auth.uid()) or created_by = auth.uid()) with check (public.is_admin(auth.uid()) or created_by = auth.uid());
+create policy "mr_delete_v16_owner" on public.module_records for delete using (public.is_admin(auth.uid()) or created_by = auth.uid());
+
+-- Parents can read attendance for linked children; students only their own record. No family write policy is introduced.
+drop policy if exists "attendance_parent_read_v16" on public.attendance;
+create policy "attendance_parent_read_v16" on public.attendance for select using (
+  student_id = auth.uid() or exists (select 1 from public.students s where s.id = attendance.student_id and s.user_id = auth.uid())
+  or exists (select 1 from public.parent_children pc where pc.student_id = attendance.student_id and pc.parent_id = auth.uid())
+);
+
+-- Report-score ownership: a subject teacher cannot overwrite another teacher's marks.
+alter table public.report_scores add column if not exists updated_by uuid references public.profiles(id) default auth.uid();
+drop policy if exists "rs_staff" on public.report_scores;
+drop policy if exists "rs_insert_v16_owner" on public.report_scores;
+drop policy if exists "rs_update_v16_owner" on public.report_scores;
+drop policy if exists "rs_delete_v16_owner" on public.report_scores;
+create policy "rs_insert_v16_owner" on public.report_scores for insert with check (public.is_admin(auth.uid()) or (public.is_staff(auth.uid()) and updated_by = auth.uid()));
+create policy "rs_update_v16_owner" on public.report_scores for update using (public.is_admin(auth.uid()) or updated_by = auth.uid()) with check (public.is_admin(auth.uid()) or updated_by = auth.uid());
+create policy "rs_delete_v16_owner" on public.report_scores for delete using (public.is_admin(auth.uid()) or updated_by = auth.uid());
