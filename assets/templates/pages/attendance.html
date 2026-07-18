@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Digital ID Cards • God of Seed Academy</title>
-<meta name="description" content="God of Seed Academy — Digital ID Cards. Free school management platform by HMG Concepts.">
-<meta name="keywords" content="God of Seed Academy, school management, GoSA, HMG Concepts">
+<title>Attendance • God of Seed Academy</title>
+<meta name="description" content="God of Seed Academy — Attendance. Free school management platform by HMG Concepts.">
+<meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="manifest" href="manifest.json">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<meta property="og:title" content="Digital ID Cards • God of Seed Academy">
+<meta property="og:title" content="Attendance • God of Seed Academy">
 <meta property="og:description" content="God of Seed Academy — Free school management by HMG Concepts">
 <meta property="og:image" content="assets/img/logo.png">
 <meta property="og:type" content="website">
@@ -36,7 +36,7 @@ body{font-family:var(--font)!important;background:#f8fafc}
 .app-nav a{display:grid;grid-template-columns:32px minmax(0,1fr);align-items:center;gap:10px;min-height:42px;padding:8px 10px;border-radius:12px;color:#475569;text-decoration:none;font-size:.875rem;font-weight:700;line-height:1.2;white-space:normal;word-break:normal;transition:background .18s ease,color .18s ease,transform .18s ease}
 .app-nav a:hover{background:#f1f5f9;color:var(--primary);transform:translateX(2px)}
 .app-nav a.active{background:var(--gradient);color:#fff;box-shadow:0 8px 20px rgba(79,70,229,.22)}
-body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!important}.app-nav a[style*="display: none"]{display:none!important}
+body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!important}.app-nav a[style*="display: none"]{display:none!important}
 .app-nav a.nav-locked{opacity:.62}.app-nav a.nav-locked .app-nav-icon{filter:grayscale(.35)}.app-nav a.nav-locked::after{content:'🔒';font-size:.72rem;opacity:.65;justify-self:end}.app-nav a.nav-locked.active{opacity:1}
 .app-nav-icon{width:32px;height:32px;min-width:32px;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem;line-height:1;border-radius:10px;background:rgba(79,70,229,.09);color:var(--primary);flex-shrink:0;overflow:hidden}
 .app-nav a.active .app-nav-icon{background:rgba(255,255,255,.22);color:#fff}
@@ -61,19 +61,19 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
 @media(min-width:901px){.app-topbar .mobile-toggle{display:none}}
 </style>
 
-    <meta name="description" content="God of Seed Academy — Digital ID Cards. Free school management platform by HMG Concepts.">
-    <meta name="keywords" content="God of Seed Academy, school management, GoSA, HMG Concepts">
+    <meta name="description" content="God of Seed Academy — Attendance. Free school management platform by HMG Concepts.">
+    <meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
     <meta name="author" content="HMG Concepts">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="./idcards.html">
-    <meta property="og:title" content="Digital ID Cards • God of Seed Academy">
-    <meta property="og:description" content="God of Seed Academy — Digital ID Cards. Free school management platform by HMG Concepts.">
-    <meta property="og:url" content="./idcards.html">
+    <link rel="canonical" href="./attendance.html">
+    <meta property="og:title" content="Attendance • God of Seed Academy">
+    <meta property="og:description" content="God of Seed Academy — Attendance. Free school management platform by HMG Concepts.">
+    <meta property="og:url" content="./attendance.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="School Connect v5 — God of Seed Academy">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Digital ID Cards • God of Seed Academy">
-    <meta name="twitter:description" content="God of Seed Academy — Digital ID Cards. Free school management platform by HMG Concepts.">
+    <meta name="twitter:title" content="Attendance • God of Seed Academy">
+    <meta name="twitter:description" content="God of Seed Academy — Attendance. Free school management platform by HMG Concepts.">
     <link rel="alternate" href="https://hmgconcepts.pages.dev/" title="HMG Concepts Ecosystem">
   </head>
 <body data-theme="theme15" data-school="God of Seed Academy" data-font="plusjakarta">
@@ -116,19 +116,28 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
     <div id="modal-footer" class="modal-footer"></div>
   </div>
 </div>
-<div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar">
+<div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher parent student">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
         <img src="assets/img/logo.png" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{textContent:('G'),style:'width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900'}))">
         <div>
           <strong>God of Seed Academy</strong>
-          <div style="font-size:0.7rem;color:var(--gray-500)">GoSA</div>
+          <div style="font-size:0.7rem;color:var(--gray-500)">GOSA</div>
         </div>
       </div>
       <nav class="app-nav">
         <a href="dashboard.html" data-module-id="dashboard" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="">
           <span class="app-nav-icon">🏠</span>
           <span>Dashboard</span>
+        </a><a href="profile.html" data-module-id="profile" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="">
+          <span class="app-nav-icon">👤</span>
+          <span>My Profile</span>
+        </a><a href="change-password.html" data-module-id="change-password" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="">
+          <span class="app-nav-icon">🔐</span>
+          <span>Change Password</span>
+        </a><a href="cbt-multi.html" data-module-id="cbt-multi" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
+          <span class="app-nav-icon">🧪</span>
+          <span>Multi-Subject CBT</span>
         </a><a href="academic_setup.html" data-module-id="academic_setup" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
           <span class="app-nav-icon">⚙️</span>
           <span>Academic Setup</span>
@@ -144,7 +153,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
         </a><a href="subjects.html" data-module-id="subjects" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
           <span class="app-nav-icon">◦</span>
           <span>Subjects</span>
-        </a><a href="attendance.html" data-module-id="attendance" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
+        </a><a href="attendance.html" data-module-id="attendance" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="active">
           <span class="app-nav-icon">📋</span>
           <span>Attendance</span>
         </a><a href="cbt-prompts.html" data-module-id="cbt-prompts" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
@@ -201,6 +210,9 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
         </a><a href="fees.html" data-module-id="fees" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
           <span class="app-nav-icon">💰</span>
           <span>Fees</span>
+        </a><a href="payment-history.html" data-module-id="payment-history" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
+          <span class="app-nav-icon">🧾</span>
+          <span>Payment History</span>
         </a><a href="timetable.html" data-module-id="timetable" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
           <span class="app-nav-icon">🗓️</span>
           <span>Timetable</span>
@@ -270,6 +282,9 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
         </a><a href="admissions.html" data-module-id="admissions" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
           <span class="app-nav-icon">📝</span>
           <span>Admissions</span>
+        </a><a href="exam_registrations.html" data-module-id="exam_registrations" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
+          <span class="app-nav-icon">🎓</span>
+          <span>Exam Registrations</span>
         </a><a href="promotion.html" data-module-id="promotion" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
           <span class="app-nav-icon">🎓</span>
           <span>Promotion</span>
@@ -432,7 +447,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
   <main class="app-main">
     <header class="app-topbar">
       <button class="mobile-toggle" onclick="App.toggleSidebar()" title="Menu">☰</button>
-      <h1 class="app-page-title">Digital ID Cards</h1>
+      <h1 class="app-page-title">Attendance</h1>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
         
         <button class="btn btn-sm btn-outline" onclick="if(window.Super)Super.chatbot.explainPage()" title="About this page">ℹ️ Help</button>
@@ -442,46 +457,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
       </div>
     </header>
     <div class="app-content">
-      
-      <div class="card" style="margin-bottom:16px">
-        <p style="color:var(--gray-600);margin:0">Generate branded student/staff ID cards with a scannable
-        <strong>QR code</strong> (encodes the person's ID for attendance scanning). Print directly from the browser.</p>
-      </div>
-      <div class="card" style="margin-bottom:16px" data-staff-only>
-        <div class="grid grid-2">
-          <div class="form-group"><label>Card type</label>
-            <select class="form-select" id="ic-type" onchange="ICUI.switchType(this.value)">
-              <option value="student">Student card</option>
-              <option value="staff">Staff card</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Professional template</label>
-            <select class="form-select" id="ic-template" onchange="ICUI.render()">
-              <option value="horizontal">Horizontal (classic)</option>
-              <option value="premium">Premium (like sample — navy/QR)</option><option value="executive">Executive (green & gold)</option><option value="minimal">Minimal (Swiss clean)</option><option value="gradient">Gradient (vibrant modern)</option><option value="badge">Badge (portrait conference)</option><option value="smart">Smart Card (fintech chip)</option><option value="heritage">Heritage (classic crest)</option><option value="vertical">Vertical (lanyard / portrait)</option>
-              <option value="corporate">Corporate (dark premium)</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Primary colour</label><input class="form-input" type="color" id="ic-pc" value="#0506ae" oninput="ICUI.render()"></div>
-          <div class="form-group"><label>Accent colour</label><input class="form-input" type="color" id="ic-ac" value="#964eec" oninput="ICUI.render()"></div>
-        </div>
-        <div class="grid grid-2">
-          <div class="form-group"><label>Pick a <span id="ic-pick-label">student</span></label><select class="form-select" id="ic-student" onchange="ICUI.pick(this.value)"><option value="">— choose —</option></select></div>
-          <div class="form-group"><label>…or enter manually</label><input class="form-input" id="ic-name" placeholder="Full name" oninput="ICUI.render()"></div>
-          <div class="form-group"><label id="ic-class-label">Class</label><input class="form-input" id="ic-class" placeholder="JSS1" oninput="ICUI.render()"></div>
-          <div class="form-group"><label>ID / Admission / Staff no</label><input class="form-input" id="ic-id" placeholder="(auto)" oninput="ICUI.render()"></div>
-          <div class="form-group"><label>Gender</label><input class="form-input" id="ic-gender" placeholder="male/female" oninput="ICUI.render()"></div>
-          <div class="form-group"><label>Phone</label><input class="form-input" id="ic-phone" placeholder="0803..." oninput="ICUI.render()"></div>
-          <div class="form-group" id="ic-dept-wrap" style="display:none"><label>Department / Designation</label><input class="form-input" id="ic-dept" oninput="ICUI.render()"></div>
-          <div class="form-group"><label>Blood group (optional)</label><input class="form-input" id="ic-blood" placeholder="O+" oninput="ICUI.render()"></div>
-          <div class="form-group" style="grid-column:1/-1"><label>Photo URL (auto-filled; Google Drive links supported, no upload)</label><input class="form-input" id="ic-photo" placeholder="https://drive.google.com/file/d/..." oninput="ICUI.render()"></div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="ICUI.print()">🖨 Print ID Card</button>
-          <button class="btn btn-outline" onclick="ICUI.printAll()">🖨 Print ALL <span id="ic-all-label">students</span></button>
-        </div>
-      </div>
-      <div id="ic-preview" style="display:flex;justify-content:center"></div>
+      <div class="card" style="margin-bottom:16px;background:#eef2ff;border-color:#c7d2fe"><h3 style="margin-top:0">📋 Class E-Register / Attendance</h3><p style="color:var(--gray-700);line-height:1.7;margin:0">Select a class to show every registered student in that class. Class/subject teachers can mark each learner Present, Absent, Late or Excused by clicking one button. Parents/students can read scoped attendance where allowed.</p></div><div class="card" style="margin-bottom:16px"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end"><div class="form-group"><label>Class</label><select class="form-select" id="at-class" onchange="AT.load()"><option value="">— choose class —</option></select></div><div class="form-group"><label>Date</label><input class="form-input" id="at-date" type="date"></div><button class="btn btn-outline" onclick="AT.load()">Load register</button><button class="btn btn-primary" data-staff-only onclick="AT.saveAll()">Save all marks</button></div></div><div id="at-register"><p style="color:var(--gray-500)">Choose a class to open the e-register.</p></div>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
       © 2026 God of Seed Academy · Built by <a href="https://cssadewale.pages.dev" target="_blank" rel="noopener">Adewale Samson Adeagbo</a> · Powered by <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener">HMG Concepts</a> · <a href="developer.html">About the developer</a>
@@ -510,64 +486,130 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
   if (window.CRUD) CRUD.init(sb);
 </script>
 <script>
-const ICUI={ cur:{}, all:[], kind:'student', loaded:false,
-  sample(){ return this.kind==='staff'
-    ? {full_name:'Sample Staff',staff_no:'STAFF-001',role:'Teacher',department:'Academics',staff_type:'Teaching',gender:'',phone:'',type:'staff'}
-    : {full_name:'Sample Student',class:'JSS 1',arm:'A',admission_no:'STD-001',gender:'',phone:'',type:'student'}; },
-  switchType(t){ this.kind=t; this.all=[]; this.cur={}; const sel=document.getElementById('ic-student'); if(sel)sel.innerHTML='<option value="">— choose —</option>';
-    document.getElementById('ic-pick-label').textContent=t; document.getElementById('ic-class-label').textContent=(t==='staff'?'Type':'Class');
-    document.getElementById('ic-dept-wrap').style.display=(t==='staff'?'block':'none');
-    document.getElementById('ic-all-label').textContent=(t==='staff'?'staff':'students');
-    this.load(); this.render(); },
-  async load(){ const sel=document.getElementById('ic-student'); if(!sel)return;
-    while(sel.options.length>1)sel.remove(1);
-    if(!window.sb){ this.loaded=true; this.render(); return; }
-    try{
-      if(this.kind==='staff'){
-        const {data,error}=await sb.from('staff').select('id,full_name,staff_no,role,department,staff_type,gender,phone,photo_url').order('full_name').limit(3000); if(error)throw error;
-        ICUI.all=data||[]; const seen=new Set(); (data||[]).forEach(s=>{ const key=String(s.id||s.staff_no||s.full_name||'').toLowerCase(); if(!key||seen.has(key))return; seen.add(key); const o=document.createElement('option'); o.value=JSON.stringify(s); o.textContent=(s.full_name||'Unnamed')+' ('+(s.role||s.staff_type||'staff')+')'; sel.appendChild(o); });
-      } else {
-        const role = (window.SC_PROFILE && SC_PROFILE.role) || (window.SCHOOL_USER && SCHOOL_USER.role) || '';
-        const userId = (window.SC_PROFILE && SC_PROFILE.id) || (window.SCHOOL_USER && SCHOOL_USER.id) || null;
-        let query = sb.from('students').select('id,full_name,class,arm,admission_no,gender,photo_url,date_of_birth').order('full_name').limit(5000);
-        if (role === 'student' && userId) query=query.eq('user_id',userId);
-        if (role === 'parent' && userId) { const linked=await sb.from('parent_children').select('student_id').eq('parent_id',userId); const ids=(linked.data||[]).map(x=>x.student_id).filter(Boolean); if(!ids.length){ICUI.all=[];this.loaded=true;this.render();return;} query=query.in('id',ids); }
-        const {data,error}=await query; if(error)throw error;
-        ICUI.all=data||[]; const seen=new Set(); (data||[]).forEach(s=>{ const key=String(s.id||s.admission_no||s.full_name||'').toLowerCase(); if(!key||seen.has(key))return; seen.add(key); const o=document.createElement('option'); o.value=JSON.stringify(s); o.textContent=(s.full_name||'Unnamed')+' ('+(s.class||'student')+')'; sel.appendChild(o); });
-        // Auto-select an actual linked child/self, never a sample object.
-        if (ICUI.all.length > 0 && (role === 'parent' || role === 'student')) {
-          setTimeout(() => {
-            sel.value = JSON.stringify(ICUI.all[0]);
-            ICUI.pick(sel.value);
-          }, 100);
+const AT={
+  students:[], 
+  async init(){
+    document.getElementById('at-date').value=new Date().toISOString().slice(0,10);
+    const role = (window.SC_PROFILE && SC_PROFILE.role) || (window.SCHOOL_USER && SCHOOL_USER.role) || '';
+    const isParentOrStudent = role === 'parent' || role === 'student';
+    
+    if (isParentOrStudent) {
+      document.getElementById('at-register').innerHTML = '<div class="pulse">Loading attendance history…</div>';
+      const selectors = document.getElementById('at-class')?.closest('.card');
+      if (selectors) selectors.style.display = 'none';
+      try {
+        let students = [];
+        const { data: stData } = await sb.from('students').select('id,full_name,class,admission_no');
+        students = stData || [];
+        if (!students.length) {
+          document.getElementById('at-register').innerHTML = '<div class="card"><p style="color:var(--gray-500)">No student profiles found.</p></div>';
+          return;
         }
+        const studentIds = students.map(s => s.id);
+        const { data: att, error } = await sb.from('attendance').select('*').in('student_id', studentIds).order('date', { ascending: false }).limit(300);
+        if (error) throw error;
+        if (!att || !att.length) {
+          document.getElementById('at-register').innerHTML = `<div class="card"><h3>📅 Attendance Records</h3><p style="color:var(--gray-500)">No attendance records found yet for: ${students.map(s => s.full_name).join(', ')}</p></div>`;
+          return;
+        }
+        const total = att.length;
+        const present = att.filter(a => String(a.status).toLowerCase() === 'present').length;
+        const late = att.filter(a => String(a.status).toLowerCase() === 'late').length;
+        const absent = att.filter(a => String(a.status).toLowerCase() === 'absent').length;
+        const excused = att.filter(a => String(a.status).toLowerCase() === 'excused').length;
+        const pct = total ? Math.round((present / total) * 100) : 100;
+        let html = `
+          <div class="grid grid-4" style="margin-bottom:16px">
+            <div class="card" style="background:#f0fdf4;border-color:#bbf7d0;text-align:center">
+              <b style="font-size:1.8rem;color:#15803d">${pct}%</b>
+              <div style="font-size:.8rem;color:#166534">Attendance Rate</div>
+            </div>
+            <div class="card" style="background:#f0f9ff;border-color:#bae6fd;text-align:center">
+              <b style="font-size:1.8rem;color:#0369a1">${present}</b>
+              <div style="font-size:.8rem;color:#075985">Days Present</div>
+            </div>
+            <div class="card" style="background:#fffbeb;border-color:#fef08a;text-align:center">
+              <b style="font-size:1.8rem;color:#b45309">${late}</b>
+              <div style="font-size:.8rem;color:#854d0e">Days Late</div>
+            </div>
+            <div class="card" style="background:#fef2f2;border-color:#fecaca;text-align:center">
+              <b style="font-size:1.8rem;color:#b91c1c">${absent}</b>
+              <div style="font-size:.8rem;color:#991b1b">Days Absent</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0">📅 Read-Only Attendance History</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Student Name</th>
+                    <th>Class</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${att.map(a => {
+                    const statusColors = {
+                      present: 'background:#dcfce7;color:#166534',
+                      absent: 'background:#fee2e2;color:#991b1b',
+                      late: 'background:#fef3c7;color:#854d0e',
+                      excused: 'background:#f1f5f9;color:#475569'
+                    };
+                    const col = statusColors[String(a.status).toLowerCase()] || '';
+                    return `
+                      <tr>
+                        <td><b>${new Date(a.date).toLocaleDateString(undefined, {weekday:'short', year:'numeric', month:'short', day:'numeric'})}</b></td>
+                        <td>${esc(a.student_name || '')}</td>
+                        <td>${esc(a.class || '')}</td>
+                        <td><span style="display:inline-block;padding:3px 12px;border-radius:12px;font-weight:800;font-size:0.75rem;text-transform:uppercase;${col}">${esc(a.status)}</span></td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+        document.getElementById('at-register').innerHTML = html;
+      } catch (err) {
+        document.getElementById('at-register').innerHTML = `<div class="card danger">Could not load attendance: ${esc(err.message || err)}</div>`;
       }
-    }catch(e){ console.warn('ID-card list load failed:', e); if(typeof toast==='function')toast('Could not load list. You can still type details manually and print.', 'warning', 7000); }
-    this.loaded=true; this.render();
-  },
-  pick(v){ if(!v){this.cur={}; this.render(); return;} let s={}; try{s=JSON.parse(v);}catch(_){s={};} this.cur=s;
-    document.getElementById('ic-name').value=s.full_name||'';
-    document.getElementById('ic-class').value=(this.kind==='staff'?(s.staff_type||s.role||''):(s.class||''));
-    document.getElementById('ic-id').value=(this.kind==='staff'?(s.staff_no||s.id||''):(s.admission_no||s.id||''));
-    document.getElementById('ic-gender').value=s.gender||'';
-    document.getElementById('ic-phone').value=s.phone||'';
-    if(document.getElementById('ic-dept')) document.getElementById('ic-dept').value=(s.department||s.role||'');
-    document.getElementById('ic-photo').value=s.photo_url||''; this.render(); },
-  tplOpts(){ var t=document.getElementById('ic-template'),pc=document.getElementById('ic-pc'),ac=document.getElementById('ic-ac'); return { template:t?t.value:'horizontal', pc:pc?pc.value:undefined, ac:ac?ac.value:undefined }; },
-  person(){ var to=this.tplOpts(); const typedName=(document.getElementById('ic-name').value||'').trim(); const sample=this.sample(); const base={ full_name:typedName||this.cur.full_name||sample.full_name, date_of_birth:(this.cur&&this.cur.date_of_birth)||'', photo_url:document.getElementById('ic-photo').value||this.cur.photo_url||'', gender:document.getElementById('ic-gender').value||this.cur.gender||'', phone:document.getElementById('ic-phone').value||this.cur.phone||'', blood_group:document.getElementById('ic-blood').value||'', type:this.kind, template:to.template, pc:to.pc, ac:to.ac };
-    if(this.kind==='staff'){ base.staff_no=document.getElementById('ic-id').value||this.cur.staff_no||sample.staff_no; base.staff_type=document.getElementById('ic-class').value||this.cur.staff_type||sample.staff_type; base.role=(document.getElementById('ic-dept')?document.getElementById('ic-dept').value:'')||this.cur.role||sample.role; base.department=this.cur.department||sample.department; }
-    else { base.admission_no=document.getElementById('ic-id').value||this.cur.admission_no||sample.admission_no; base.class=document.getElementById('ic-class').value||this.cur.class||sample.class; base.arm=this.cur.arm||sample.arm; }
-    return base; },
-  fallbackHtml(p){ return '<div class="sc-idcard" style="width:340px;border:1px solid #e2e8f0;border-radius:16px;padding:18px;background:#fff;box-shadow:0 8px 22px rgba(0,0,0,.12);font-family:system-ui"><h3 style="margin:0;color:#0506ae">'+(window.SCHOOL&&SCHOOL.name||'School')+'</h3><p style="font-size:.75rem;color:#64748b">'+(p.type==='staff'?'STAFF IDENTITY CARD':'STUDENT IDENTITY CARD')+'</p><div style="display:flex;gap:12px;align-items:center"><div style="width:76px;height:76px;border-radius:12px;background:#0506ae;color:#fff;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:900">'+(p.full_name||'S').charAt(0).toUpperCase()+'</div><div><b>'+esc(p.full_name||'')+'</b><br><span>'+esc(p.admission_no||p.staff_no||'')+'</span><br><span>'+esc(p.class||p.role||'')+'</span></div></div><p style="font-size:.65rem;color:#94a3b8;margin-bottom:0">If found, please return to the school office.</p></div>'; },
-  cardHtml(p){ try{ if(window.Super&&Super.idcard&&Super.idcard.html) return Super.idcard.html(p); }catch(e){ console.error('ID-card render failed:',e); } return this.fallbackHtml(p); },
-  render(){ const box=document.getElementById('ic-preview'); if(!box)return; const html=this.cardHtml(this.person()); box.innerHTML=html||this.fallbackHtml(this.person()); },
-  print(){ const p=this.person(); if(window.Super&&Super.idcard&&Super.idcard.print) Super.idcard.print(p); else this.printHtml(this.cardHtml(p),'ID Card'); },
-  printHtml(cards,title){ const w=window.open('','_blank'); if(!w){toast('Popup blocked. Please allow popups.','warning');return;} const base=document.baseURI.replace(/[^/]*$/,''); w.document.open(); w.document.write('<!DOCTYPE html><html><head><title>'+esc(title||'ID Cards')+'</title><base href="'+base+'"><style>@page{size:A4;margin:10mm}*{box-sizing:border-box}body{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:10px;margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.sc-idcard{break-inside:avoid;page-break-inside:avoid}</style></head><body>'+cards+'<script>window.onload=function(){var done=false;function go(){if(done)return;done=true;setTimeout(function(){window.focus();window.print()},250)};var i=[].slice.call(document.images),n=i.length;if(!n)return go();var d=function(){if(--n<=0)go()};i.forEach(function(m){if(m.complete)d();else{m.onload=d;m.onerror=d}});setTimeout(go,2400)};<\/script></body></html>'); w.document.close(); },
-  printAll(){ var to=this.tplOpts(); const source=(ICUI.all&&ICUI.all.length)?ICUI.all:[this.person()];
-    const cards=source.map(s=> ICUI.kind==='staff'
-      ? '<div style="margin:8px;display:inline-block">'+ICUI.cardHtml({full_name:s.full_name,staff_no:s.staff_no||s.id,role:s.role,department:s.department,staff_type:s.staff_type,gender:s.gender,phone:s.phone,photo_url:s.photo_url,type:'staff',template:to.template,pc:to.pc,ac:to.ac})+'</div>'
-      : '<div style="margin:8px;display:inline-block">'+ICUI.cardHtml({full_name:s.full_name,class:s.class,arm:s.arm,admission_no:s.admission_no||s.id,gender:s.gender,photo_url:s.photo_url,date_of_birth:s.date_of_birth,type:'student',template:to.template,pc:to.pc,ac:to.ac})+'</div>').join('');
-    this.printHtml(cards, 'ID Cards'); }
-};
-document.addEventListener('DOMContentLoaded',()=>{ if(window.Super)Super.init(window.sb||null,window.SCHOOL); ICUI.load(); ICUI.render(); setTimeout(()=>ICUI.render(),500); }); if(document.readyState!=='loading'){ ICUI.load(); ICUI.render(); }
+      return;
+    }
+
+    try{
+      const {data}=await sb.from('classes').select('name').order('name'); 
+      const sel=document.getElementById('at-class'); 
+      (function(){
+        var seen=new Set();
+        (data||[]).forEach(c=>{
+          var v=String(c.name==null?'':c.name).trim(),k=v.toLowerCase();
+          if(!v||seen.has(k))return;
+          seen.add(k);
+          var o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o);
+        });
+      })();
+    }catch(e){}
+  }, 
+  async load(){ 
+    const cls=document.getElementById('at-class').value, box=document.getElementById('at-register'); 
+    if(!cls){box.innerHTML='<p>Choose a class.</p>';return;} 
+    const {data,error}=await sb.from('students').select('id,full_name,admission_no,class').eq('class',cls).order('full_name').limit(300); 
+    if(error){box.innerHTML='<div class="card">'+esc(error.message)+'</div>';return;} 
+    this.students=data||[]; 
+    box.innerHTML='<div class="card"><h3>'+esc(cls)+' Register</h3><div class="table-wrap"><table><thead><tr><th>#</th><th>Student</th><th>Admission No</th><th>Status</th></tr></thead><tbody>'+this.students.map((s,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(s.full_name)+'</td><td>'+esc(s.admission_no||'')+'</td><td><select class="form-select" id="ats-'+s.id+'"><option value="present">Present</option><option value="absent">Absent</option><option value="late">Late</option><option value="excused">Excused</option></select></td></tr>').join('')+'</tbody></table></div></div>';
+  }, 
+  async saveAll(){ 
+    if(!this.students.length){toast('Load a class first','warning');return;} 
+    const date=document.getElementById('at-date').value||new Date().toISOString().slice(0,10); 
+    const rows=this.students.map(s=>({student_id:s.id,student_name:s.full_name,class:s.class,date:date,status:document.getElementById('ats-'+s.id).value,recorded_by:(window.SC_PROFILE&&SC_PROFILE.id)||null})); 
+    const {error}=await sb.from('attendance').upsert(rows,{onConflict:'student_id,date'}); 
+    if(error){toast(error.message,'danger');return;} 
+    toast('Attendance saved for '+rows.length+' student(s)','success'); 
+  }
+}; 
+document.addEventListener('DOMContentLoaded',()=>AT.init()); 
+AT.init();
 </script></body></html>
