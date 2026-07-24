@@ -2947,3 +2947,9 @@ notify pgrst, 'reload schema';
 select pg_notify('pgrst','reload schema');
 
 select 'School Connect v12.5 clean schema installed successfully ✅ (CBT scale pack + Punctuality Points engine + all runtime helper RPCs included — fully self-contained)' as status;
+
+-- Enhanced admission number and staff ID format settings
+alter table public.school_settings add column if not exists admission_format text default 'prefix-dash';
+alter table public.school_settings add column if not exists admission_start_num integer default 1;
+alter table public.school_settings add column if not exists admission_include_year boolean default false;
+alter table public.school_settings add column if not exists staff_mid_segment text default 'STF';
