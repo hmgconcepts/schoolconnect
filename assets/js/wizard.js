@@ -71,9 +71,14 @@ const Wizard = {
   },
 
   bindUI() {
-    document.addEventListener('click', e => {
-      const a = e.target.closest('[data-wizard]');
-      if (!a) return;
+    // v7-15 shared dispatcher — fixes two "button does nothing" field bugs:
+    //  ① clicking a FILE input fired its action at picker-OPEN time (files
+    //    still empty → load() returned immediately) and the subsequent change
+    //    event was never dispatched → "Load config" appeared dead.
+    //  ② async handlers (previewLive/fullPreview) rejected silently inside
+    //    the click loop → "Preview" appeared dead. Rejections now surface
+    //    as a visible toast.
+    const dispatch = (a, e) => {
       const raw = (a.dataset.wizard || '').trim();
       if (!raw) return;
       // Parse "method" OR "method(arg1, 'arg2', this)" so BOTH argument-less
@@ -86,7 +91,7 @@ const Wizard = {
         console.warn('[Wizard] no handler for action:', raw);
         return;
       }
-      e.preventDefault();
+      if (e && e.preventDefault) e.preventDefault();
       let args = [];
       if (m[2] != null && m[2].trim() !== '') {
         args = m[2].split(',').map(s => {
@@ -100,8 +105,31 @@ const Wizard = {
       } else {
         args = [a]; // back-compat: pass the element to no-arg handlers
       }
-      try { Wizard[name].apply(Wizard, args); }
-      catch (err) { console.error('[Wizard] action error:', raw, err); }
+      try {
+        const r = Wizard[name].apply(Wizard, args);
+        if (r && typeof r.catch === 'function') {
+          r.catch(err => {
+            console.error('[Wizard] async action failed:', raw, err);
+            try { toast('⚠️ ' + raw + ' failed: ' + (err && err.message || err), 'danger', 5000); } catch (_) {}
+          });
+        }
+      } catch (err) {
+        console.error('[Wizard] action error:', raw, err);
+        try { toast('⚠️ ' + raw + ' failed: ' + (err && err.message || err), 'danger', 5000); } catch (_) {}
+      }
+    };
+    document.addEventListener('click', e => {
+      const a = e.target.closest('[data-wizard]');
+      if (!a) return;
+      // File inputs run their action on CHANGE (when a file exists), not on
+      // the click that merely opens the picker.
+      if (a.tagName === 'INPUT' && a.type === 'file') return;
+      dispatch(a, e);
+    });
+    document.addEventListener('change', e => {
+      const a = e.target.closest ? e.target.closest('[data-wizard]') : null;
+      if (!a || !(a.tagName === 'INPUT' && a.type === 'file')) return;
+      dispatch(a, e);
     });
     document.addEventListener('input', e => {
       if (e.target.matches('[data-sync]')) {
@@ -217,11 +245,15 @@ const Wizard = {
       try {
         this.config = JSON.parse(e.target.result);
         toast('✅ Config loaded.', 'success');
-        this.render();
+        try { this.render(); } catch (_) {}
+        try { this.renderModulePicker(); } catch (_) {}
+        try { this.updateQuote(); } catch (_) {}
         this.showStep(this.step);
       } catch (err) { toast('Invalid JSON file', 'danger'); }
     };
     reader.readAsText(file);
+    // allow re-picking the same file later
+    try { input.value = ''; } catch (_) {}
   },
   shareLink() {
     const enc = btoa(unescape(encodeURIComponent(JSON.stringify(this.config))));
@@ -239,7 +271,13 @@ const Wizard = {
     const font = window.SC.FONTS.find(f => f.id === cfg.fontId) || window.SC.FONTS[0];
     cfg.fontFamily = font.family;
     cfg.fontCss = font.css;
-    
+
+    // v7-15: open the tab SYNCHRONOUSLY inside the click gesture — awaiting
+    // fetch() first made browsers treat window.open as non-gesture and
+    // silently BLOCK the popup ("preview does nothing" field report).
+    const w = window.open('', '_blank');
+    if (w) { try { w.document.write('<p style="font:16px system-ui;padding:40px;text-align:center">Loading preview…</p>'); } catch (_) {} }
+
     let STYLE_CSS = '';
     try {
       const res = await fetch('assets/css/style.css');
@@ -253,10 +291,17 @@ const Wizard = {
     if (cfg.logoData) {
         html = html.replace(/src="assets\/img\/logo\.([a-z]+)"/g, 'src="' + cfg.logoData + '"');
     }
-    
+
+    if (w) {
+      try { w.document.open(); w.document.write(html); w.document.close(); return; } catch (_) {}
+    }
+    // Popup blocked / write failed → download fallback so the user still gets it
     const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'preview.html';
+    a.click();
+    toast('ℹ️ Popup blocked — preview downloaded as preview.html', 'info', 5000);
   },
 
   /* ✨ FULL interactive multi-page preview — click through every page with
@@ -267,20 +312,33 @@ const Wizard = {
       cfg.modules = window.SC.PRESETS.secondary.modules.slice();
       cfg.levels = window.SC.PRESETS.secondary.levels.slice();
     }
-    let STYLE_CSS = '';
-    try { STYLE_CSS = await (await fetch('assets/css/style.css')).text(); } catch (e) {}
-    let html = Generator.fullPreviewHtml(cfg);
-    html = html.replace('__STYLE__', STYLE_CSS);
-    if (cfg.logoData) html = html.replace(/src="assets\/img\/logo\.([a-z]+)"/g, 'src="' + cfg.logoData + '"');
-    // Prefer an in-page modal iframe if present; else open a new tab.
-    const frame = document.getElementById('fullPreviewFrame');
-    if (frame) {
-      frame.srcdoc = html;
-      const modal = document.getElementById('fullPreviewModal');
-      if (modal) modal.classList.add('show');
-    } else {
-      const w = window.open('', '_blank');
-      w.document.open(); w.document.write(html); w.document.close();
+    // v7-15: if the in-page modal is unavailable we need window.open to happen
+    // INSIDE the click gesture (popup blockers kill post-await opens), so open
+    // the fallback tab NOW and fill it after the async work.
+    const frameProbe = document.getElementById('fullPreviewFrame');
+    const w = frameProbe ? null : window.open('', '_blank');
+    if (w) { try { w.document.write('<p style="font:16px system-ui;padding:40px;text-align:center">Building full preview…</p>'); } catch (_) {} }
+    try {
+      let STYLE_CSS = '';
+      try { STYLE_CSS = await (await fetch('assets/css/style.css')).text(); } catch (e) {}
+      let html = Generator.fullPreviewHtml(cfg);
+      html = html.replace('__STYLE__', STYLE_CSS);
+      if (cfg.logoData) html = html.replace(/src="assets\/img\/logo\.([a-z]+)"/g, 'src="' + cfg.logoData + '"');
+      // Prefer an in-page modal iframe if present; else fill the fallback tab.
+      const frame = document.getElementById('fullPreviewFrame');
+      if (frame) {
+        frame.srcdoc = html;
+        const modal = document.getElementById('fullPreviewModal');
+        if (modal) modal.classList.add('show');
+      } else if (w) {
+        w.document.open(); w.document.write(html); w.document.close();
+      } else {
+        throw new Error('Preview window was blocked. Allow popups for this page and try again.');
+      }
+    } catch (err) {
+      if (w) { try { w.close(); } catch (_) {} }
+      console.error('[Wizard] fullPreview failed:', err);
+      toast('⚠️ Full preview failed: ' + (err && err.message || err), 'danger', 5000);
     }
   },
 
