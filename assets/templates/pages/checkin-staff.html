@@ -28,6 +28,11 @@ body{font-family:var(--font)!important;background:#f8fafc}
 video{width:100%;height:100%;object-fit:cover}
 .scanner-overlay{position:absolute;top:0;left:0;right:0;bottom:0;border:2px dashed rgba(255,255,255,0.4);margin:40px;border-radius:12px;pointer-events:none}
 </style>
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <meta name="author" content="HMG Concepts">
+    <link rel="canonical" href="https://gosasite.vercel.app/checkin-staff.html">
+    <meta property="og:url" content="https://gosasite.vercel.app/checkin-staff.html">
+    <meta name="twitter:card" content="summary_large_image">
 </head>
 <body data-school="School Portal">
 
@@ -37,7 +42,7 @@ video{width:100%;height:100%;object-fit:cover}
       <img src="assets/img/logo.png" alt="" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{textContent:('S'),style:'width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900'}))">
       <div>
         <strong id="sidebar-school-name">School Portal</strong>
-        <div style="font-size:0.7rem;color:var(--gray-500)">SCD Staff</div>
+        <div style="font-size:0.7rem;color:var(--gray-500)">GoSA Staff</div>
       </div>
     </div>
     <nav class="app-nav">
@@ -97,6 +102,18 @@ video{width:100%;height:100%;object-fit:cover}
           <div class="form-group">
             <label>Full Name (Optional fallback)</label>
             <input class="form-input" id="ck-name" placeholder="e.g. Mrs. Bello">
+          </div>
+          
+          <div class="form-group" style="margin-top: 14px; margin-bottom: 14px;">
+            <label style="font-weight: 700; margin-bottom: 8px; display: block;">Select Attendance Action:</label>
+            <div style="display: flex; gap: 20px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.95rem;">
+                <input type="radio" name="clock_action" value="in" checked style="width:18px;height:18px;"> ⏰ <b>Clock In (Daily Arrival)</b>
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.95rem;">
+                <input type="radio" name="clock_action" value="out" style="width:18px;height:18px;"> 🚪 <b>Clock Out (Departure)</b>
+              </label>
+            </div>
           </div>
           
           <button class="btn btn-primary" onclick="CK.go(document.getElementById('ck-id').value, 'code')" style="width:100%">Mark Attendance</button>
@@ -272,35 +289,75 @@ const CK = {
     const p = Enterprise.checkin.parseQR(raw);
     const id = p.id || raw;
     const nm = p.name || document.getElementById('ck-name').value || 'Staff Member';
+    const action = document.querySelector('input[name="clock_action"]:checked')?.value || 'in';
     
-    // Determine lateness: past 8:00 AM is late
     const now = new Date();
     const hours = now.getHours();
     const minutes = now.getMinutes();
-    const status = (hours > 8 || (hours === 8 && minutes > 0)) ? 'late' : 'present';
+    
+    // Admin lateness cutoff: uses checkin_deadline from school_settings
+    const deadline = window.SC_SETTINGS?.checkin_deadline || localStorage.getItem('sc-checkin-deadline') || '08:00';
+    const [dh, dm] = deadline.split(':').map(Number);
+    const grace = Number(window.SC_SETTINGS?.checkin_grace_minutes || localStorage.getItem('sc-checkin-grace') || 0);
+    const nowMinutes = hours * 60 + minutes;
+    const deadlineMinutes = (dh * 60 + dm) + grace;
+    const status = (nowMinutes > deadlineMinutes) ? 'late' : 'present';
     
     const supabase = window.sb || sb;
     if (!supabase) { alert('Database not configured.'); return; }
     
-    // Log check-in into database
-    const { error } = await supabase.from('attendance_checkins').insert({
-      student_id_ref: id,
-      student_name: nm,
-      class: 'Staff/Teacher',
-      method: method || 'code',
-      status: status,
-      device: navigator.userAgent.slice(0, 60)
-    });
+    // Resolve staff member ID from staff_no or name
+    let staffId = null;
+    let staffName = nm;
+    try {
+      const { data: stMember } = await supabase.from('staff').select('id, full_name').or(`staff_no.eq.${id},full_name.ilike.%${nm}%`).maybeSingle();
+      if (stMember) {
+        staffId = stMember.id;
+        staffName = stMember.full_name;
+      }
+    } catch (_) {}
+
+    if (action === 'in') {
+      // 1. Log Clock-In in staff_clock table
+      const { error: clErr } = await supabase.from('staff_clock').insert({
+        staff_id: staffId,
+        clock_in: now.toISOString(),
+        date: now.toISOString().slice(0, 10),
+        note: 'Checked in as ' + status.toUpperCase()
+      });
+      if (clErr) { alert('Error logging clock-in: ' + clErr.message); return; }
+
+      // 2. Also log in generic attendance_checkins for standard listings
+      await supabase.from('attendance_checkins').insert({
+        student_id_ref: id,
+        student_name: staffName,
+        class: 'Staff/Teacher',
+        method: method || 'code',
+        status: status,
+        device: navigator.userAgent.slice(0, 60)
+      });
+      
+      CK.done.unshift({ id, name: staffName, at: now.toLocaleTimeString(), status: status + ' (clock in)' });
+      alert('✅ Clock-In Successful! Checked in as ' + status.toUpperCase() + ' at ' + now.toLocaleTimeString());
+    } else {
+      // 1. Log Clock-Out in staff_clock table
+      const todayStr = now.toISOString().slice(0, 10);
+      const { data: todayClock } = await supabase.from('staff_clock').select('*').eq('staff_id', staffId).eq('date', todayStr).maybeSingle();
+      if (todayClock) {
+        await supabase.from('staff_clock').update({ clock_out: now.toISOString(), note: 'Clocked out at ' + now.toLocaleTimeString() }).eq('id', todayClock.id);
+      } else {
+        await supabase.from('staff_clock').insert({ staff_id: staffId, clock_out: now.toISOString(), date: todayStr, note: 'Clock out only' });
+      }
+      
+      CK.done.unshift({ id, name: staffName, at: now.toLocaleTimeString(), status: 'clock out' });
+      alert('🚪 Clock-Out Successful! Clocked out at ' + now.toLocaleTimeString());
+    }
     
-    if (error) { alert('Error logging check-in: ' + error.message); return; }
-    
-    CK.done.unshift({ id, name: nm, at: now.toLocaleTimeString(), status });
     document.getElementById('ck-id').value = '';
     document.getElementById('ck-name').value = '';
-    alert('✅ Checked in: ' + nm + ' (' + status.toUpperCase() + ')');
     
     document.getElementById('ck-log').innerHTML = '<h4 style="margin:20px 0 10px">Today\'s Logs (' + CK.done.length + ')</h4>' +
-      CK.done.map(d => '<div style="padding:8px 0;border-bottom:1px solid #e2e8f0">✅ <strong>' + esc(d.name) + '</strong> (' + esc(d.id) + ') - <span class="badge ' + (d.status === 'late' ? 'badge-danger' : 'badge-success') + '">' + d.status.toUpperCase() + '</span> <span style="color:#64748b;float:right">' + d.at + '</span></div>').join('');
+      CK.done.map(d => '<div style="padding:8px 0;border-bottom:1px solid #e2e8f0">✅ <strong>' + esc(d.name) + '</strong> (' + esc(d.id) + ') - <span class="badge ' + (d.status.includes('late') ? 'badge-danger' : 'badge-success') + '">' + d.status.toUpperCase() + '</span> <span style="color:#64748b;float:right">' + d.at + '</span></div>').join('');
   }
 };
 

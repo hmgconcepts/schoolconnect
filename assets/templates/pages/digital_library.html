@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Messaging • God of Seed Academy</title>
-<meta name="description" content="God of Seed Academy — Messaging. Free school management platform by HMG Concepts.">
-<meta name="keywords" content="God of Seed Academy, school management, GoSA, HMG Concepts">
+<title>Digital Library • God of Seed Academy</title>
+<meta name="description" content="God of Seed Academy — Digital Library. Free school management platform by HMG Concepts.">
+<meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="manifest" href="manifest.json">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<meta property="og:title" content="Messaging • God of Seed Academy">
+<meta property="og:title" content="Digital Library • God of Seed Academy">
 <meta property="og:description" content="God of Seed Academy — Free school management by HMG Concepts">
 <meta property="og:image" content="assets/img/logo.png">
 <meta property="og:type" content="website">
@@ -36,7 +36,7 @@ body{font-family:var(--font)!important;background:#f8fafc}
 .app-nav a{display:grid;grid-template-columns:32px minmax(0,1fr);align-items:center;gap:10px;min-height:42px;padding:8px 10px;border-radius:12px;color:#475569;text-decoration:none;font-size:.875rem;font-weight:700;line-height:1.2;white-space:normal;word-break:normal;transition:background .18s ease,color .18s ease,transform .18s ease}
 .app-nav a:hover{background:#f1f5f9;color:var(--primary);transform:translateX(2px)}
 .app-nav a.active{background:var(--gradient);color:#fff;box-shadow:0 8px 20px rgba(79,70,229,.22)}
-body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!important}.app-nav a[style*="display: none"]{display:none!important}
+body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!important}.app-nav a[style*="display: none"]{display:none!important}
 .app-nav a.nav-locked{opacity:.62}.app-nav a.nav-locked .app-nav-icon{filter:grayscale(.35)}.app-nav a.nav-locked::after{content:'🔒';font-size:.72rem;opacity:.65;justify-self:end}.app-nav a.nav-locked.active{opacity:1}
 .app-nav-icon{width:32px;height:32px;min-width:32px;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem;line-height:1;border-radius:10px;background:rgba(79,70,229,.09);color:var(--primary);flex-shrink:0;overflow:hidden}
 .app-nav a.active .app-nav-icon{background:rgba(255,255,255,.22);color:#fff}
@@ -61,19 +61,19 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
 @media(min-width:901px){.app-topbar .mobile-toggle{display:none}}
 </style>
 
-    <meta name="description" content="God of Seed Academy — Messaging. Free school management platform by HMG Concepts.">
-    <meta name="keywords" content="God of Seed Academy, school management, GoSA, HMG Concepts">
+    <meta name="description" content="God of Seed Academy — Digital Library. Free school management platform by HMG Concepts.">
+    <meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
     <meta name="author" content="HMG Concepts">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="./messages.html">
-    <meta property="og:title" content="Messaging • God of Seed Academy">
-    <meta property="og:description" content="God of Seed Academy — Messaging. Free school management platform by HMG Concepts.">
-    <meta property="og:url" content="./messages.html">
+    <link rel="canonical" href="./digital_library.html">
+    <meta property="og:title" content="Digital Library • God of Seed Academy">
+    <meta property="og:description" content="God of Seed Academy — Digital Library. Free school management platform by HMG Concepts.">
+    <meta property="og:url" content="./digital_library.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="School Connect v5 — God of Seed Academy">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Messaging • God of Seed Academy">
-    <meta name="twitter:description" content="God of Seed Academy — Messaging. Free school management platform by HMG Concepts.">
+    <meta name="twitter:title" content="Digital Library • God of Seed Academy">
+    <meta name="twitter:description" content="God of Seed Academy — Digital Library. Free school management platform by HMG Concepts.">
     <link rel="alternate" href="https://hmgconcepts.pages.dev/" title="HMG Concepts Ecosystem">
   </head>
 <body data-theme="theme15" data-school="God of Seed Academy" data-font="plusjakarta">
@@ -122,13 +122,22 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
         <img src="assets/img/logo.png" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
         <div>
           <strong>God of Seed Academy</strong>
-          <div style="font-size:0.7rem;color:var(--gray-500)">GoSA</div>
+          <div style="font-size:0.7rem;color:var(--gray-500)">GOSA</div>
         </div>
       </div>
       <nav class="app-nav">
         <a href="dashboard.html" data-module-id="dashboard" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="">
           <span class="app-nav-icon">🏠</span>
           <span>Dashboard</span>
+        </a><a href="profile.html" data-module-id="profile" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="">
+          <span class="app-nav-icon">👤</span>
+          <span>My Profile</span>
+        </a><a href="change-password.html" data-module-id="change-password" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="">
+          <span class="app-nav-icon">🔐</span>
+          <span>Change Password</span>
+        </a><a href="cbt-multi.html" data-module-id="cbt-multi" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
+          <span class="app-nav-icon">🧪</span>
+          <span>Multi-Subject CBT</span>
         </a><a href="academic_setup.html" data-module-id="academic_setup" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
           <span class="app-nav-icon">⚙️</span>
           <span>Academic Setup</span>
@@ -204,6 +213,9 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
         </a><a href="fees.html" data-module-id="fees" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
           <span class="app-nav-icon">💰</span>
           <span>Fees</span>
+        </a><a href="payment-history.html" data-module-id="payment-history" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
+          <span class="app-nav-icon">🧾</span>
+          <span>Payment History</span>
         </a><a href="timetable.html" data-module-id="timetable" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
           <span class="app-nav-icon">🗓️</span>
           <span>Timetable</span>
@@ -273,6 +285,9 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
         </a><a href="admissions.html" data-module-id="admissions" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
           <span class="app-nav-icon">📝</span>
           <span>Admissions</span>
+        </a><a href="exam-register.html" data-module-id="exam_registrations" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
+          <span class="app-nav-icon">🎓</span>
+          <span>Exam Registrations</span>
         </a><a href="promotion.html" data-module-id="promotion" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
           <span class="app-nav-icon">🎓</span>
           <span>Promotion</span>
@@ -355,7 +370,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
           <span class="app-nav-icon">✅</span>
           <span>Compliance</span>
         </a><a href="developer.html" data-module-id="developer" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
-          <span class="app-nav-icon">👨‍💻</span>
+          <span class="app-nav-icon">👨‍</span>
           <span>About the Developer</span>
         </a><a href="lesson_plans.html" data-module-id="lesson_plans" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
           <span class="app-nav-icon">🗒️</span>
@@ -435,7 +450,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
   <main class="app-main">
     <header class="app-topbar">
       <button class="mobile-toggle" onclick="App.toggleSidebar()" title="Menu">☰</button>
-      <h1 class="app-page-title">Messaging</h1>
+      <h1 class="app-page-title">Digital Library</h1>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
         
         <button class="btn btn-sm btn-outline" onclick="if(window.Super)Super.chatbot.explainPage()" title="About this page">ℹ️ Help</button>
@@ -446,8 +461,34 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
     </header>
     <div class="app-content">
       
-      <div class="card" style="margin-bottom:16px;background:#eef2ff;border-color:#c7d2fe"><h3 style="margin-top:0">📱 Messaging Centre — WhatsApp / Email / SMS</h3><p style="color:var(--gray-700);line-height:1.7;margin:0">Create a message, choose recipients, then send through free device/email links. This avoids paid SMS/WhatsApp APIs. The system stores the message log; your browser opens WhatsApp, email or SMS with the text prefilled for the selected recipient.</p></div>
-      <div class="grid grid-2"><div class="card"><h3>Compose</h3><div class="form-group"><label>Audience</label><select class="form-select" id="msg-aud" onchange="MSG.loadRecipients()"><option value="parents">Parents</option><option value="staff">Staff / Teachers</option><option value="students">Students</option><option value="admin">Admin / Management</option></select></div><div class="form-group"><label>Recipients <span style="color:var(--gray-500);font-weight:400">(smart picker — type to search)</span></label><div style="position:relative"><input type="text" class="form-input" id="msg-search" placeholder="🔍 Type a name, class, email or phone to filter…" oninput="MSG.filterList()" style="margin-bottom:6px"><select class="form-select" id="msg-rec" multiple size="9" onchange="MSG.updateCount()"><option value="">Loading…</option></select></div><div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap"><button class="btn btn-sm btn-outline" onclick="MSG.selectAll()">Select all visible</button><button class="btn btn-sm btn-outline" onclick="MSG.selectByClass()">By class</button><button class="btn btn-sm btn-outline" onclick="MSG.clearSelection()">Clear</button><button class="btn btn-sm btn-outline" onclick="MSG.invertSelection()">Invert</button><span id="msg-count" style="color:var(--gray-500);font-size:.85rem;margin-left:auto">0 recipients selected</span></div><div id="msg-quickfilter" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px"><button class="btn btn-xs btn-outline" onclick="MSG.quickFilter('with-email')">📧 Has email</button><button class="btn btn-xs btn-outline" onclick="MSG.quickFilter('with-phone')">📱 Has phone</button><button class="btn btn-xs btn-outline" onclick="MSG.quickFilter('no-account')">⚠️ No account</button><button class="btn btn-xs btn-outline" onclick="MSG.quickFilter('all')">🔄 Reset</button></div></div><div class="form-group"><label>Subject / title</label><input class="form-input" id="msg-title"></div><div class="form-group"><label>Message</label><textarea class="form-input" id="msg-body" rows="6"></textarea></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="MSG.logOnly()">Deliver In-App</button><button class="btn btn-outline" onclick="MSG.send('whatsapp')">WhatsApp + In-App</button><button class="btn btn-outline" onclick="MSG.send('email')">Email + In-App</button><button class="btn btn-outline" onclick="MSG.send('sms')">SMS + In-App</button></div><p style="color:var(--gray-500);font-size:.82rem;margin-top:8px">In-app messages are stored with each recipient's profile ID, so they appear in the recipient's Inbox. WhatsApp/SMS use free device links; no paid API is required.</p></div><div class="card"><h3>In-App Inbox / Message Log</h3><div id="msg-log">Loading…</div></div></div>
+      <div class="card" style="margin-bottom:16px"><p style="color:var(--gray-600);margin:0">
+        📚 <strong>Digital Library.</strong> Teachers add a book/resource by pasting its online link (Google Drive, web, etc.)
+        and may attach a few comprehension questions. Students read the book, answer the questions, and their
+        auto-marked score is recorded — it can count toward their continuous-assessment grade. No files are uploaded
+        (links only), so it stays free on Supabase.</p></div>
+
+      <div class="card" style="margin-bottom:16px" data-staff-only>
+        <h3>➕ Add / set a reading (teacher)</h3>
+        <div class="grid grid-2">
+          <div class="form-group"><label>Title *</label><input class="form-input" id="dl-title" placeholder="e.g. Things Fall Apart — Chapters 1-3"></div>
+          <div class="form-group"><label>Author</label><input class="form-input" id="dl-author"></div>
+          <div class="form-group"><label>Subject</label><select class="form-select" id="dl-subject"><option value="">—</option></select></div>
+          <div class="form-group"><label>Assigned class</label><select class="form-select" id="dl-class"><option value="">—</option></select></div>
+          <div class="form-group" style="grid-column:1/-1"><label>Read link (Drive / web) *</label><input class="form-input" id="dl-link" placeholder="https://drive.google.com/file/d/..."></div>
+          <div class="form-group" style="grid-column:1/-1"><label>Instructions</label><textarea class="form-input" id="dl-inst" rows="2"></textarea></div>
+          <div class="form-group"><label>Due date</label><input class="form-input" type="date" id="dl-due"></div>
+          <div class="form-group"><label>Max score (counts to grade)</label><input class="form-input" type="number" id="dl-max" value="10"></div>
+        </div>
+        <h4 style="margin:6px 0">❓ Comprehension questions (optional, auto-marked)</h4>
+        <div id="dl-qs"></div>
+        <button class="btn btn-outline btn-sm" onclick="DL.addQ()">+ Add question</button>
+        <div style="margin-top:12px"><button class="btn btn-primary" onclick="DL.save()">💾 Save reading</button></div>
+      </div>
+
+      <div class="card">
+        <h3>📖 Readings</h3>
+        <div id="dl-list"><span class="pulse">Loading…</span></div>
+      </div>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
       © 2026 God of Seed Academy · Built by <a href="https://cssadewale.pages.dev" target="_blank" rel="noopener">Adewale Samson Adeagbo</a> · Powered by <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener">HMG Concepts</a> · <a href="developer.html">About the developer</a>
@@ -478,105 +519,156 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
   if (window.CRUD) CRUD.init(sb);
 </script>
 <script>
-const MSG={
-  rows:[],
-  async init(){ await this.loadRecipients(); this.loadLog(); },
-  esc:s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'),
-  dedupe(rows){ const seen=new Set(); return (rows||[]).filter(x=>{ const key=String(x.recipient_id||x.id||x.full_name||x.email||x.phone||'').toLowerCase(); if(!key||seen.has(key))return false; seen.add(key); return true; }); },
-  async loadRecipients(){
-    const aud=document.getElementById('msg-aud').value; let rows=[];
-    try{
-      if(aud==='parents'){
-        const r=await sb.from('profiles').select('id,full_name,email,phone,role').eq('role','parent').limit(3000);
-        rows=(r.data||[]).map(x=>Object.assign({},x,{recipient_id:x.id}));
-      }
-      if(aud==='staff'){
-        const r=await sb.from('profiles').select('id,full_name,email,phone,role').in('role',['staff','teacher','admin','principal','proprietor','head_teacher','bursar']).limit(3000);
-        rows=(r.data||[]).map(x=>Object.assign({},x,{recipient_id:x.id}));
-      }
-      if(aud==='admin'){
-        const r=await sb.from('profiles').select('id,full_name,email,phone,role').in('role',['super_admin','admin','principal','proprietor','head_teacher','bursar']).limit(1000);
-        rows=(r.data||[]).map(x=>Object.assign({},x,{recipient_id:x.id}));
-      }
-      if(aud==='students'){
-        // Try students table first (has class, admission_no etc.)
-        const r=await sb.from('students').select('id,user_id,full_name,email,guardian_phone,guardian_email,class,admission_no').limit(4000);
-        rows=(r.data||[]).map(x=>({id:x.id,recipient_id:x.user_id||x.id,full_name:(x.class?x.class+' · ':'')+x.full_name,email:x.email||x.guardian_email,phone:x.guardian_phone,admission_no:x.admission_no}));
-        // Also include student profiles that may not be in the students register yet
-        try{
-          const p=await sb.from('profiles').select('id,full_name,email,phone,role').eq('role','student').limit(2000);
-          const existing=new Set(rows.map(x=>x.recipient_id));
-          (p.data||[]).forEach(x=>{ if(!existing.has(x.id)) rows.push({id:x.id,recipient_id:x.id,full_name:x.full_name,email:x.email,phone:x.phone}); });
-        }catch(_){}
-      }
-    }catch(e){ console.warn('Recipients load failed', e); }
-    this.rows=this.dedupe(rows);
-    const sel=document.getElementById('msg-rec');
-    sel.innerHTML='<option value="__all">✅ Select all visible recipients</option>'+this.rows.map(x=>'<option value="'+this.esc(x.recipient_id||x.id)+'" data-id="'+this.esc(x.id||'')+'" data-recipient="'+this.esc(x.recipient_id||'')+'" data-email="'+this.esc(x.email||'')+'" data-phone="'+this.esc(x.phone||'')+'">'+this.esc(x.full_name||x.email||x.phone||x.id)+(x.recipient_id?'':' — no login account')+'</option>').join('');
-    this.updateCount();
+const DL={ qs:[],
+  /* v3 — determine staff/admin role from multiple sources to avoid race
+     condition where App.currentRole hasn't been resolved yet but the
+     SC_PROFILE was loaded by the page's own load() function. */
+  _isStaff(){
+    // 1. App.currentRole (after resolveAndApplyRole completes)
+    if (window.App && window.App.currentRole) {
+      const r = String(window.App.currentRole).toLowerCase();
+      if (window.App.isAdminRole && window.App.isAdminRole(r)) return true;
+      if (['staff','teacher'].includes(r)) return true;
+    }
+    // 2. SC_PROFILE.role (set by profile.html style pages)
+    if (window.SC_PROFILE && window.SC_PROFILE.role) {
+      const r = String(window.SC_PROFILE.role).toLowerCase();
+      if (['admin','super_admin','principal','proprietor','head_teacher','bursar','staff','teacher'].includes(r)) return true;
+    }
+    return false;
   },
-  updateCount(){ const n=this.selected().length; const c=document.getElementById('msg-count'); if(c)c.textContent=n+' recipient'+(n===1?'':'s')+' selected'; },
-  selected(){
-    const sel=document.getElementById('msg-rec'); if(!sel)return[];
-    const vals=[...sel.selectedOptions].map(o=>o.value);
-    if(vals.includes('__all')) return this.rows.slice();
-    const chosen=new Set(vals);
-    return this.rows.filter(x=>chosen.has(String(x.recipient_id||x.id)));
+  async init(){ if(!sb)return;
+    try{ const {data:subs}=await sb.from('subjects').select('name').order('name'); (function(){var seen=new Set();(subs||[]).forEach(x=>{var v=String(x.name==null?'':x.name).trim(),k=v.toLowerCase();if(!v||seen.has(k))return;seen.add(k);var o=document.createElement('option');o.textContent=v;var el=document.getElementById('dl-subject');el&&el.appendChild(o);});})(); }catch(e){}
+    try{ const {data:cls}=await sb.from('classes').select('name').order('name'); (function(){var seen=new Set();(cls||[]).forEach(x=>{var v=String(x.name==null?'':x.name).trim(),k=v.toLowerCase();if(!v||seen.has(k))return;seen.add(k);var o=document.createElement('option');o.textContent=v;var el=document.getElementById('dl-class');el&&el.appendChild(o);});})(); }catch(e){}
+    this.render(); this.list();
+    // v3 — re-render when App role becomes available (race fix)
+    if (window.App && !window.App._dlRoleListener) {
+      window.App._dlRoleListener = true;
+      const tryRender = () => {
+        if (window.App && window.App.currentRole && window.App.currentRole !== 'guest' && window.App.currentRole !== 'demo') {
+          try { DL.list(); } catch (_) {}
+        } else { setTimeout(tryRender, 200); }
+      };
+      setTimeout(tryRender, 200);
+    }
   },
-  selectAll(){ const sel=document.getElementById('msg-rec'); [...sel.options].forEach(o=>{if(o.value!=='__filter')o.selected=true;}); this.updateCount(); },
-  selectByClass(){ const cls=prompt('Enter class name (e.g. JSS1, SS2A, Grade 3) to select only that class:')||''; if(!cls)return; const sel=document.getElementById('msg-rec'); [...sel.options].forEach(o=>{if(o.value!=='__filter' && (o.textContent||'').toLowerCase().includes(cls.toLowerCase()))o.selected=true;}); this.updateCount(); },
-  invertSelection(){ const sel=document.getElementById('msg-rec'); [...sel.options].forEach(o=>{if(o.value!=='__filter')o.selected=!o.selected;}); this.updateCount(); },
-  clearSelection(){ const sel=document.getElementById('msg-rec'); [...sel.options].forEach(o=>o.selected=false); this.updateCount(); },
-  filterList(){ this.applyFilter(); },
-  quickFilter(kind){ this._filter=kind; this.applyFilter(); },
-  applyFilter(){
-    const sel=document.getElementById('msg-rec'); if(!sel)return;
-    const q=(document.getElementById('msg-search')?.value||'').toLowerCase().trim();
-    const kind=this._filter||'all';
-    [...sel.options].forEach(o=>{
-      if(o.value==='__filter'||o.value==='__all')return;
-      const txt=(o.textContent||'').toLowerCase();
-      const email=(o.getAttribute('data-email')||'').trim();
-      const phone=(o.getAttribute('data-phone')||'').trim();
-      const noAcct=txt.includes('no login account');
-      let match=true;
-      if(q && !txt.includes(q)) match=false;
-      if(match && kind==='with-email' && !email) match=false;
-      if(match && kind==='with-phone' && !phone) match=false;
-      if(match && kind==='no-account' && !noAcct) match=false;
-      o.hidden=!match;
+  addQ(){ this.qs.push({q:'',options:['','','',''],answer:''}); this.render(); },
+  render(){ var box=document.getElementById('dl-qs'); if(!box)return; box.innerHTML=this.qs.map((q,i)=>
+    '<div class="card" style="background:#f8fafc;margin:8px 0;padding:10px">'+
+    '<div class="form-group"><label>Q'+(i+1)+'</label><input class="form-input" value="'+esc(q.q)+'" oninput="DL.qs['+i+'].q=this.value"></div>'+
+    '<div class="grid grid-2">'+q.options.map((op,j)=>'<input class="form-input" placeholder="Option '+(j+1)+'" value="'+esc(op)+'" oninput="DL.qs['+i+'].options['+j+']=this.value">').join('')+'</div>'+
+    '<div class="form-group"><label>Correct answer (exact option text)</label><input class="form-input" value="'+esc(q.answer)+'" oninput="DL.qs['+i+'].answer=this.value"></div>'+
+    '<button class="btn btn-sm btn-outline" onclick="DL.qs.splice('+i+',1);DL.render()">Remove</button></div>').join(''); },
+  async save(){ if(!sb){toast('DB not configured','warning');return;}
+    var title=document.getElementById('dl-title').value, link=document.getElementById('dl-link').value;
+    if(!title||!link){toast('Title and read link are required','warning');return;}
+    var rec={ title:title, author:document.getElementById('dl-author').value, subject:document.getElementById('dl-subject').value,
+      class:document.getElementById('dl-class').value, read_link:link, instructions:document.getElementById('dl-inst').value,
+      due_date:document.getElementById('dl-due').value||null, has_quiz:this.qs.length>0, questions:this.qs,
+      max_score:Number(document.getElementById('dl-max').value||0) };
+    var {error}=await sb.from('digital_library').insert(rec);
+    if(error){toast(error.message,'danger',6000);return;} toast('Reading saved ✓','success'); this.qs=[]; this.render(); this.list();
+  },
+  _books:[],
+  async list(){ var box=document.getElementById('dl-list'); if(!sb){box.innerHTML='<p>DB not configured.</p>';return;}
+    var {data}=await sb.from('digital_library').select('*').order('created_at',{ascending:false}).limit(200);
+    if(!data||!data.length){box.innerHTML='<p style="color:var(--gray-500)">No readings yet.</p>';return;}
+    this._books=data;
+    const isStaff = DL._isStaff();
+    box.innerHTML = data.map((b,i) => {
+      const canEdit = isStaff;
+      return '<div class="card" style="margin:8px 0" data-id="'+esc(b.id)+'"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:center">'+
+        '<div style="flex:1;min-width:240px"><strong>'+esc(b.title)+'</strong> '+(b.subject?'<span class="badge">'+esc(b.subject)+'</span> ':'')+(b.class?'<span class="badge">'+esc(b.class)+'</span>':'')+
+        (b.author?'<span class="badge" style="background:#f1f5f9;color:#475569">'+esc(b.author)+'</span>':'')+
+        '<div style="color:var(--gray-500);font-size:.85rem">'+esc(b.instructions||'')+(b.due_date?' · Due '+esc(b.due_date):'')+'</div></div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+          '<a class="btn btn-sm btn-primary" href="'+esc(DL.drive(b.read_link))+'" target="_blank" rel="noopener">📖 Read</a> '+
+          (b.has_quiz?'<button type="button" class="btn btn-sm btn-outline" data-act="quiz" data-i="'+i+'">📝 Take quiz</button>':'')+
+          (canEdit?'<button type="button" class="btn btn-sm btn-outline" data-act="edit" data-i="'+i+'">✏️ Edit</button>':'')+
+          (canEdit?'<button type="button" class="btn btn-sm btn-outline" data-act="delete" data-i="'+i+'" style="color:#dc2626;border-color:#fca5a5">🗑 Delete</button>':'')+
+        '</div></div></div>';
+    }).join('');
+    // Wire up the buttons
+    box.querySelectorAll('button[data-act]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const i = Number(btn.dataset.i);
+        const act = btn.dataset.act;
+        if (act === 'quiz') DL.quiz(i);
+        else if (act === 'edit') DL.edit(i);
+        else if (act === 'delete') DL.del(i);
+      });
     });
   },
-  text(){return (document.getElementById('msg-title').value?document.getElementById('msg-title').value+'\n\n':'')+document.getElementById('msg-body').value;},
-  async log(channel){
-    if(!sb){toast('Database not configured','warning');return;}
-    const recs=this.selected(); if(!recs.length){toast('Choose at least one recipient or click Select all.','warning');return;}
-    const title=document.getElementById('msg-title').value.trim(); const body=document.getElementById('msg-body').value.trim();
-    if(!title&&!body){toast('Type a subject or message.','warning');return;}
-    const from=(window.SC_PROFILE&&SC_PROFILE.full_name)||'User'; const uid=(window.SC_PROFILE&&SC_PROFILE.id)||null;
-    const rows=recs.map(r=>({module:'inbox',title,body,status:'unread',audience:'private',recipient_id:r.recipient_id||null,created_by:uid,data:{channel,audience:document.getElementById('msg-aud').value,recipient:r.recipient_id||r.id,source_id:r.id,to:r.full_name||r.email||r.phone||'Recipient',from}}));
-    const deliverable=rows.filter(r=>r.recipient_id);
-    if(!deliverable.length){ toast('Selected recipient(s) have no linked login account for in-app delivery. Add/link user accounts first.','warning',7000); return; }
-    const {error}=await sb.from('module_records').insert(deliverable);
-    if(error){toast(error.message,'danger',7000);return;}
-    try{ if(window.Notifications){ for(const r of deliverable.slice(0,30)){ await Notifications.create({title:'💬 '+(title||'New message'),body:body.slice(0,140),url:'inbox.html',audience:'private',recipient_id:r.recipient_id,channels:['inapp','push']}); } } }catch(_){ }
-    toast('✅ In-app message delivered to '+deliverable.length+' recipient(s).','success',6000); this.loadLog();
+  edit(i){
+    const b = this._books[i]; if (!b) { toast('Reading not found.', 'warning'); return; }
+    const isStaff = DL._isStaff();
+    if (!isStaff) { toast('Only staff can edit readings.', 'warning'); return; }
+    const opts = (this._books.map((x, j) => '<option value="'+j+'"'+(j===i?' selected':'')+'>'+esc(x.title)+'</option>').join(''));
+    const body =
+      '<div class="form-group"><label>Pick a reading</label><select class="form-select" id="dl-edit-pick">' + opts + '</select></div>' +
+      '<div class="form-group"><label>Title</label><input class="form-input" id="dl-edit-title" value="'+esc(b.title)+'"></div>' +
+      '<div class="form-group"><label>Author</label><input class="form-input" id="dl-edit-author" value="'+esc(b.author||'')+'"></div>' +
+      '<div class="form-group"><label>Subject</label><input class="form-input" id="dl-edit-subject" value="'+esc(b.subject||'')+'"></div>' +
+      '<div class="form-group"><label>Class</label><input class="form-input" id="dl-edit-class" value="'+esc(b.class||'')+'"></div>' +
+      '<div class="form-group"><label>Read link</label><input class="form-input" id="dl-edit-link" value="'+esc(b.read_link)+'"></div>' +
+      '<div class="form-group"><label>Instructions</label><textarea class="form-input" id="dl-edit-inst" rows="2">'+esc(b.instructions||'')+'</textarea></div>' +
+      '<div class="grid grid-2"><div class="form-group"><label>Due date</label><input class="form-input" type="date" id="dl-edit-due" value="'+esc(b.due_date||'')+'"></div>' +
+      '<div class="form-group"><label>Max score</label><input class="form-input" type="number" id="dl-edit-max" value="'+(b.max_score||0)+'"></div></div>' +
+      '<p style="color:#64748b;font-size:.85rem">Quiz questions stay as they are unless you delete and recreate the reading.</p>';
+    openModal('✏️ Edit reading', body, '<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="dl-edit-save">Save changes</button>');
+    const pick = document.getElementById('dl-edit-pick');
+    pick.addEventListener('change', () => { this.edit(Number(pick.value)); });
+    document.getElementById('dl-edit-save').addEventListener('click', () => this._saveEdit());
   },
-  send(ch){
-    const recs=this.selected(); if(!recs.length){toast('Choose recipient(s).','warning');return;}
-    const text=this.text(), title=document.getElementById('msg-title').value;
-    if(ch==='email'){
-      const emails=[...new Set(recs.map(r=>r.email).filter(Boolean))]; if(!emails.length){toast('No selected recipient has email.','warning');return;}
-      location.href='mailto:?bcc='+encodeURIComponent(emails.join(','))+'&subject='+encodeURIComponent(title)+'&body='+encodeURIComponent(document.getElementById('msg-body').value);
-    }
-    if(ch==='whatsapp'||ch==='sms'){
-      const phones=[...new Set(recs.map(r=>String(r.phone||'').replace(/[^0-9]/g,'')).filter(Boolean))]; if(!phones.length){toast('No selected recipient has phone.','warning');return;}
-      const first=phones[0]; if(phones.length>1) toast('Opening the first recipient. For bulk WhatsApp/SMS, repeat from the log/list because browsers block mass popups. In-app delivery supports bulk instantly.','info',9000);
-      if(ch==='whatsapp') window.open('https://wa.me/'+first+'?text='+encodeURIComponent(text),'_blank'); else location.href='sms:'+first+'?&body='+encodeURIComponent(text);
-    }
-    this.log(ch);
+  async _saveEdit(){
+    const i = this._books.findIndex(b => b.id);
+    const idx = Number(document.getElementById('dl-edit-pick').value);
+    const b = this._books[idx]; if (!b) { toast('Pick a reading.', 'warning'); return; }
+    const patch = {
+      title: document.getElementById('dl-edit-title').value.trim(),
+      author: document.getElementById('dl-edit-author').value.trim(),
+      subject: document.getElementById('dl-edit-subject').value.trim(),
+      class: document.getElementById('dl-edit-class').value.trim(),
+      read_link: document.getElementById('dl-edit-link').value.trim(),
+      instructions: document.getElementById('dl-edit-inst').value,
+      due_date: document.getElementById('dl-edit-due').value || null,
+      max_score: Number(document.getElementById('dl-edit-max').value || 0)
+    };
+    if (!patch.title || !patch.read_link) { toast('Title and read link are required.', 'warning'); return; }
+    const { error } = await window.sb.from('digital_library').update(patch).eq('id', b.id);
+    if (error) { toast(error.message, 'danger', 6000); return; }
+    if (window.App) App.logActivity('update', 'digital_library', b.id);
+    closeModal();
+    toast('Reading updated ✓', 'success');
+    this.list();
   },
-  logOnly(){this.log('in-app');},
-  async loadLog(){ const box=document.getElementById('msg-log'); try{const r=await sb.from('module_records').select('*').eq('module','inbox').order('created_at',{ascending:false}).limit(80); box.innerHTML=(r.data||[]).length?'<div class="table-wrap"><table><thead><tr><th>Date</th><th>From</th><th>To</th><th>Subject</th><th>Channel</th><th>Status</th></tr></thead><tbody>'+(r.data||[]).map(x=>'<tr><td>'+esc((x.created_at||'').slice(0,10))+'</td><td>'+esc((x.data&&x.data.from)||'User')+'</td><td>'+esc((x.data&&x.data.to)||'User')+'</td><td>'+esc(x.title||'')+'</td><td>'+esc((x.data&&x.data.channel)||'in-app')+'</td><td>'+esc(x.status||'')+'</td></tr>').join('')+'</tbody></table></div>':'<p>No messages logged yet.</p>';}catch(e){box.innerHTML='<p>Could not load log.</p>';}}
-}; document.addEventListener('DOMContentLoaded',()=>MSG.init()); MSG.init();
+  async del(i){
+    const b = this._books[i]; if (!b) { toast('Reading not found.', 'warning'); return; }
+    const isStaff = DL._isStaff();
+    if (!isStaff) { toast('Only staff can delete readings.', 'warning'); return; }
+    if (!confirm('Delete "' + (b.title || 'this reading') + '"?\n\nThis also removes the comprehension questions and the quiz history linked to it.')) return;
+    try { await window.sb.from('reading_scores').delete().eq('book_id', b.id); } catch (e) {}
+    const { error } = await window.sb.from('digital_library').delete().eq('id', b.id);
+    if (error) { toast('Delete failed: ' + error.message, 'danger', 6000); return; }
+    if (window.App) App.logActivity('delete', 'digital_library', b.id);
+    toast('Reading deleted ✓', 'success');
+    this.list();
+  },
+  drive(u){ if(!u)return '#'; var m=u.match(/drive\.google\.com\/file\/d\/([^/]+)/); return m?('https://drive.google.com/file/d/'+m[1]+'/view'):u; },
+  quiz(i){ var b=this._books[i]; if(!b)return; var qs=b.questions||[];
+    if(!qs.length){toast('No questions on this reading.','info');return;}
+    var html=qs.map((q,j)=>'<div class="form-group"><label>Q'+(j+1)+'. '+esc(q.q)+'</label>'+
+      (q.options||[]).filter(Boolean).map(op=>'<label style="display:block"><input type="radio" name="dq'+j+'" value="'+esc(op)+'"> '+esc(op)+'</label>').join('')+'</div>').join('');
+    openModal('Quiz: '+esc(b.title), html, '<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="DL.submit('+i+')">Submit</button>');
+  },
+  async submit(i){ var b=this._books[i]; if(!b)return; var qs=b.questions||[]; var correct=0;
+    qs.forEach((q,j)=>{ var sel=document.querySelector('input[name="dq'+j+'"]:checked'); if(sel&&sel.value===q.answer) correct++; });
+    var max=Number(b.max_score||qs.length); var score=Math.round((correct/qs.length)*max*10)/10;
+    var me=(window.App&&App.user)?App.user:null; var name=(me&&me.full_name)||(window.SC_PROFILE&&SC_PROFILE.full_name)||'';
+    if(!name){ name=prompt('Enter your full name to record this score:')||''; }
+    if(sb&&name){ try{ await sb.from('reading_scores').insert({ student_name:name, subject:b.subject, class:b.class, book_id:b.id, score:score, max_score:max, source:'digital_library' }); }catch(e){} }
+    closeModal(); toast('You scored '+score+' / '+max+' — recorded ✓','success',6000);
+  }
+};
+document.addEventListener('DOMContentLoaded',()=>DL.init()); DL.init();
 </script></body></html>

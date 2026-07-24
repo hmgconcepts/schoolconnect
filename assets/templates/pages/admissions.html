@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Messaging • God of Seed Academy</title>
-<meta name="description" content="God of Seed Academy — Messaging. Free school management platform by HMG Concepts.">
-<meta name="keywords" content="God of Seed Academy, school management, GoSA, HMG Concepts">
+<title>Admissions • God of Seed Academy</title>
+<meta name="description" content="God of Seed Academy — Admissions. Free school management platform by HMG Concepts.">
+<meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="manifest" href="manifest.json">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<meta property="og:title" content="Messaging • God of Seed Academy">
+<meta property="og:title" content="Admissions • God of Seed Academy">
 <meta property="og:description" content="God of Seed Academy — Free school management by HMG Concepts">
 <meta property="og:image" content="assets/img/logo.png">
 <meta property="og:type" content="website">
@@ -36,7 +36,7 @@ body{font-family:var(--font)!important;background:#f8fafc}
 .app-nav a{display:grid;grid-template-columns:32px minmax(0,1fr);align-items:center;gap:10px;min-height:42px;padding:8px 10px;border-radius:12px;color:#475569;text-decoration:none;font-size:.875rem;font-weight:700;line-height:1.2;white-space:normal;word-break:normal;transition:background .18s ease,color .18s ease,transform .18s ease}
 .app-nav a:hover{background:#f1f5f9;color:var(--primary);transform:translateX(2px)}
 .app-nav a.active{background:var(--gradient);color:#fff;box-shadow:0 8px 20px rgba(79,70,229,.22)}
-body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!important}.app-nav a[style*="display: none"]{display:none!important}
+body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!important}.app-nav a[style*="display: none"]{display:none!important}
 .app-nav a.nav-locked{opacity:.62}.app-nav a.nav-locked .app-nav-icon{filter:grayscale(.35)}.app-nav a.nav-locked::after{content:'🔒';font-size:.72rem;opacity:.65;justify-self:end}.app-nav a.nav-locked.active{opacity:1}
 .app-nav-icon{width:32px;height:32px;min-width:32px;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem;line-height:1;border-radius:10px;background:rgba(79,70,229,.09);color:var(--primary);flex-shrink:0;overflow:hidden}
 .app-nav a.active .app-nav-icon{background:rgba(255,255,255,.22);color:#fff}
@@ -61,19 +61,19 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
 @media(min-width:901px){.app-topbar .mobile-toggle{display:none}}
 </style>
 
-    <meta name="description" content="God of Seed Academy — Messaging. Free school management platform by HMG Concepts.">
-    <meta name="keywords" content="God of Seed Academy, school management, GoSA, HMG Concepts">
+    <meta name="description" content="God of Seed Academy — Admissions. Free school management platform by HMG Concepts.">
+    <meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
     <meta name="author" content="HMG Concepts">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="./messages.html">
-    <meta property="og:title" content="Messaging • God of Seed Academy">
-    <meta property="og:description" content="God of Seed Academy — Messaging. Free school management platform by HMG Concepts.">
-    <meta property="og:url" content="./messages.html">
+    <link rel="canonical" href="./admissions.html">
+    <meta property="og:title" content="Admissions • God of Seed Academy">
+    <meta property="og:description" content="God of Seed Academy — Admissions. Free school management platform by HMG Concepts.">
+    <meta property="og:url" content="./admissions.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="School Connect v5 — God of Seed Academy">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Messaging • God of Seed Academy">
-    <meta name="twitter:description" content="God of Seed Academy — Messaging. Free school management platform by HMG Concepts.">
+    <meta name="twitter:title" content="Admissions • God of Seed Academy">
+    <meta name="twitter:description" content="God of Seed Academy — Admissions. Free school management platform by HMG Concepts.">
     <link rel="alternate" href="https://hmgconcepts.pages.dev/" title="HMG Concepts Ecosystem">
   </head>
 <body data-theme="theme15" data-school="God of Seed Academy" data-font="plusjakarta">
@@ -116,19 +116,28 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
     <div id="modal-footer" class="modal-footer"></div>
   </div>
 </div>
-<div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher">
+<div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
         <img src="assets/img/logo.png" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
         <div>
           <strong>God of Seed Academy</strong>
-          <div style="font-size:0.7rem;color:var(--gray-500)">GoSA</div>
+          <div style="font-size:0.7rem;color:var(--gray-500)">GOSA</div>
         </div>
       </div>
       <nav class="app-nav">
         <a href="dashboard.html" data-module-id="dashboard" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="">
           <span class="app-nav-icon">🏠</span>
           <span>Dashboard</span>
+        </a><a href="profile.html" data-module-id="profile" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="">
+          <span class="app-nav-icon">👤</span>
+          <span>My Profile</span>
+        </a><a href="change-password.html" data-module-id="change-password" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student" class="">
+          <span class="app-nav-icon">🔐</span>
+          <span>Change Password</span>
+        </a><a href="cbt-multi.html" data-module-id="cbt-multi" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
+          <span class="app-nav-icon">🧪</span>
+          <span>Multi-Subject CBT</span>
         </a><a href="academic_setup.html" data-module-id="academic_setup" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
           <span class="app-nav-icon">⚙️</span>
           <span>Academic Setup</span>
@@ -204,6 +213,9 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
         </a><a href="fees.html" data-module-id="fees" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
           <span class="app-nav-icon">💰</span>
           <span>Fees</span>
+        </a><a href="payment-history.html" data-module-id="payment-history" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
+          <span class="app-nav-icon">🧾</span>
+          <span>Payment History</span>
         </a><a href="timetable.html" data-module-id="timetable" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
           <span class="app-nav-icon">🗓️</span>
           <span>Timetable</span>
@@ -270,9 +282,12 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
         </a><a href="certificates.html" data-module-id="certificates" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
           <span class="app-nav-icon">📜</span>
           <span>Certificates</span>
-        </a><a href="admissions.html" data-module-id="admissions" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
+        </a><a href="admissions.html" data-module-id="admissions" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="active">
           <span class="app-nav-icon">📝</span>
           <span>Admissions</span>
+        </a><a href="exam-register.html" data-module-id="exam_registrations" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher" class="">
+          <span class="app-nav-icon">🎓</span>
+          <span>Exam Registrations</span>
         </a><a href="promotion.html" data-module-id="promotion" data-role-allow="super_admin admin principal proprietor head_teacher bursar" class="">
           <span class="app-nav-icon">🎓</span>
           <span>Promotion</span>
@@ -435,7 +450,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
   <main class="app-main">
     <header class="app-topbar">
       <button class="mobile-toggle" onclick="App.toggleSidebar()" title="Menu">☰</button>
-      <h1 class="app-page-title">Messaging</h1>
+      <h1 class="app-page-title">Admissions</h1>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
         
         <button class="btn btn-sm btn-outline" onclick="if(window.Super)Super.chatbot.explainPage()" title="About this page">ℹ️ Help</button>
@@ -446,8 +461,24 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
     </header>
     <div class="app-content">
       
-      <div class="card" style="margin-bottom:16px;background:#eef2ff;border-color:#c7d2fe"><h3 style="margin-top:0">📱 Messaging Centre — WhatsApp / Email / SMS</h3><p style="color:var(--gray-700);line-height:1.7;margin:0">Create a message, choose recipients, then send through free device/email links. This avoids paid SMS/WhatsApp APIs. The system stores the message log; your browser opens WhatsApp, email or SMS with the text prefilled for the selected recipient.</p></div>
-      <div class="grid grid-2"><div class="card"><h3>Compose</h3><div class="form-group"><label>Audience</label><select class="form-select" id="msg-aud" onchange="MSG.loadRecipients()"><option value="parents">Parents</option><option value="staff">Staff / Teachers</option><option value="students">Students</option><option value="admin">Admin / Management</option></select></div><div class="form-group"><label>Recipients <span style="color:var(--gray-500);font-weight:400">(smart picker — type to search)</span></label><div style="position:relative"><input type="text" class="form-input" id="msg-search" placeholder="🔍 Type a name, class, email or phone to filter…" oninput="MSG.filterList()" style="margin-bottom:6px"><select class="form-select" id="msg-rec" multiple size="9" onchange="MSG.updateCount()"><option value="">Loading…</option></select></div><div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap"><button class="btn btn-sm btn-outline" onclick="MSG.selectAll()">Select all visible</button><button class="btn btn-sm btn-outline" onclick="MSG.selectByClass()">By class</button><button class="btn btn-sm btn-outline" onclick="MSG.clearSelection()">Clear</button><button class="btn btn-sm btn-outline" onclick="MSG.invertSelection()">Invert</button><span id="msg-count" style="color:var(--gray-500);font-size:.85rem;margin-left:auto">0 recipients selected</span></div><div id="msg-quickfilter" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px"><button class="btn btn-xs btn-outline" onclick="MSG.quickFilter('with-email')">📧 Has email</button><button class="btn btn-xs btn-outline" onclick="MSG.quickFilter('with-phone')">📱 Has phone</button><button class="btn btn-xs btn-outline" onclick="MSG.quickFilter('no-account')">⚠️ No account</button><button class="btn btn-xs btn-outline" onclick="MSG.quickFilter('all')">🔄 Reset</button></div></div><div class="form-group"><label>Subject / title</label><input class="form-input" id="msg-title"></div><div class="form-group"><label>Message</label><textarea class="form-input" id="msg-body" rows="6"></textarea></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="MSG.logOnly()">Deliver In-App</button><button class="btn btn-outline" onclick="MSG.send('whatsapp')">WhatsApp + In-App</button><button class="btn btn-outline" onclick="MSG.send('email')">Email + In-App</button><button class="btn btn-outline" onclick="MSG.send('sms')">SMS + In-App</button></div><p style="color:var(--gray-500);font-size:.82rem;margin-top:8px">In-app messages are stored with each recipient's profile ID, so they appear in the recipient's Inbox. WhatsApp/SMS use free device links; no paid API is required.</p></div><div class="card"><h3>In-App Inbox / Message Log</h3><div id="msg-log">Loading…</div></div></div>
+      <div class="card" style="margin-bottom:16px"><p style="color:var(--gray-600);margin:0">
+        Generate a public <strong>application link</strong> to send to prospective parents. They fill it (no account),
+        you review, then <strong>Accept &amp; Extract</strong> to auto-create the student record.</p></div>
+      <div class="card" style="margin-bottom:16px" data-staff-only>
+        <h3>🔗 Application links</h3>
+        <div class="grid grid-2">
+          <div class="form-group"><label>Label</label><input class="form-input" id="al-label" placeholder="2026 Intake"></div>
+          <div class="form-group"><label>Applying for class</label><input class="form-input" id="al-class" placeholder="JSS1"></div>
+          <div class="form-group"><label>Session</label><input class="form-input" id="al-session" placeholder="2025/2026"></div>
+        </div>
+        <button class="btn btn-primary" onclick="ADM.makeLink()">+ Generate link</button> <button class="btn btn-outline" onclick="ADM.printForm('admission')">Print Blank Admission Form</button> <button class="btn btn-outline" onclick="ADM.printForm('entrance')">Print Common Entrance Form</button>
+        <div id="al-list" style="margin-top:12px"></div>
+      </div>
+      <div class="card">
+        <h3>📨 Submitted applications</h3>
+        <div style="display:flex;gap:8px;margin-bottom:8px"><button class="btn btn-outline" onclick="ADM.load()">↻ Refresh</button></div>
+        <div style="margin:8px 0"><button class="btn btn-outline" onclick="CRUD.bulkPrintAdmissions()" data-admin-only>🖨 Print / PDF ALL applications</button></div><div id="adm-list"><span class="pulse">Loading…</span></div>
+      </div>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
       © 2026 God of Seed Academy · Built by <a href="https://cssadewale.pages.dev" target="_blank" rel="noopener">Adewale Samson Adeagbo</a> · Powered by <a href="https://hmgconcepts.pages.dev/" target="_blank" rel="noopener">HMG Concepts</a> · <a href="developer.html">About the developer</a>
@@ -478,105 +509,28 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
   if (window.CRUD) CRUD.init(sb);
 </script>
 <script>
-const MSG={
-  rows:[],
-  async init(){ await this.loadRecipients(); this.loadLog(); },
-  esc:s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'),
-  dedupe(rows){ const seen=new Set(); return (rows||[]).filter(x=>{ const key=String(x.recipient_id||x.id||x.full_name||x.email||x.phone||'').toLowerCase(); if(!key||seen.has(key))return false; seen.add(key); return true; }); },
-  async loadRecipients(){
-    const aud=document.getElementById('msg-aud').value; let rows=[];
-    try{
-      if(aud==='parents'){
-        const r=await sb.from('profiles').select('id,full_name,email,phone,role').eq('role','parent').limit(3000);
-        rows=(r.data||[]).map(x=>Object.assign({},x,{recipient_id:x.id}));
-      }
-      if(aud==='staff'){
-        const r=await sb.from('profiles').select('id,full_name,email,phone,role').in('role',['staff','teacher','admin','principal','proprietor','head_teacher','bursar']).limit(3000);
-        rows=(r.data||[]).map(x=>Object.assign({},x,{recipient_id:x.id}));
-      }
-      if(aud==='admin'){
-        const r=await sb.from('profiles').select('id,full_name,email,phone,role').in('role',['super_admin','admin','principal','proprietor','head_teacher','bursar']).limit(1000);
-        rows=(r.data||[]).map(x=>Object.assign({},x,{recipient_id:x.id}));
-      }
-      if(aud==='students'){
-        // Try students table first (has class, admission_no etc.)
-        const r=await sb.from('students').select('id,user_id,full_name,email,guardian_phone,guardian_email,class,admission_no').limit(4000);
-        rows=(r.data||[]).map(x=>({id:x.id,recipient_id:x.user_id||x.id,full_name:(x.class?x.class+' · ':'')+x.full_name,email:x.email||x.guardian_email,phone:x.guardian_phone,admission_no:x.admission_no}));
-        // Also include student profiles that may not be in the students register yet
-        try{
-          const p=await sb.from('profiles').select('id,full_name,email,phone,role').eq('role','student').limit(2000);
-          const existing=new Set(rows.map(x=>x.recipient_id));
-          (p.data||[]).forEach(x=>{ if(!existing.has(x.id)) rows.push({id:x.id,recipient_id:x.id,full_name:x.full_name,email:x.email,phone:x.phone}); });
-        }catch(_){}
-      }
-    }catch(e){ console.warn('Recipients load failed', e); }
-    this.rows=this.dedupe(rows);
-    const sel=document.getElementById('msg-rec');
-    sel.innerHTML='<option value="__all">✅ Select all visible recipients</option>'+this.rows.map(x=>'<option value="'+this.esc(x.recipient_id||x.id)+'" data-id="'+this.esc(x.id||'')+'" data-recipient="'+this.esc(x.recipient_id||'')+'" data-email="'+this.esc(x.email||'')+'" data-phone="'+this.esc(x.phone||'')+'">'+this.esc(x.full_name||x.email||x.phone||x.id)+(x.recipient_id?'':' — no login account')+'</option>').join('');
-    this.updateCount();
+const ADM={
+  printForm(type){ var sc=window.SCHOOL||{}; var title=type==='entrance'?'ENTRANCE EXAMINATION FORM':'ADMISSION FORM'; var html='<div style="width:760px;max-width:96vw;padding:28px;font-family:Arial,sans-serif;color:#111"><div style="text-align:center;border-bottom:3px solid '+(sc.primary||'#4f46e5')+';padding-bottom:10px"><h1>'+esc(sc.name||'School')+'</h1><p>'+esc(sc.motto||'')+'</p><p>'+esc(sc.address||'')+' · '+esc(sc.phone||'')+'</p><h2>'+title+'</h2></div><div style="float:right;width:130px;height:150px;border:1px solid #111;text-align:center;padding-top:45px;margin:15px">Affix Passport Photograph Here</div><h3>BIO-DATA</h3>'+['Surname','Other Names','Date of Birth','Gender','Residential Address','Nationality','State of Origin','Local Government','Present Class / Applying for Class','Previous School','Best Subject','Hobbies / Future Ambition','Blood Group / Allergy'].map(x=>'<p><b>'+x+':</b> ________________________________________________</p>').join('')+'<h3>PARENT / GUARDIAN DATA</h3>'+['Parent/Guardian Name','Occupation','Phone / WhatsApp','Email','Signature'].map(x=>'<p><b>'+x+':</b> ________________________________________________</p>').join('')+'<h3>DECLARATION</h3><p>I declare that the information supplied is correct and agree to abide by the school rules and admission policy.</p><p>Parent/Guardian Signature: ____________________ &nbsp; Principal Signature: ____________________</p></div>'; var w=window.open('','_blank'); w.document.write('<html><head><title>'+title+'</title></head><body style="display:flex;justify-content:center">'+html+'<script>window.onload=()=>window.print()<\/script></body></html>'); w.document.close(); },
+  async makeLink(){ if(!sb){toast('DB not configured','warning');return;}
+    const {data,error}=await sb.from('admission_links').insert({label:document.getElementById('al-label').value,applying_for_class:document.getElementById('al-class').value,session:document.getElementById('al-session').value}).select().single();
+    if(error){toast(error.message,'danger');return;} toast('Link generated ✓','success'); ADM.links();
   },
-  updateCount(){ const n=this.selected().length; const c=document.getElementById('msg-count'); if(c)c.textContent=n+' recipient'+(n===1?'':'s')+' selected'; },
-  selected(){
-    const sel=document.getElementById('msg-rec'); if(!sel)return[];
-    const vals=[...sel.selectedOptions].map(o=>o.value);
-    if(vals.includes('__all')) return this.rows.slice();
-    const chosen=new Set(vals);
-    return this.rows.filter(x=>chosen.has(String(x.recipient_id||x.id)));
+  async deleteLink(id){ if(!confirm('Delete this application link? Existing applications remain, but the link will no longer be usable.')) return; const {error}=await sb.from('admission_links').delete().eq('id',id); if(error){toast(error.message,'danger');return;} toast('Application link deleted.','info'); ADM.links(); },
+  async toggleLink(id,active){ const {error}=await sb.from('admission_links').update({active:!!active}).eq('id',id); if(error){toast(error.message,'danger');return;} ADM.links(); },
+  async links(){ if(!sb)return; const {data}=await sb.from('admission_links').select('*').order('created_at',{ascending:false});
+    const base=location.origin+location.pathname.replace(/admissions\.html$/,'apply.html');
+    document.getElementById('al-list').innerHTML='<div class="table-wrap"><table><thead><tr><th>Label</th><th>Class</th><th>Link</th><th>Active</th><th>Actions</th></tr></thead><tbody>'+(data||[]).map(l=>{const url=base+'?token='+l.token;return '<tr><td>'+esc(l.label||'-')+'</td><td>'+esc(l.applying_for_class||'-')+'</td><td><input class="form-input" style="font-size:.78rem" value="'+esc(url)+'" onclick="this.select()"> <button class="btn btn-sm btn-outline" onclick="navigator.clipboard.writeText(\''+url+'\');toast(\'Copied\',\'success\')">Copy</button></td><td>'+(l.active?'✓':'—')+'</td><td><button class="btn btn-sm btn-outline" onclick="ADM.toggleLink(\''+l.id+'\','+(!l.active)+')">'+(l.active?'Disable':'Enable')+'</button> <button class="btn btn-sm btn-outline" onclick="ADM.deleteLink(\''+l.id+'\')">Delete</button></td></tr>';}).join('')+'</tbody></table></div>';
   },
-  selectAll(){ const sel=document.getElementById('msg-rec'); [...sel.options].forEach(o=>{if(o.value!=='__filter')o.selected=true;}); this.updateCount(); },
-  selectByClass(){ const cls=prompt('Enter class name (e.g. JSS1, SS2A, Grade 3) to select only that class:')||''; if(!cls)return; const sel=document.getElementById('msg-rec'); [...sel.options].forEach(o=>{if(o.value!=='__filter' && (o.textContent||'').toLowerCase().includes(cls.toLowerCase()))o.selected=true;}); this.updateCount(); },
-  invertSelection(){ const sel=document.getElementById('msg-rec'); [...sel.options].forEach(o=>{if(o.value!=='__filter')o.selected=!o.selected;}); this.updateCount(); },
-  clearSelection(){ const sel=document.getElementById('msg-rec'); [...sel.options].forEach(o=>o.selected=false); this.updateCount(); },
-  filterList(){ this.applyFilter(); },
-  quickFilter(kind){ this._filter=kind; this.applyFilter(); },
-  applyFilter(){
-    const sel=document.getElementById('msg-rec'); if(!sel)return;
-    const q=(document.getElementById('msg-search')?.value||'').toLowerCase().trim();
-    const kind=this._filter||'all';
-    [...sel.options].forEach(o=>{
-      if(o.value==='__filter'||o.value==='__all')return;
-      const txt=(o.textContent||'').toLowerCase();
-      const email=(o.getAttribute('data-email')||'').trim();
-      const phone=(o.getAttribute('data-phone')||'').trim();
-      const noAcct=txt.includes('no login account');
-      let match=true;
-      if(q && !txt.includes(q)) match=false;
-      if(match && kind==='with-email' && !email) match=false;
-      if(match && kind==='with-phone' && !phone) match=false;
-      if(match && kind==='no-account' && !noAcct) match=false;
-      o.hidden=!match;
-    });
+  async load(){ if(!sb){document.getElementById('adm-list').innerHTML='<p>DB not configured.</p>';return;}
+    const {data}=await sb.from('admissions').select('*').order('created_at',{ascending:false}).limit(500);
+    if(!data||!data.length){document.getElementById('adm-list').innerHTML='<p style="color:var(--gray-500)">No applications yet.</p>';return;}
+    document.getElementById('adm-list').innerHTML='<div class="table-wrap"><table><thead><tr><th>Applicant</th><th>Class</th><th>Parent</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+
+      data.map(a=>'<tr><td>'+esc(a.full_name||'')+'</td><td>'+esc(a.applying_for_class||'')+'</td><td>'+esc(a.parent_name||'')+'<br><small>'+esc(a.parent_phone||'')+'</small></td><td><span class="badge">'+esc(a.status)+'</span>'+(a.extracted?' <span class="badge badge-success">enrolled</span>':'')+'</td>'+
+        '<td style="white-space:nowrap" data-admin-only>'+'<button class="btn btn-sm btn-outline" onclick="CRUD.previewAdmission(\''+a.id+'\')">👁 Preview</button> <button class="btn btn-sm btn-outline" onclick="CRUD.printAdmissionPDF(\''+a.id+'\')">📄 PDF</button> '+(a.extracted?'':'<button class="btn btn-sm btn-primary" onclick="ADM.extract(\''+a.id+'\')">Accept &amp; Extract</button> ')+'<button class="btn btn-sm btn-outline" onclick="ADM.set(\''+a.id+'\',\'rejected\')">Reject</button></td></tr>').join('')+'</tbody></table></div>';
+    if(window.App&&App.applyRoleVisibility)try{App.applyRoleVisibility();}catch(e){}
   },
-  text(){return (document.getElementById('msg-title').value?document.getElementById('msg-title').value+'\n\n':'')+document.getElementById('msg-body').value;},
-  async log(channel){
-    if(!sb){toast('Database not configured','warning');return;}
-    const recs=this.selected(); if(!recs.length){toast('Choose at least one recipient or click Select all.','warning');return;}
-    const title=document.getElementById('msg-title').value.trim(); const body=document.getElementById('msg-body').value.trim();
-    if(!title&&!body){toast('Type a subject or message.','warning');return;}
-    const from=(window.SC_PROFILE&&SC_PROFILE.full_name)||'User'; const uid=(window.SC_PROFILE&&SC_PROFILE.id)||null;
-    const rows=recs.map(r=>({module:'inbox',title,body,status:'unread',audience:'private',recipient_id:r.recipient_id||null,created_by:uid,data:{channel,audience:document.getElementById('msg-aud').value,recipient:r.recipient_id||r.id,source_id:r.id,to:r.full_name||r.email||r.phone||'Recipient',from}}));
-    const deliverable=rows.filter(r=>r.recipient_id);
-    if(!deliverable.length){ toast('Selected recipient(s) have no linked login account for in-app delivery. Add/link user accounts first.','warning',7000); return; }
-    const {error}=await sb.from('module_records').insert(deliverable);
-    if(error){toast(error.message,'danger',7000);return;}
-    try{ if(window.Notifications){ for(const r of deliverable.slice(0,30)){ await Notifications.create({title:'💬 '+(title||'New message'),body:body.slice(0,140),url:'inbox.html',audience:'private',recipient_id:r.recipient_id,channels:['inapp','push']}); } } }catch(_){ }
-    toast('✅ In-app message delivered to '+deliverable.length+' recipient(s).','success',6000); this.loadLog();
-  },
-  send(ch){
-    const recs=this.selected(); if(!recs.length){toast('Choose recipient(s).','warning');return;}
-    const text=this.text(), title=document.getElementById('msg-title').value;
-    if(ch==='email'){
-      const emails=[...new Set(recs.map(r=>r.email).filter(Boolean))]; if(!emails.length){toast('No selected recipient has email.','warning');return;}
-      location.href='mailto:?bcc='+encodeURIComponent(emails.join(','))+'&subject='+encodeURIComponent(title)+'&body='+encodeURIComponent(document.getElementById('msg-body').value);
-    }
-    if(ch==='whatsapp'||ch==='sms'){
-      const phones=[...new Set(recs.map(r=>String(r.phone||'').replace(/[^0-9]/g,'')).filter(Boolean))]; if(!phones.length){toast('No selected recipient has phone.','warning');return;}
-      const first=phones[0]; if(phones.length>1) toast('Opening the first recipient. For bulk WhatsApp/SMS, repeat from the log/list because browsers block mass popups. In-app delivery supports bulk instantly.','info',9000);
-      if(ch==='whatsapp') window.open('https://wa.me/'+first+'?text='+encodeURIComponent(text),'_blank'); else location.href='sms:'+first+'?&body='+encodeURIComponent(text);
-    }
-    this.log(ch);
-  },
-  logOnly(){this.log('in-app');},
-  async loadLog(){ const box=document.getElementById('msg-log'); try{const r=await sb.from('module_records').select('*').eq('module','inbox').order('created_at',{ascending:false}).limit(80); box.innerHTML=(r.data||[]).length?'<div class="table-wrap"><table><thead><tr><th>Date</th><th>From</th><th>To</th><th>Subject</th><th>Channel</th><th>Status</th></tr></thead><tbody>'+(r.data||[]).map(x=>'<tr><td>'+esc((x.created_at||'').slice(0,10))+'</td><td>'+esc((x.data&&x.data.from)||'User')+'</td><td>'+esc((x.data&&x.data.to)||'User')+'</td><td>'+esc(x.title||'')+'</td><td>'+esc((x.data&&x.data.channel)||'in-app')+'</td><td>'+esc(x.status||'')+'</td></tr>').join('')+'</tbody></table></div>':'<p>No messages logged yet.</p>';}catch(e){box.innerHTML='<p>Could not load log.</p>';}}
-}; document.addEventListener('DOMContentLoaded',()=>MSG.init()); MSG.init();
+  async extract(id){ const {data,error}=await sb.rpc('extract_admission',{p_id:id}); if(error||(data&&!data.ok)){toast((error&&error.message)||(data&&data.error)||'Error','danger');return;} if(window.App&&App.logActivity)App.logActivity('extract','admission',id); toast('✅ Student created from application','success'); ADM.load(); },
+  async set(id,s){ await sb.from('admissions').update({status:s}).eq('id',id); ADM.load(); }
+};
+document.addEventListener('DOMContentLoaded',()=>{ ADM.links(); ADM.load(); }); ADM.links(); ADM.load();
 </script></body></html>
