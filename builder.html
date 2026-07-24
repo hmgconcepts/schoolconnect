@@ -393,6 +393,15 @@
       const reader = new FileReader();
       reader.onload = event => {
         Wizard.config.logoData = event.target.result;
+        // v7-15 FIX L-01b: record the uploaded format — generator.js uses
+        // logoExt to name assets/img/logo.<ext> inside the ZIP. Without this
+        // the ext stayed 'svg' and PNG/JPG uploads were silently dropped.
+        const t = (file.type || '').toLowerCase();
+        if (t.indexOf('png') !== -1) Wizard.config.logoExt = 'png';
+        else if (t.indexOf('jpeg') !== -1 || t.indexOf('jpg') !== -1) Wizard.config.logoExt = 'jpg';
+        else if (t.indexOf('webp') !== -1) Wizard.config.logoExt = 'webp';
+        else if (t.indexOf('svg') !== -1) Wizard.config.logoExt = 'svg';
+        else { const m = String(event.target.result || '').match(/^data:image\/(png|jpe?g|webp|svg\+xml)/i); if (m) Wizard.config.logoExt = m[1].toLowerCase().replace('jpeg','jpg').replace('svg+xml','svg'); }
         Wizard.autosave();
         toast('Logo added successfully!', 'success');
       };

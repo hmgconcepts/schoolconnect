@@ -56,11 +56,17 @@ live data on the builder site itself:
 ## B2. Install the tables (run ONE SQL file)
 1. Supabase → **SQL Editor → + New query**.
 2. Open **`database/complete-schema.sql`** from the ZIP, copy **all** of it, paste, **Run**.
-3. Success message: **`School Connect v7 complete schema installed successfully`**.
-   - ✅ This one file installs everything (tables, RLS, voting, trigger).
+3. Success message: **`School Connect v12.5 clean schema installed successfully ✅
+   (CBT scale pack + Punctuality Points engine + all runtime helper RPCs included —
+   fully self-contained)`**.
+   - ✅ This one file installs everything (all tables, RLS, triggers, views, and
+     **every RPC the app calls** — all 16 — plus the CBT scale pack and the
+     Punctuality Points engine).
    - ✅ It is **idempotent** — safe to run again.
-   - ❌ You do **not** need to run `voting-schema.sql` separately (that's only for
-     adding voting to an *older* project).
+   - ✅ Apart from the optional demo packs (`demo-users.sql`, `demo-seed.sql`),
+     this is the **only** SQL your deployment ever needs.
+   - ❌ You do **not** need to run any smaller feature SQL separately (each of those
+     is only for upgrading an *older* already-live project without a full re-run).
    - ❌ If you ever see `relation "public.profiles" does not exist`, you ran an old
      file — use the one from **this** ZIP, where the ordering bug is fixed.
 
