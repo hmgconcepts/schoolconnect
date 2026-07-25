@@ -549,6 +549,8 @@ const SP={fees:[],student:null,
   },
   receipt(i){
     const f=this.fees[i], s=this.student||{}, sc=window.SCHOOL||{}, cur=this.cur(); if(!f)return;
+    // One canonical sample-matched receipt renderer across Fees and Student Profile.
+    if(window.CRUD&&typeof CRUD.printReceipt==='function'&&f.id){CRUD.printReceipt(f.id);return;}
     /* ENTERPRISE V10: routed through the fixed receipt pipeline — school logo,
        server-synced signature (Drive-direct + background removal), dd/mm/yyyy,
        base-href + wait-for-images so nothing prints blank. */

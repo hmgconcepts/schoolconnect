@@ -9,7 +9,7 @@ const sampleReceipt=read('samples/sample-e-receipt.html');
 const sampleReport=read('samples/sample-report-card.html');
 const sampleClass=read('samples/sample-class-broadsheet.html');
 const sampleSubject=read('samples/sample-subject-broadsheet.html');
-const schema=read('database/schema.sql')+read('database/update-v11-schema.sql');
+const schema=read('database/complete-schema.sql');
 const notify=read('assets/js/notifications.js');
 
 ok('entrance page has examination officer signature fields', /en-officer-name/.test(entrance)&&/en-officer-signature/.test(entrance)&&/sc-exam-officer-signature/.test(entrance));

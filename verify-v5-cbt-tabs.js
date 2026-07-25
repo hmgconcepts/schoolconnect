@@ -41,8 +41,8 @@ ok('multi builder stores subject_breakdown fallback metadata', /subject_breakdow
 ok('CBT engine can recover tabs from subject_breakdown metadata', /subject_breakdown/.test(engine) && /recover subject tabs/.test(engine));
 ok('two subjects detected', sections.length === 2 && sections.includes('Mathematics') && sections.includes('English'));
 ok('tabs contain both subjects', tabs.includes('Mathematics') && tabs.includes('English'));
-ok('math palette excludes English question text and has two buttons', !mathPalette.includes('English') && (mathPalette.match(/Exam.go\(/g)||[]).length === 2);
-ok('english palette excludes Mathematics label and has two buttons', !engPalette.includes('Mathematics') && (engPalette.match(/Exam.go\(/g)||[]).length === 2);
+ok('math palette excludes English question text and has two buttons', !mathPalette.includes('English') && (mathPalette.match(/data-i=/g)||[]).length === 2);
+ok('english palette excludes Mathematics label and has two buttons', !engPalette.includes('Mathematics') && (engPalette.match(/data-i=/g)||[]).length === 2);
 Exam.goSubject('English'); ok('goSubject switches to first English question', Exam.idx === 2);
 Exam.nextInSubject(); ok('nextInSubject stays inside English', Exam.idx === 3);
 Exam.prevInSubject(); ok('prevInSubject stays inside English', Exam.idx === 2);
