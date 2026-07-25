@@ -460,6 +460,54 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       </div>
     </header>
     <div class="app-content">
+<div class="card" style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #3b82f6;margin-bottom:20px;padding:24px">
+      <h2 style="color:#1e40af;margin-top:0;display:flex;align-items:center;gap:10px">📊 Mark Entry Pipeline — Enter Once, Populate Everywhere</h2>
+      <p style="color:#475569;font-size:.95rem;line-height:1.7;margin-bottom:16px">Marks are entered <strong>only once</strong> in the <strong>Subject Broadsheet</strong> by each subject teacher. The system automatically populates the Class Broadsheet and Student Report Cards. No re-entry needed.</p>
+      
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:20px 0">
+        <div style="background:white;padding:20px;border-radius:12px;border-left:5px solid #10b981;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+          <div style="font-size:2rem;margin-bottom:8px">📝</div>
+          <strong style="color:#10b981;font-size:1.05rem">Step 1: Subject Broadsheet</strong>
+          <p style="margin:8px 0 0;font-size:.88rem;color:#475569;line-height:1.6">Each <strong>subject teacher</strong> opens their subject broadsheet and enters CA1, CA2, CA3/CBT, Project, and Exam scores for every student in their class.</p>
+          <div style="margin-top:12px;padding:8px;background:#f0fdf4;border-radius:6px;font-size:.8rem;color:#166534">
+            <strong>Who:</strong> Subject Teachers<br>
+            <strong>Where:</strong> Academic Records → Subject Broadsheet<br>
+            <strong>What:</strong> Enter scores per student per subject
+          </div>
+        </div>
+        <div style="background:white;padding:20px;border-radius:12px;border-left:5px solid #f59e0b;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+          <div style="font-size:2rem;margin-bottom:8px">📋</div>
+          <strong style="color:#f59e0b;font-size:1.05rem">Step 2: Class Broadsheet</strong>
+          <p style="margin:8px 0 0;font-size:.88rem;color:#475569;line-height:1.6"><strong>Auto-populated</strong> from all subject broadsheets. Shows every student × every subject in one landscape view with totals, averages, positions, and grades.</p>
+          <div style="margin-top:12px;padding:8px;background:#fffbeb;border-radius:6px;font-size:.8rem;color:#92400e">
+            <strong>Who:</strong> Class Teachers / Admin (view & print)<br>
+            <strong>Where:</strong> Academic Records → Class Broadsheet<br>
+            <strong>What:</strong> Review all subjects at a glance
+          </div>
+        </div>
+        <div style="background:white;padding:20px;border-radius:12px;border-left:5px solid #8b5cf6;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+          <div style="font-size:2rem;margin-bottom:8px">🎓</div>
+          <strong style="color:#8b5cf6;font-size:1.05rem">Step 3: Report Cards</strong>
+          <p style="margin:8px 0 0;font-size:.88rem;color:#475569;line-height:1.6"><strong>Auto-generated</strong> from class broadsheet data. Individual student report with all subjects, grades, positions, affective/psychomotor traits, comments, and school stamp.</p>
+          <div style="margin-top:12px;padding:8px;background:#faf5ff;border-radius:6px;font-size:.8rem;color:#6b21a8">
+            <strong>Who:</strong> Auto-generated (Admin reviews & prints)<br>
+            <strong>Where:</strong> Report Cards → Select student → Print<br>
+            <strong>What:</strong> Individual terminal report sheet
+          </div>
+        </div>
+      </div>
+      
+      <div style="background:#fef3c7;padding:14px 18px;border-radius:8px;border:1px solid #fbbf24;margin-top:16px">
+        <strong style="color:#92400e">⚡ Key Principle:</strong> <span style="color:#78350f">Enter marks <strong>ONCE</strong> in the Subject Broadsheet. The Class Broadsheet and Report Cards are <strong>automatically populated</strong>. You never need to re-enter scores.</span>
+      </div>
+      
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+        <a href="academic-records.html" class="btn btn-primary">📝 Open Subject Broadsheet (Enter Marks)</a>
+        <a href="academic-records.html?view=class" class="btn btn-outline">📋 View Class Broadsheet</a>
+        <a href="report-cards.html" class="btn btn-outline">🎓 Generate Report Cards</a>
+      </div>
+    </div>
+
 <div class="card" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:2px solid #3b82f6;margin-bottom:20px">
       <h2 style="color:#1e40af;margin-top:0">📊 Mark Entry Workflow — How It Works</h2>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:16px 0">
