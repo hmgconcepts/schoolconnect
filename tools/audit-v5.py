@@ -55,7 +55,7 @@ for repo in REPOS:
  ok(f'{repo.name}: static HTML href/src targets exist',not broken,', '.join(broken[:8]))
 
 # Cross-repository runtime parity
-common=['assets/js/cbt-engine.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/demo-seed.sql']
+common=['assets/js/cbt-engine.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/demo-seed.sql']
 for rel in common:
  data=[(r/rel).read_bytes() for r in REPOS]
  ok(f'Runtime parity: {rel}',data[0]==data[1]==data[2])
@@ -66,6 +66,7 @@ for f in ['cbt-exam.html','cbt-multi.html','cbt.html','report-cards.html','stude
 cbt=(ROOT/'cbt-exam.html').read_text();engine=(ROOT/'assets/js/cbt-engine.js').read_text();multi=(ROOT/'cbt-multi.html').read_text();manager=(ROOT/'cbt.html').read_text();report=(ROOT/'assets/js/report-engine.js').read_text();rc=(ROOT/'report-cards.html').read_text();crud=(ROOT/'assets/js/crud.js').read_text();gen=(ROOT/'assets/js/generator.js').read_text()
 ok('CBT page displays dynamic school logo/name/motto/contact',all(x in cbt for x in ['exam-school-logo','exam-school-name','exam-school-name-banner','exam-school-motto','exam-school-contact','applySchoolIdentity']))
 ok('CBT uses explicit V5 getter diagnostics and normalised codes',"rpc('cbt_get_public_exam_v5'" in cbt and 'canonicalCode' in cbt and 'not_open' in schema)
+ok('V5.1.1 getter tolerates missing optional school settings','select to_jsonb(ss)into settings_json' in schema and (ROOT/'database/cbt-v5.1.1-getter-school-settings-fix.sql').exists())
 ok('CBT submission is idempotent and original-index aware',all(x in cbt for x in ['client_ref','_orig_index','answers_data']))
 ok('CBT uses distinct V5.1 server RPC and network-first exam refresh',"rpc('cbt_submit_v5'" in cbt and "rpc('cbt_get_public_exam_v5'" in cbt and 'Network-first' in cbt and "engine_version||''" in cbt)
 ok('Server-authoritative matcher handles legacy aliases, option text and multi-select',all(x in schema for x in ['sc_cbt_answer_matches','sc_cbt_json_value','correctanswer','answerkey','sc_cbt_canonical_option',"typ='multi_select'",'qidx:=case']))

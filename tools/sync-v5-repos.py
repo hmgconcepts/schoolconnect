@@ -19,7 +19,7 @@ RUNTIME=[
  'assets/js/crud.js','assets/js/demo.js','assets/js/enterprise.js','assets/js/license.js',
  'assets/js/notifications.js','assets/js/pwa-install.js','assets/js/report-engine.js',
  'assets/js/site-help.js','assets/js/super.js','assets/js/voting.js',
- 'database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/demo-seed.sql','database/demo-users.sql',
+ 'database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/demo-seed.sql','database/demo-users.sql',
  'database/README.md','CBT_AND_REPORTCARD_GUIDE.md','DEPLOYMENT-GUIDE.md'
 ]
 RICH=['cbt-exam.html','cbt-multi.html','cbt.html','report-cards.html','student-profile.html','academic-records.html']

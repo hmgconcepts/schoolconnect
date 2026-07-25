@@ -12,7 +12,7 @@ const base={schoolName:'V5 Automated Test College',shortName:'V5TC',schoolMotto:
 async function build(kind){
  const cfg={...base,buildType:kind};
  const result=await w.Generator.build(cfg); const ab=await result.blob.arrayBuffer(); const buf=Buffer.from(ab); const out=path.join(root,`test-output-${kind}.zip`);fs.writeFileSync(out,buf);
- const zip=await JSZip.loadAsync(buf), names=Object.keys(zip.files); const must=['index.html','login.html','dashboard.html','cbt-exam.html','cbt-multi.html','report-cards.html','assets/js/cbt-engine.js','assets/js/report-engine.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/demo-seed.sql','assets/img/logo.svg'];
+ const zip=await JSZip.loadAsync(buf), names=Object.keys(zip.files); const must=['index.html','login.html','dashboard.html','cbt-exam.html','cbt-multi.html','report-cards.html','assets/js/cbt-engine.js','assets/js/report-engine.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/demo-seed.sql','assets/img/logo.svg'];
  if(kind==='modern')must.push('modern/package.json','modern/public/cbt-exam.html','modern/public/assets/img/logo.svg','modern/app/api/health/route.js');
  const missing=must.filter(x=>!zip.file(x)); if(missing.length)throw new Error(kind+' missing: '+missing.join(', '));
  const cbt=await zip.file('cbt-exam.html').async('string'), sql=await zip.file('database/complete-schema.sql').async('string');

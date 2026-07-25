@@ -13,6 +13,9 @@ create function public.is_staff(uuid)returns boolean language sql stable as $$se
 create function public.sc_cbt_norm(text)returns text language sql immutable as $$select lower(regexp_replace(trim(coalesce($1,'')),'\\s+',' ','g'))$$;
 insert into students values('${student}','SCD-1');`);
 const hotfix=fs.readFileSync(new URL('../database/cbt-v5.1-zero-score-hotfix.sql',import.meta.url),'utf8');if(!hotfix.includes('cbt_submit_v5'))throw Error('V5.1 hotfix missing');await db.exec(hotfix);
+// Reproduce the user's legacy schema after installation: the final getter must
+// continue working even if an optional settings column is absent.
+await db.exec(`alter table school_settings drop column motto`);
 const redacted=(await db.query(`select public.sc_cbt_public_question('{"Question":"Safe?","CorrectAnswer":"B","answer_key":"B","Explanation":"secret","Option A":"No","Option B":"Yes"}'::jsonb) q`)).rows[0].q;if(redacted.CorrectAnswer||redacted.answer_key||redacted.Explanation||redacted['Option B']!=='Yes')throw Error('answer-key redaction failed '+JSON.stringify(redacted));
 const bank=[
  {Question:'2 + 2?',Type:'multiplechoice','Option A':'3','Option B':'4','Option C':'5',CorrectAnswer:'B',Marks:2,Subject:'Mathematics'},
@@ -22,7 +25,7 @@ const bank=[
  {question:'Square root of 144',type:'number',rightAnswer:'12',tolerance:'0.01',mark:3,section:'Mathematics'}
 ];
 await db.query(`insert into cbt_exams(id,code,title,class,csv_data,questions)values($1,'TEST-V51','Test','SS2',$2,$2)`,[exam,JSON.stringify(bank)]);
-const fetched=(await db.query(`select public.cbt_get_public_exam_v5(' test v51 ') d`)).rows[0].d;if(!fetched.ok||fetched.code!=='TEST-V51'||fetched.school.name!=='Test School'||fetched.questions[0].CorrectAnswer||fetched.questions[0].answer)throw Error('V5 getter failed '+JSON.stringify(fetched));
+const fetched=(await db.query(`select public.cbt_get_public_exam_v5(' test v51 ') d`)).rows[0].d;if(!fetched.ok||fetched.engine_version!=='v5.1.1'||fetched.code!=='TEST-V51'||fetched.school.name!=='Test School'||fetched.questions[0].CorrectAnswer||fetched.questions[0].answer)throw Error('V5 getter failed '+JSON.stringify(fetched));
 await db.query(`update cbt_exams set is_open=false where id=$1`,[exam]);const notOpen=(await db.query(`select public.cbt_get_public_exam_v5('TESTV51') d`)).rows[0].d;if(notOpen.error!=='not_open')throw Error('not-open diagnostic failed '+JSON.stringify(notOpen));await db.query(`update cbt_exams set is_open=true where id=$1`,[exam]);
 const diag=(await db.query(`select public.cbt_diagnose_exam($1) d`,[exam])).rows[0].d;if(diag.question_count!==5||diag.gradable_count!==5||diag.missing_answer_indexes.length)throw Error('bad diagnostic '+JSON.stringify(diag));
 const answers=[{index:0,answer:'B'},{index:1,answer:'B'},{index:2,answer:'A'},{index:3,answer:['C','B']},{index:4,answer:'12.005'}];
