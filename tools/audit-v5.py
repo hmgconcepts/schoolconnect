@@ -64,9 +64,10 @@ for f in ['cbt-exam.html','cbt-multi.html','cbt.html','report-cards.html','stude
 
 # Critical regressions
 cbt=(ROOT/'cbt-exam.html').read_text();engine=(ROOT/'assets/js/cbt-engine.js').read_text();multi=(ROOT/'cbt-multi.html').read_text();manager=(ROOT/'cbt.html').read_text();report=(ROOT/'assets/js/report-engine.js').read_text();rc=(ROOT/'report-cards.html').read_text();crud=(ROOT/'assets/js/crud.js').read_text();gen=(ROOT/'assets/js/generator.js').read_text()
-ok('CBT page displays dynamic school logo/name/motto/contact',all(x in cbt for x in ['exam-school-logo','exam-school-name','exam-school-motto','exam-school-contact','applySchoolIdentity']))
+ok('CBT page displays dynamic school logo/name/motto/contact',all(x in cbt for x in ['exam-school-logo','exam-school-name','exam-school-name-banner','exam-school-motto','exam-school-contact','applySchoolIdentity']))
+ok('CBT uses explicit V5 getter diagnostics and normalised codes',"rpc('cbt_get_public_exam_v5'" in cbt and 'canonicalCode' in cbt and 'not_open' in schema)
 ok('CBT submission is idempotent and original-index aware',all(x in cbt for x in ['client_ref','_orig_index','answers_data']))
-ok('CBT uses distinct V5.1 server RPC and network-first exam refresh',"rpc('cbt_submit_v5'" in cbt and "rpc('cbt_get_public_exam'" in cbt and 'Network-first' in cbt and "engine_version||''" in cbt)
+ok('CBT uses distinct V5.1 server RPC and network-first exam refresh',"rpc('cbt_submit_v5'" in cbt and "rpc('cbt_get_public_exam_v5'" in cbt and 'Network-first' in cbt and "engine_version||''" in cbt)
 ok('Server-authoritative matcher handles legacy aliases, option text and multi-select',all(x in schema for x in ['sc_cbt_answer_matches','sc_cbt_json_value','correctanswer','answerkey','sc_cbt_canonical_option',"typ='multi_select'",'qidx:=case']))
 ok('Canonical and v2 compatibility RPCs delegate to V5.1',all(x in schema for x in ['create or replace function public.cbt_submit_v5(p_payload jsonb)','create or replace function public.cbt_submit(p_payload jsonb)','create or replace function public.cbt_submit_v2(p_payload jsonb)','public.cbt_submit_v5(p_payload)']))
 ok('Missing answer keys cannot be saved as silent zero',"'answer_key_missing'" in schema and 'missing_answer_indexes' in schema)
@@ -76,6 +77,10 @@ ok('Historical saved answers can be regraded with V5.1','cbt_regrade_exam_result
 ok('UTME subject tabs + repair persist both question columns',all(x in cbt+manager+multi for x in ['renderTabs=function','subject_breakdown','questions: questions','csv_data: questions']))
 ok('Report outputs use sample layout classes',all(x in report for x in ['sample-report','class-sheet','subject-sheet','AFFECTIVE DOMAIN','PSYCHOMOTOR DOMAIN','OFFICIAL']))
 ok('Report Cards routes all three print actions through ReportEngine',all(x in rc for x in ['ReportEngine.renderStudent','ReportEngine.renderClass','ReportEngine.renderSubject']))
+ok('Official reports exclude implicit raw CBT/LMS data and preserve blank cells','raw CBT/reading/LMS attempts are NOT injected' in report and 'scoreCell(row,field)' in report and 'data-has-score' in rc)
+ok('Report grid scopes scores by subject and does not save blank as zero',".eq('subject',this.ctx.subject)" in rc and "String(el.value||'').trim()===''" in rc)
+ok('Report card prints explicit promotion decision','loadPromotionStatus' in report and 'PROMOTION NOT YET DECIDED' in report and 'promotion-status' in report)
+ok('Bulk CBT push filters and writes canonical report_scores',all(x in report for x in ['openBulkCBTExportModal','be-class','be-subject','be-term','be-session','pushOneCBTExam',"from('report_scores').upsert"]))
 ok('E-receipt matches sample class structure',all(x in crud for x in ['class="receipt"','class="rh"','class="paid"','OFFICIAL E-RECEIPT','Remaining Balance']))
 ok('Demo alumni seed uses current_occupation (42703 fixed)','current_occupation' in seed and 'insert into public.alumni (full_name, graduation_year, last_class, occupation' not in seed)
 ok('Demo contains multi-subject live test exam',all(x in seed for x in ['DEMO-UTME','multi_subject','English Language","start":0','Mathematics","start":4']))
