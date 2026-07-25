@@ -1,0 +1,17 @@
+{
+  "name": "school-connect-generator-v5-tests",
+  "private": true,
+  "version": "5.1.0",
+  "description": "Development-only verification dependencies for School Connect generator outputs",
+  "scripts": {
+    "verify": "bash verify.sh",
+    "test:cbt": "node tools/test-cbt-scoring.js && node tools/test-cbt-sql-engine.mjs",
+    "test:reports": "node tools/test-report-output.js",
+    "test:builds": "node tools/test-generator-build.js"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.3.10",
+    "jsdom": "26.1.0",
+    "jszip": "3.10.1"
+  }
+}

@@ -7,6 +7,13 @@ This guide has **two parts**:
 
 Everything uses **free tools only**. No credit card, no monthly fees, no AI APIs.
 
+> ## CBT V5.1 existing-database requirement
+> If correct attempts currently record zero, stop new sittings, back up Supabase,
+> run **`database/cbt-v5.1-zero-score-hotfix.sql`**, then deploy the matching V5.1
+> CBT pages/engine. The candidate page deliberately refuses to start against an
+> old engine. In CBT Manager use **Diagnose Scoring** and **Repair Scoring** on
+> legacy exams. Fresh projects run only `complete-schema.sql`, which includes V5.1.
+
 ---
 
 # PART A — Deploy the Builder (this repository)
@@ -56,9 +63,7 @@ live data on the builder site itself:
 ## B2. Install the tables (run ONE SQL file)
 1. Supabase → **SQL Editor → + New query**.
 2. Open **`database/complete-schema.sql`** from the ZIP, copy **all** of it, paste, **Run**.
-3. Success message: **`School Connect v12.5 clean schema installed successfully ✅
-   (CBT scale pack + Punctuality Points engine + all runtime helper RPCs included —
-   fully self-contained)`**.
+3. Confirm the final success message: **`School Connect CBT V5.1 definitive grading engine installed — use RPC cbt_submit_v5 ✅`**.
    - ✅ This one file installs everything (all tables, RLS, triggers, views, and
      **every RPC the app calls** — all 16 — plus the CBT scale pack and the
      Punctuality Points engine).
