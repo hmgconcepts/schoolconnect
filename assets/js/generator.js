@@ -14,6 +14,7 @@
 const Generator = {
   // Cache for loaded file contents
   _cache: {},
+  _binaryCache: {},
 
   /** Detect proxy/GitHub/host error documents that must never be bundled as app files. */
   isBadRemoteContent(text) {
@@ -42,6 +43,18 @@ const Generator = {
       console.warn('[Generator] Failed to load:', path, e.message);
       return '';
     }
+  },
+
+  /** Load binary assets without UTF-8 round-tripping (which corrupts JPEG/PNG). */
+  async loadBinary(path) {
+    if (Generator._binaryCache[path]) return Generator._binaryCache[path];
+    try {
+      const res=await fetch(path,{cache:'no-store'}); if(!res.ok)throw new Error(`HTTP ${res.status} for ${path}`);
+      const data=new Uint8Array(await res.arrayBuffer());
+      const prefix=new TextDecoder().decode(data.slice(0,500));
+      if(Generator.isBadRemoteContent(prefix))throw new Error(`Refusing to bundle host error document from ${path}`);
+      Generator._binaryCache[path]=data; return data;
+    } catch(e){console.warn('[Generator] Failed to load binary:',path,e.message);return null;}
   },
 
   /** Load and execute a JS file, returning its window-exported value. */
@@ -133,6 +146,9 @@ const Generator = {
       logoExt:       ((cfg) => {
         const m = String(cfg.logoData || '').match(/^data:image\/(png|jpe?g|webp|svg\+xml)/i);
         if (m) return m[1].toLowerCase().replace('jpeg', 'jpg').replace('svg+xml', 'svg');
+        // A stale draft may remember "png" after its data URL was cleared. In
+        // that state only the generated SVG exists, so reference it explicitly.
+        if (!cfg.logoData) return 'svg';
         return (cfg.logoExt || 'svg').toLowerCase();
       })(config),
       logoData:      config.logoData     || '',
@@ -241,9 +257,10 @@ const Generator = {
 
     // ---- 5. Fetch SQL files ----
     const sqlFiles = [
-      // ONE authoritative fresh-install path. Historical migrations remain in
-      // the source repository but are deliberately not bundled into client ZIPs.
-      'database/complete-schema.sql'
+      // ONE authoritative fresh-install path plus one narrowly-scoped,
+      // idempotent upgrade hotfix for existing databases affected by zero marks.
+      'database/complete-schema.sql',
+      'database/cbt-v5.1-zero-score-hotfix.sql'
     ];
     const sqlContents = {};
     for (const f of sqlFiles) {
@@ -283,7 +300,7 @@ const Generator = {
     if (CSS) zip.file('assets/css/style.css', CSS);
     const hmgLogo=await Generator.loadFile('assets/img/hmg-technologies.svg'); if(hmgLogo) zip.file('assets/img/hmg-technologies.svg',hmgLogo);
     // HMG Ecosystem service flyers are first-party marketing assets used by the generated client page.
-    for (let i=1;i<=8;i++){ const flyer=await Generator.loadFile('assets/img/ecosystem-flyers/flyer-'+i+'.jpg'); if(flyer) zip.file('assets/img/ecosystem-flyers/flyer-'+i+'.jpg',flyer); }
+    for (let i=1;i<=8;i++){ const flyer=await Generator.loadBinary('assets/img/ecosystem-flyers/flyer-'+i+'.jpg'); if(flyer) zip.file('assets/img/ecosystem-flyers/flyer-'+i+'.jpg',flyer,{binary:true}); }
 
     // ---- 7. Generate config.js ----
     const configJS = Generator.generateConfigJS(resolvedConfig, config);
@@ -468,7 +485,7 @@ const Generator = {
     for (const [f, content] of Object.entries(sqlContents)) {
       if (content) zip.file(f, Generator.schoolSQL ? Generator.schoolSQL(content, resolvedConfig) : content);
     }
-    zip.file('database/README.md', '# Database installation\n\nRun `complete-schema.sql` once. It is the single self-contained schema for a fresh School Connect deployment. Historical migration files remain in the source repository only; do not run them after the complete schema on a new project.\n');
+    zip.file('database/README.md', '# Database installation\n\n## Fresh project\nRun `complete-schema.sql` once. It is the single self-contained schema. Do not run the hotfix afterward on a fresh project.\n\n## Existing project recording zero CBT marks\nBack up Supabase, then run `cbt-v5.1-zero-score-hotfix.sql` once and deploy the matching V5.1 CBT files. The hotfix installs the distinct `cbt_submit_v5` RPC, normalises legacy answer-key names and refuses to save a silent zero when an objective answer key is missing.\n');
 
     // ---- 16a-1b. SAMPLE document templates (ENTERPRISE FINAL #4): report card,
     // class broadsheet, subject broadsheet, e-receipt — so users see exactly
@@ -495,10 +512,10 @@ const Generator = {
       zip.file('students_import_template.csv', csvContents['database/students_import_template.csv']);
     }
 
-    // ---- 16b. Optional modern/full-stack SaaS scaffold ----
-    if ((config.buildType || '').toLowerCase() === 'modern') {
-      await Generator.addModernScaffold(zip, resolvedConfig);
-    }
+    // ---- 16b. Optional modern/full-stack scaffold is assembled AFTER every
+    // root file (including README and generated/uploaded logo) exists. Previous
+    // versions copied too early, leaving modern/public without the logo.
+    const includeModern = (config.buildType || '').toLowerCase() === 'modern';
 
     // ---- 17. README with setup instructions ----
     zip.file('README.md', Generator.generateREADME(resolvedConfig));
@@ -526,6 +543,7 @@ const Generator = {
         zip.file('assets/img/logo.svg', atob(b64));
       } catch (e) { /* keep generated placeholder */ }
     }
+    if (includeModern) await Generator.addModernScaffold(zip, resolvedConfig);
 
     // FIX RC-B (audit): post-build integrity sweep. Before finalising the ZIP,
     // scan every root-level .html page we emitted and flag any that has ZERO
@@ -578,7 +596,7 @@ const Generator = {
         ref = ref.split('#')[0].split('?')[0];
         if (!ref || ref === '.') continue;
         const target = ref.startsWith('/') ? ref.slice(1) : (dir + ref);
-        const clean = target.replace(/^\.?\//, '').replace(/[^/]+\/\.\.\//g, '');
+        const clean = target.split('/').reduce((parts,part)=>{if(!part||part==='.')return parts;if(part==='..'){parts.pop();return parts;}parts.push(part);return parts;},[]).join('/');
         if (/\.(html|js|css|png|jpe?g|webp|svg|json|csv|xml|txt|ico|woff2?)$/i.test(clean)) {
           inbound.set(clean, (inbound.get(clean) || 0) + 1);
           if (!fileSet.has(clean) && !clean.startsWith('assets/templates/')) {
@@ -1363,6 +1381,18 @@ ${publicPages.map(u => `  <url><loc>${base}${u.p}</loc><changefreq>${u.cf}</chan
   Permissions-Policy: camera=(self), microphone=(self), geolocation=(self)
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.supabase.io wss://*.supabase.co
 
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/js/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/css/*
+  Cache-Control: public, max-age=3600, must-revalidate
+
 /_headers
   Access-Control-Allow-Origin: *
 `;
@@ -1387,6 +1417,18 @@ ${publicPages.map(u => `  <url><loc>${base}${u.p}</loc><changefreq>${u.cf}</chan
         },
         {
           source: '/sw.js',
+          headers: [
+            { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }
+          ]
+        },
+        {
+          source: '/assets/js/(.*)',
+          headers: [
+            { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }
+          ]
+        },
+        {
+          source: '/(.*)\\.html',
           headers: [
             { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }
           ]

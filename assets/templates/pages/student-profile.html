@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Student Dashboard • God of Seed Academy</title>
-<meta name="description" content="God of Seed Academy — Student Dashboard. Comprehensive school management platform.">
-<meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
+<title>Student Dashboard • School Connect Demo School</title>
+<meta name="description" content="School Connect Demo School — Student Dashboard. Comprehensive school management platform.">
+<meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="manifest" href="manifest.json">
@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<meta property="og:title" content="Student Dashboard • God of Seed Academy">
-<meta property="og:description" content="God of Seed Academy — Free school management by HMG Concepts">
+<meta property="og:title" content="Student Dashboard • School Connect Demo School">
+<meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
 <meta property="og:image" content="assets/img/logo.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -61,22 +61,22 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 @media(min-width:901px){.app-topbar .mobile-toggle{display:none}}
 </style>
 
-    <meta name="description" content="God of Seed Academy — Student Dashboard. Comprehensive school management platform.">
-    <meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
+    <meta name="description" content="School Connect Demo School — Student Dashboard. Comprehensive school management platform.">
+    <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
     <meta name="author" content="HMG Concepts">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="./student-profile.html">
-    <meta property="og:title" content="Student Dashboard • God of Seed Academy">
-    <meta property="og:description" content="God of Seed Academy — Student Dashboard. Comprehensive school management platform.">
+    <meta property="og:title" content="Student Dashboard • School Connect Demo School">
+    <meta property="og:description" content="School Connect Demo School — Student Dashboard. Comprehensive school management platform.">
     <meta property="og:url" content="./student-profile.html">
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="School Connect v5 — God of Seed Academy">
+    <meta property="og:site_name" content="School Connect v5 — School Connect Demo School">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Student Dashboard • God of Seed Academy">
-    <meta name="twitter:description" content="God of Seed Academy — Student Dashboard. Comprehensive school management platform.">
+    <meta name="twitter:title" content="Student Dashboard • School Connect Demo School">
+    <meta name="twitter:description" content="School Connect Demo School — Student Dashboard. Comprehensive school management platform.">
     <link rel="alternate" href="https://hmgconcepts.pages.dev/" title="HMG Concepts Ecosystem">
   </head>
-<body data-theme="theme15" data-school="God of Seed Academy" data-font="plusjakarta">
+<body data-theme="theme15" data-school="School Connect Demo School" data-font="plusjakarta">
 
 <div id="notif-bell" class="notif-bell" title="Notifications" data-chatbot>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -119,10 +119,10 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar parent student">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.png" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{textContent:('G'),style:'width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900'}))">
+        <img src="assets/img/logo.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
         <div>
-          <strong>God of Seed Academy</strong>
-          <div style="font-size:0.7rem;color:var(--gray-500)">GOSA</div>
+          <strong>School Connect Demo School</strong>
+          <div style="font-size:0.7rem;color:var(--gray-500)">SCD</div>
         </div>
       </div>
       <nav class="app-nav">
@@ -473,7 +473,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       <div id="sp-view"><p style="color:var(--gray-500)">Select a student to view their full dashboard.</p></div>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
-      © 2026 God of Seed Academy · Licensed by <a href="https://hmgtechnologies.pages.dev" target="_blank" rel="noopener">HMG Technologies</a>
+      © 2026 School Connect Demo School · Licensed by <a href="https://hmgtechnologies.pages.dev" target="_blank" rel="noopener">HMG Technologies</a>
     </footer>
   </main>
 </div>
@@ -509,20 +509,18 @@ const SP={fees:[],student:null,
       Object.keys(groups).sort().forEach(g=>{ var og=document.createElement('optgroup'); og.label=g; var seenG=new Set(); groups[g].forEach(s=>{ if(seenG.has(s.id))return; seenG.add(s.id); var o=document.createElement('option');o.value=s.id;o.textContent=s.full_name;og.appendChild(o);}); sel.appendChild(og); }); }
     // deep-link or auto-load own profile
     var q=new URLSearchParams(location.search).get('student');
-    if(q && !['parent','student'].includes((window.SC_PROFILE||{}).role)){ if(sel)sel.value=q; this.load(q); }
+    if(q && !['student'].includes((window.SC_PROFILE||{}).role)){ if(sel)sel.value=q; if((window.SC_PROFILE||{}).role==='parent'){ const pc=await sb.from('parent_child').select('student_id').eq('parent_id',SC_PROFILE.id).eq('student_id',q).maybeSingle(); if(pc.data) this.load(q); } else this.load(q); }
     else { try{ var prof=(window.SC_PROFILE||{}); if(prof.role==='student' && prof.id){ const st=await sb.from('students').select('id').eq('user_id',prof.id).maybeSingle(); if(st.data&&st.data.id) this.load(st.data.id); else document.getElementById('sp-view').innerHTML='<div class="card"><h3>Student record not linked</h3><p>Your login account is active, but it has not been linked to a student record. Contact the school admin.</p></div>'; } else if(prof.student_id) this.load(prof.student_id); else if(prof.role==='parent' && prof.id){ const pc=await sb.from('parent_child').select('student_id').eq('parent_id',prof.id).limit(1); if(pc.data&&pc.data[0]) this.load(pc.data[0].student_id); else document.getElementById('sp-view').innerHTML='<div class="card"><h3>No child linked yet</h3><p>Your parent account is active, but no student has been mapped to you. Please contact the school admin to link your child on the Parents page.</p></div>'; } }catch(e){} }
   },
   cur(currency){ return (window.SCHOOL&&SCHOOL.currency)||currency||'₦'; },
   async load(id){ if(!id||!sb){return;} var box=document.getElementById('sp-view'); box.innerHTML='<p class="pulse">Loading…</p>';
     var {data:s}=await sb.from('students').select('*').eq('id',id).maybeSingle(); if(!s){box.innerHTML='<p>Student not found.</p>';return;}
     var name=s.full_name;
-    var fees=[],results=[],att={present:0,total:0},awards=[],classBill=null,products=[];
+    var fees=[],results=[],att={present:0,total:0},awards=[];
     try{ var r1=await sb.from('fee_payments').select('*').eq('student_name',name).order('created_at',{ascending:false}); fees=r1.data||[]; }catch(e){}
     try{ var r2=await sb.from('results').select('*').eq('student_name',name).limit(500); results=r2.data||[]; }catch(e){}
     try{ var r3=await sb.from('attendance').select('status').eq('student_name',name).limit(2000); var rows=r3.data||[]; att.total=rows.length; att.present=rows.filter(x=>x.status==='present').length; }catch(e){}
     try{ var r4=await sb.from('behaviour_points').select('*').eq('student_name',name).limit(200); awards=r4.data||[]; }catch(e){}
-    try{ var r5=await sb.from('class_fee_structure').select('*').eq('class',s.class).eq('term','Next Term').limit(1); classBill=(r5.data||[])[0]||null; }catch(e){}
-    try{ var r6=await sb.from('school_products').select('*').order('category').order('name').limit(100); products=r6.data||[]; }catch(e){}
     this.fees=fees; this.student=s; var totalPaid=fees.reduce((a,b)=>a+(Number(b.amount_paid)||0),0);
     var cur=this.cur();
     var photo=window.Super?Super.media.thumb(s.photo_url||'',{w:90,h:90}):'';
@@ -538,8 +536,6 @@ const SP={fees:[],student:null,
       '<div class="grid grid-2">'+
         '<div class="card"><h3 style="margin-top:0">💰 Fees & Payment History</h3>'+
           '<p>Total paid: <b>'+cur+totalPaid.toLocaleString()+'</b> over '+fees.length+' payment(s)</p>'+
-          (classBill?'<div class="card" style="background:#fffbeb;border-color:#fcd34d"><b>Next-term class bill:</b> '+cur+Number(classBill.total||0).toLocaleString()+' · Due: '+esc(classBill.due_date||'See school notice')+'</div>':'')+
-          (products.length?'<div><b>Required school products</b><ul>'+products.map(p=>'<li>'+esc(p.name)+' — '+cur+Number(p.price||0).toLocaleString()+'</li>').join('')+'</ul></div>':'')+
           (fees.length?'<div class="table-wrap"><table><thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Term</th><th>Receipt</th></tr></thead><tbody>'+
             fees.map((f,i)=>'<tr><td>'+esc((window.CRUD&&CRUD.formatDate)?CRUD.formatDate(f.created_at):String(f.created_at||'').slice(0,10))+'</td><td>'+cur+Number(f.amount_paid||0).toLocaleString()+'</td><td>'+esc(f.method||'')+'</td><td>'+esc(f.term||'')+'</td><td><button class="btn btn-sm btn-outline" onclick="SP.receipt('+i+')">Print</button></td></tr>').join('')+'</tbody></table></div>':'<p style="color:var(--gray-500)">No payments recorded.</p>')+'</div>'+
         '<div class="card"><h3 style="margin-top:0">📊 Attendance & Awards</h3>'+
@@ -553,6 +549,8 @@ const SP={fees:[],student:null,
   },
   receipt(i){
     const f=this.fees[i], s=this.student||{}, sc=window.SCHOOL||{}, cur=this.cur(); if(!f)return;
+    // One canonical sample-matched receipt renderer across Fees and Student Profile.
+    if(window.CRUD&&typeof CRUD.printReceipt==='function'&&f.id){CRUD.printReceipt(f.id);return;}
     /* ENTERPRISE V10: routed through the fixed receipt pipeline — school logo,
        server-synced signature (Drive-direct + background removal), dd/mm/yyyy,
        base-href + wait-for-images so nothing prints blank. */
