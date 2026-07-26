@@ -483,7 +483,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
           </select></div>
           <div class="form-group"><label>Older than (days)</label><input class="form-input" type="number" id="st-days" value="180"></div>
         </div>
-        <button class="btn btn-outline" style="color:#dc2626;border-color:#dc2626" onclick="ST.purge()">🗑 Purge old rows</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="ST.exportBeforePurge()">⬇ Export selected table first (portable JSON)</button><button class="btn btn-outline" style="color:#dc2626;border-color:#dc2626" onclick="ST.purge()">🗑 Purge old rows</button><a class="btn btn-outline" href="admin-data.html">♻️ Re-import / analyse an archive</a></div>
       </div>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
@@ -496,6 +496,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <script src="assets/js/config.js"></script>
 <script src="assets/js/license.js"></script>
 <script src="assets/js/demo.js"></script>
+<script src="assets/js/data-portability.js"></script>
 <script src="assets/js/notifications.js"></script>
 <script src="assets/js/voting.js"></script>
 <script src="assets/js/pwa-install.js"></script>
@@ -516,6 +517,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 </script>
 <script>
 const ST={
+  async exportBeforePurge(){if(!window.DataPortability){toast('Data portability engine unavailable.','danger');return;}DataPortability.init(sb);const t=document.getElementById('st-table').value;try{const n=await DataPortability.exportTable(t);toast('✅ '+n+' rows exported. Keep the JSON; it can be restored from Admin Data.','success',7000);}catch(e){toast(e.message||e,'danger');}},
   async load(){ if(!sb){toast('DB not configured','warning');return;}
     var {data,error}=await sb.rpc('table_sizes'); if(error){document.getElementById('st-sizes').innerHTML='<p style="color:#dc2626">'+esc(error.message)+'</p>';return;}
     var total=(data||[]).find(r=>r.table_name==='TOTAL_DATABASE_USED') || {pretty:'0 bytes',row_estimate:0,total_bytes:0};

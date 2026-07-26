@@ -3,7 +3,7 @@
 # Historical version-specific checks remain in verify-legacy.sh and verify-v*.js.
 set -euo pipefail
 cd "$(dirname "$0")"
-echo "School Connect V5.3 — cumulative release verification"
+echo "School Connect V5.4 — cumulative release verification"
 echo "=================================================="
 echo "[0/6] Installing development-only test dependencies"
 npm install --silent --no-audit --no-fund
@@ -28,10 +28,11 @@ node tools/test-report-output.js
 node tools/test-report-bulk.js
 node tools/test-timetable-sql-engine.mjs
 node tools/test-demo-seed-sql.mjs
+node tools/test-data-portability.js
 node verify-v6-enterprise-workflows.js
 
 echo "[6/6] Real traditional + modern ZIP generation"
 node tools/test-generator-build.js
 
 echo "=================================================="
-echo "School Connect V5.3 verification PASSED"
+echo "School Connect V5.4 verification PASSED"
