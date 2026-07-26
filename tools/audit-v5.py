@@ -55,11 +55,11 @@ for repo in REPOS:
  ok(f'{repo.name}: static HTML href/src targets exist',not broken,', '.join(broken[:8]))
 
 # Cross-repository runtime parity
-common=['assets/js/cbt-engine.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/demo-seed.sql']
+common=['assets/js/cbt-engine.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/v5.3-platform-enhancements.sql','database/demo-seed.sql']
 for rel in common:
  data=[(r/rel).read_bytes() for r in REPOS]
  ok(f'Runtime parity: {rel}',data[0]==data[1]==data[2])
-for f in ['cbt-exam.html','cbt-multi.html','cbt.html','report-cards.html','student-profile.html','academic-records.html']:
+for f in ['cbt-exam.html','cbt-multi.html','cbt.html','report-cards.html','student-profile.html','academic-records.html','profile.html','timetable-generator.html']:
  ok(f'Generator source/template parity: {f}',(ROOT/f).read_bytes()==(ROOT/'assets/templates/pages'/f).read_bytes())
 
 # Critical regressions
@@ -82,6 +82,12 @@ ok('Official reports exclude implicit raw CBT/LMS data and preserve blank cells'
 ok('Report grid scopes scores by subject and does not save blank as zero',".eq('subject',this.ctx.subject)" in rc and "String(el.value||'').trim()===''" in rc)
 ok('Report card prints explicit promotion decision','loadPromotionStatus' in report and 'PROMOTION NOT YET DECIDED' in report and 'promotion-status' in report)
 ok('Bulk CBT push filters and writes canonical report_scores',all(x in report for x in ['openBulkCBTExportModal','be-class','be-subject','be-term','be-session','pushOneCBTExam',"from('report_scores').upsert"]))
+profile=(ROOT/'profile.html').read_text();timetable=(ROOT/'timetable-generator.html').read_text();enterprise=(ROOT/'assets/js/enterprise.js').read_text()
+ok('Teachers can own a profile signature used by assigned class reports',all(x in schema+profile+report for x in ['signature_url','get_class_teacher_identity','teacher-signature-card','saveTeacherSignature','loadClassTeacherIdentity','teacherSignatureInk']))
+ok('CBT full edit uses platform dropdowns and covers full settings',all(x in manager for x in ['refreshEditReportColumns','ed-subject','ed-class','ed-term','ed-session','ed-col','ed-mode','ed-start','ed-close','ed-pass','certificate_enabled']))
+ok('Timetable wizard uses controlled dropdowns and clear four-step workflow',all(x in timetable for x in ['Admin Timetable Wizard','Step 1','Step 2','Step 3','Step 4','<select class="form-select" id="tt-class"','id="tt-subject"','id="tt-teacher"','id="tt-term"','id="tt-session"','TTG.validate','TTG.printGrid']))
+ok('Timetable backend checks availability and cross-class teacher conflicts','No free class/teacher slot' in schema and 'teacher_availability' in schema and 'removeRequirement' in enterprise and 'clearGenerated' in enterprise)
+ok('Demo generic amount is explicitly numeric','x.amount::numeric' in seed)
 ok('E-receipt matches sample class structure',all(x in crud for x in ['class="receipt"','class="rh"','class="paid"','OFFICIAL E-RECEIPT','Remaining Balance']))
 ok('Demo alumni seed uses current_occupation (42703 fixed)','current_occupation' in seed and 'insert into public.alumni (full_name, graduation_year, last_class, occupation' not in seed)
 ok('Demo contains multi-subject live test exam',all(x in seed for x in ['DEMO-UTME','multi_subject','English Language","start":0','Mathematics","start":4']))
