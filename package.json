@@ -1,7 +1,7 @@
 {
   "name": "school-connect-generator-v5-tests",
   "private": true,
-  "version": "5.3.0",
+  "version": "5.4.0",
   "description": "Development-only verification dependencies for School Connect generator outputs",
   "scripts": {
     "verify": "bash verify.sh",
@@ -9,6 +9,7 @@
     "test:reports": "node tools/test-report-output.js && node tools/test-report-bulk.js",
     "test:timetable": "node tools/test-timetable-sql-engine.mjs",
     "test:demo-seed": "node tools/test-demo-seed-sql.mjs",
+    "test:portability": "node tools/test-data-portability.js",
     "test:builds": "node tools/test-generator-build.js"
   },
   "devDependencies": {
