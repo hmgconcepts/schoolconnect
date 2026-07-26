@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Sign in • God of Seed Academy</title>
-<meta name="description" content="God of Seed Academy — Sign in. Comprehensive school management platform.">
-<meta name="keywords" content="$1">
+<title>Sign in • School Connect Demo School</title>
+<meta name="description" content="School Connect Demo School — Sign in. Comprehensive school management platform.">
+<meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
 <link rel="canonical" href="./login.html">
 <meta property="og:url" content="./login.html">
@@ -17,8 +17,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<meta property="og:title" content="Sign in • God of Seed Academy">
-<meta property="og:description" content="$1 — Comprehensive school management platform">
+<meta property="og:title" content="Sign in • School Connect Demo School">
+<meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
 <meta property="og:image" content="assets/img/logo.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -66,7 +66,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
     <meta name="author" content="HMG Concepts">
 </head>
-<body data-theme="theme15" data-school="God of Seed Academy" data-font="plusjakarta">
+<body data-theme="theme15" data-school="School Connect Demo School" data-font="plusjakarta">
 
 <div id="notif-bell" class="notif-bell" title="Notifications" data-chatbot>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -109,8 +109,8 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <div class="login-shell" style="min-height:100vh;background:var(--gradient);display:flex;align-items:center;justify-content:center;padding:40px 20px">
   <div class="login-card" style="background:white;padding:40px;border-radius:24px;box-shadow:var(--shadow-xl);max-width:440px;width:100%">
     <div style="text-align:center;margin-bottom:32px">
-      <img src="assets/img/logo.png" alt="God of Seed Academy logo" style="width:64px;height:64px;margin:0 auto 16px;border-radius:14px;object-fit:contain">
-      <h1 style="font-size:1.8rem;font-weight:900;color:var(--dark);margin-bottom:4px">God of Seed Academy</h1>
+      <img src="assets/img/logo.png" alt="School Connect Demo School logo" style="width:64px;height:64px;margin:0 auto 16px;border-radius:14px;object-fit:contain">
+      <h1 style="font-size:1.8rem;font-weight:900;color:var(--dark);margin-bottom:4px">School Connect Demo School</h1>
       <p style="color:var(--gray-600);font-size:0.95rem">Excellence in Learning and Character</p>
     </div>
     <div id="auth-tabs" style="display:flex;gap:8px;background:var(--gray-100);padding:4px;border-radius:12px;margin-bottom:24px">
@@ -118,9 +118,10 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       <button class="btn btn-outline" id="tab-signup" onclick="App.switchAuthTab('signup')" style="flex:1">Request access</button>
     </div>
     <form id="signin-form" onsubmit="App.handleSignIn(event)" class="form">
-      <div class="form-group"><label>Email or Student/Staff ID</label><input class="form-input" type="text" name="email" placeholder="you@example.com or GOSA/2026/0001" autocapitalize="none" required></div>
+      <div class="form-group"><label>Email or Student/Staff ID</label><input class="form-input" type="text" name="email" placeholder="you@example.com or SCD/2026/0001" autocapitalize="none" required></div>
       <div class="form-group"><label>Password</label><input class="form-input" type="password" name="password" required minlength="8"></div>
       <button type="submit" class="btn btn-primary" style="width:100%">Sign in</button>
+      <p style="text-align:right;margin:10px 0 0"><a href="forgot-password.html">Forgot password?</a></p>
     </form>
     <form id="signup-form" onsubmit="App.handleSignUp(event)" class="form" style="display:none">
       <div class="form-group"><label>Full name</label><input class="form-input" name="full_name" required></div>
