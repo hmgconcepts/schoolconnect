@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Admin Data • School Connect Demo School</title>
-<meta name="description" content="School Connect Demo School — Admin Data. Comprehensive school management platform.">
+<title>Health / Clinic • School Connect Demo School</title>
+<meta name="description" content="School Connect Demo School — Health / Clinic. Comprehensive school management platform.">
 <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<meta property="og:title" content="Admin Data • School Connect Demo School">
+<meta property="og:title" content="Health / Clinic • School Connect Demo School">
 <meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
 <meta property="og:image" content="assets/img/logo.png">
 <meta property="og:type" content="website">
@@ -61,19 +61,19 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 @media(min-width:901px){.app-topbar .mobile-toggle{display:none}}
 </style>
 
-    <meta name="description" content="School Connect Demo School — Admin Data. Comprehensive school management platform.">
+    <meta name="description" content="School Connect Demo School — Health / Clinic. Comprehensive school management platform.">
     <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
     <meta name="author" content="HMG Concepts">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="./admin-data.html">
-    <meta property="og:title" content="Admin Data • School Connect Demo School">
-    <meta property="og:description" content="School Connect Demo School — Admin Data. Comprehensive school management platform.">
-    <meta property="og:url" content="./admin-data.html">
+    <link rel="canonical" href="./health.html">
+    <meta property="og:title" content="Health / Clinic • School Connect Demo School">
+    <meta property="og:description" content="School Connect Demo School — Health / Clinic. Comprehensive school management platform.">
+    <meta property="og:url" content="./health.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="School Connect v5 — School Connect Demo School">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Admin Data • School Connect Demo School">
-    <meta name="twitter:description" content="School Connect Demo School — Admin Data. Comprehensive school management platform.">
+    <meta name="twitter:title" content="Health / Clinic • School Connect Demo School">
+    <meta name="twitter:description" content="School Connect Demo School — Health / Clinic. Comprehensive school management platform.">
     <link rel="alternate" href="https://hmgconcepts.pages.dev/" title="HMG Concepts Ecosystem">
   </head>
 <body data-theme="theme15" data-school="School Connect Demo School" data-font="plusjakarta">
@@ -116,7 +116,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
     <div id="modal-footer" class="modal-footer"></div>
   </div>
 </div>
-<div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar">
+<div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
         <img src="assets/img/logo.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
@@ -450,7 +450,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
   <main class="app-main">
     <header class="app-topbar">
       <button class="mobile-toggle" onclick="App.toggleSidebar()" title="Menu">☰</button>
-      <h1 class="app-page-title">Admin Data</h1>
+      <h1 class="app-page-title">Health / Clinic</h1>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
         
         <button class="btn btn-sm btn-outline" onclick="if(window.Super)Super.chatbot.explainPage()" title="About this page">ℹ️ Help</button>
@@ -461,36 +461,33 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
     </header>
     <div class="app-content">
       
-      <div class="card" style="margin-bottom:16px">
-        <p style="color:var(--gray-600);margin:0">Admin-only data console: <strong>view</strong> any table,
-        <strong>delete</strong> records, take a full <strong>backup</strong> (JSON download) and
-        <strong>restore</strong> from a backup. Every action is written to the Activity Log.</p>
+      <div class="card" style="margin-bottom:16px;background:#eef2ff;border-color:#c7d2fe">
+        <h3 style="margin-top:0">ℹ️ What is this page?</h3>
+        <p style="color:var(--gray-700);line-height:1.75;margin:0 0 8px"><strong>Health</strong> is part of the School Connect portal. Sick-bay visits, medical history, allergy alerts.</p>
+        <p style="color:var(--gray-700);line-height:1.75;margin:0 0 8px"><strong>Who should use it:</strong> Super admin Admin principal proprietor head Teacher bursar Super admin Admin principal proprietor head Teacher bursar Staff Teacher Parent. Admin/Super Admin may see management overviews, while non-admin roles only see pages relevant to their duties.</p>
+        <ol style="margin:8px 0 0 20px;color:var(--gray-700);line-height:1.75">
+          <li>Read this guide first so you understand the purpose of the page.</li>
+          <li>Use <strong>+ Add new</strong> only if your role is allowed to create records.</li>
+          <li>Use <strong>Refresh</strong>, <strong>Export CSV</strong> or <strong>Export PDF</strong> for records and reporting.</li>
+          <li>Ask the 💬 assistant, or open <a href="feature-guide.html">Feature Guide</a>, for a fuller explanation.</li>
+        </ol>
       </div>
-      <div class="card" style="margin-bottom:16px" data-admin-only>
-        <h3>🗄️ Full backup & restore</h3>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
-          <button class="btn btn-primary" onclick="DataTools.backupAll()">⬇ Download full backup (JSON)</button>
-          <label class="btn btn-outline">⬆ Restore from backup<input type="file" accept=".json" hidden onchange="DataTools.restore(event)"></label>
-        </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <button class="btn btn-primary" onclick="CRUD.openForm('health')" data-staff-only>+ Add new</button>
+        <button class="btn btn-outline" onclick="CRUD.renderList('health')">↻ Refresh</button>
+        <button class="btn btn-outline" onclick="CRUD.exportCSV('health')" data-staff-only>⬇ Export CSV</button>
+        <button class="btn btn-outline" onclick="CRUD.exportPDF('health')" data-staff-only>📄 Export PDF</button>
+        <button class="btn btn-outline" onclick="CRUD.importCSV('health')" data-admin-only>⬆ Import CSV</button>
+        <a class="btn btn-outline" href="report-cards.html" data-staff-only>📏 Enter term height / weight / health metrics</a>
+        
+        
+        
+        
+        
       </div>
-      <div class="card" style="margin-bottom:16px" data-admin-only>
-        <h3>♻️ Portable Data Archive Center</h3>
-        <p style="color:var(--gray-600)"><b>Every machine-readable export can come back.</b> Portable JSON preserves UUIDs, dates, arrays and JSON fields for later restoration/analysis; CSV remains available for spreadsheets and can be re-imported into the selected table. Files are processed locally and are never stored in Supabase.</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="DataTools.portableFull()">⬇ Export all portable JSON</button><button class="btn btn-outline" onclick="DataTools.portableSelected()">⬇ Export selected table JSON</button><button class="btn btn-outline" onclick="DataTools.choosePortableImport()">⬆ Import JSON / CSV with preview</button></div>
-        <div class="notice" style="margin-top:10px;background:#fffbeb;border-color:#fcd34d;color:#92400e"><b>Auth note:</b> profile UUIDs belong to Supabase Auth users. A full archive restores most reliably into the same project. On a new project, create/adopt users first, then import operational tables.</div>
-        <div id="dt-portable-report"></div>
-      </div>
-      <div class="card">
-        <h3>🔎 Browse & delete a table</h3>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:10px">
-          <div class="form-group" style="margin:0"><label>Table</label>
-            <select class="form-select" id="dt-table" onchange="DataTools.view()"><option>students</option><option>staff</option><option>classes</option><option>subjects</option><option>attendance</option><option>results</option><option>fee_payments</option><option>finance_entries</option><option>cbt_exams</option><option>cbt_results</option><option>assessment_columns</option><option>report_scores</option><option>report_cards</option><option>polls</option><option>poll_votes</option><option>announcements</option><option>events</option><option>messages</option><option>complaints</option><option>admissions</option><option>donations</option><option>activity_log</option><option>profiles</option><option>parent_child</option><option>academic_periods</option><option>certificates</option></select>
-          </div>
-          <button class="btn btn-outline" onclick="DataTools.view()">View</button>
-          <button class="btn btn-outline" onclick="DataTools.exportTable()">⬇ Export this table (CSV)</button><button class="btn btn-outline" onclick="DataTools.importCSV()">⬆ Re-import CSV</button>
-        </div>
-        <div id="dt-grid" style="margin-top:12px"></div>
-      </div>
+      
+      <div class="table-wrap"><table id="health-table"><thead><tr><th>Loading…</th></tr></thead><tbody><tr><td><span class="pulse">Loading…</span></td></tr></tbody></table></div>
+      <script>document.addEventListener('DOMContentLoaded',function(){ if(window.CRUD) CRUD.renderList('health'); });</script>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
       © 2026 School Connect Demo School · Licensed by <a href="https://hmgtechnologies.pages.dev" target="_blank" rel="noopener">HMG Technologies</a>
@@ -502,7 +499,6 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <script src="assets/js/config.js"></script>
 <script src="assets/js/license.js"></script>
 <script src="assets/js/demo.js"></script>
-<script src="assets/js/data-portability.js"></script>
 <script src="assets/js/notifications.js"></script>
 <script src="assets/js/voting.js"></script>
 <script src="assets/js/pwa-install.js"></script>
@@ -521,64 +517,4 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
   if (window.Enterprise) Enterprise.init(sb);
   if (window.CRUD) CRUD.init(sb);
 </script>
-<script>
-const DataTools = {
-  TABLES: (window.DataPortability&&DataPortability.TABLES)||["students","staff","classes","subjects","attendance","results","fee_payments","cbt_exams","cbt_results","assessment_columns","report_scores","report_cards"],
-  init(){if(window.DataPortability)DataPortability.init(sb);const sel=document.getElementById('dt-table');if(sel){const keep=sel.value;sel.innerHTML=this.TABLES.map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join('');if(this.TABLES.includes(keep))sel.value=keep;}},
-  async portableFull(){try{toast('Preparing paginated portable archive…','info');const env=await DataPortability.exportFull(this.TABLES);toast('✅ Exported '+env.meta.row_count+' rows from '+env.meta.table_count+' tables.','success',7000);}catch(e){toast(e.message||e,'danger',9000);}},
-  async portableSelected(){const t=document.getElementById('dt-table').value;try{const n=await DataPortability.exportTable(t);toast('✅ '+n+' '+t+' row(s) exported as re-importable JSON.','success');}catch(e){toast(e.message||e,'danger');}},
-  choosePortableImport(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,.csv,application/json,text/csv';inp.onchange=async()=>{const f=inp.files[0];if(!f)return;try{const archive=await DataPortability.inspectFile(f,document.getElementById('dt-table').value),summary=Object.entries(archive.tables).map(([t,r])=>'<tr><td>'+esc(t)+'</td><td>'+r.length+'</td></tr>').join('');DataTools._pendingArchive=archive;openModal('Preview portable import','<p><b>File:</b> '+esc(f.name)+'</p><div class="table-wrap"><table><thead><tr><th>Table</th><th>Rows</th></tr></thead><tbody>'+summary+'</tbody></table></div><p>No file is uploaded. Import uses chunked upserts and reports every failed table.</p>','<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-outline" onclick="DataTools.analysePendingArchive()">Analyse locally (no import)</button><button class="btn btn-primary" onclick="DataTools.runPortableImport()">Import / update these rows</button>');}catch(e){toast('Cannot read archive: '+(e.message||e),'danger',10000);}};inp.click();},
-  analysePendingArchive(){const a=this._pendingArchive;if(!a)return;const summaries=Object.entries(a.tables).map(([t,rows])=>{const nums={};(rows||[]).forEach(r=>Object.entries(r).forEach(([k,v])=>{if(typeof v==='number'&&Number.isFinite(v)){const x=nums[k]||(nums[k]={sum:0,min:v,max:v,n:0});x.sum+=v;x.min=Math.min(x.min,v);x.max=Math.max(x.max,v);x.n++;}}));const metrics=Object.entries(nums).slice(0,5).map(([k,x])=>esc(k)+': avg '+(x.sum/x.n).toFixed(2)+' · '+x.min+'–'+x.max).join('<br>');return'<tr><td>'+esc(t)+'</td><td>'+rows.length+'</td><td>'+metrics+'</td></tr>';}).join('');openModal('Local archive analysis','<div class="notice" style="background:#f0fdf4;border-color:#86efac;color:#166534">The archive is analysed in this browser only. No rows have been uploaded to Supabase.</div><div class="table-wrap"><table><thead><tr><th>Dataset</th><th>Rows</th><th>Numeric overview</th></tr></thead><tbody>'+summaries+'</tbody></table></div>','<button class="btn btn-outline" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="DataTools.runPortableImport()">Import archive</button>');},
-  async runPortableImport(){if(!this._pendingArchive)return;closeModal();toast('Importing archive in dependency order…','info');const report=await DataPortability.importArchive(this._pendingArchive,'upsert');document.getElementById('dt-portable-report').innerHTML=DataPortability.reportHTML(report);if(App&&App.logActivity)App.logActivity('portable-import','platform',report.reduce((a,x)=>a+x.saved,0)+' rows');toast('Portable import completed. Review the table report.','success',7000);this._pendingArchive=null;this.view();},
-  async view(){
-    if(!sb){ toast('Database not configured.','warning'); return; }
-    const t=document.getElementById('dt-table').value;
-    const { data, error } = await sb.from(t).select('*').order('created_at',{ascending:false}).limit(200);
-    const box=document.getElementById('dt-grid');
-    if(error){ box.innerHTML='<p style="color:#dc2626">'+esc(error.message)+'</p>'; return; }
-    if(!data||!data.length){ box.innerHTML='<p>No rows.</p>'; return; }
-    const cols=Object.keys(data[0]).slice(0,7);
-    box.innerHTML='<div class="table-wrap"><table><thead><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'<th>Delete</th></tr></thead><tbody>'+
-      data.map(r=>'<tr>'+cols.map(c=>'<td>'+esc(String(r[c]).slice(0,40))+'</td>').join('')+'<td><button class="btn btn-sm btn-outline" onclick="DataTools.del(\''+t+'\',\''+r.id+'\')">✕</button></td></tr>').join('')+
-      '</tbody></table></div><p style="color:var(--gray-500);font-size:.8rem">Showing up to 200 rows.</p>';
-  },
-  async del(table,id){
-    if(!confirm('Permanently delete this record from '+table+'?'))return;
-    const { error } = await sb.from(table).delete().eq('id',id);
-    if(error){ toast(error.message,'danger'); return; }
-    if(App&&App.logActivity)App.logActivity('delete',table,id);
-    toast('Deleted.','info'); DataTools.view();
-  },
-  async exportTable(){const t=document.getElementById('dt-table').value;try{const n=await DataPortability.exportCSV(t);toast('✅ '+n+' row(s) exported. Select the same table and use Import to restore this CSV.','success',7000);}catch(e){toast(e.message||e,'danger');}},
-  importCSV(){this.choosePortableImport();},
-  parseCSV(text){
-    const rows=[]; let r=[],c='',q=false;
-    for(let i=0;i<text.length;i++){
-      const ch=text[i], nx=text[i+1];
-      if(ch==='\"'&&q&&nx==='\"'){ c+='\"'; i++; }
-      else if(ch==='\"') q=!q;
-      else if(ch===','&&!q){ r.push(c); c=''; }
-      else if((ch==='\n'||ch==='\r')&&!q){ if(ch==='\r'&&nx==='\n') i++; r.push(c); rows.push(r); r=[]; c=''; }
-      else c+=ch;
-    }
-    if(c||r.length){ r.push(c); rows.push(r); }
-    return rows;
-  },
-  async backupAll(){return this.portableFull();},
-  restore(ev){
-    const f=ev.target.files[0]; if(!f)return;
-    const r=new FileReader();
-    r.onload=async()=>{
-      let dump; try{ dump=JSON.parse(r.result); }catch(e){ toast('Invalid backup file.','danger'); return; }
-      if(!confirm('Restore will UPSERT records from this backup into the live database. Continue?'))return;
-      let ok=0,fail=0;
-      for(const t of this.TABLES){ const rows=dump[t]; if(!Array.isArray(rows)||!rows.length)continue;
-        try{ const { error } = await sb.from(t).upsert(rows,{ onConflict:'id' }); if(error)fail++; else ok++; }catch(e){ fail++; } }
-      if(App&&App.logActivity)App.logActivity('restore','platform','tables:'+ok);
-      toast('Restore complete. Tables restored: '+ok+(fail?' · failed: '+fail:''), fail?'warning':'success',6000);
-    };
-    r.readAsText(f);
-  }
-};
-document.addEventListener('DOMContentLoaded',()=>DataTools.init());if(document.readyState!=='loading')DataTools.init();
-</script></body></html>
+</body></html>
