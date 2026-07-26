@@ -261,7 +261,8 @@ const Generator = {
       // idempotent upgrade hotfix for existing databases affected by zero marks.
       'database/complete-schema.sql',
       'database/cbt-v5.1-zero-score-hotfix.sql',
-      'database/cbt-v5.1.1-getter-school-settings-fix.sql'
+      'database/cbt-v5.1.1-getter-school-settings-fix.sql',
+      'database/v5.3-platform-enhancements.sql'
     ];
     const sqlContents = {};
     for (const f of sqlFiles) {
