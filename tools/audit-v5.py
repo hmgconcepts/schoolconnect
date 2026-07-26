@@ -55,7 +55,7 @@ for repo in REPOS:
  ok(f'{repo.name}: static HTML href/src targets exist',not broken,', '.join(broken[:8]))
 
 # Cross-repository runtime parity
-common=['assets/js/cbt-engine.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/v5.3-platform-enhancements.sql','database/v5.4-portability-cbt-metrics.sql','database/demo-seed.sql']
+common=['assets/css/style.css','assets/js/cbt-engine.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/v5.3-platform-enhancements.sql','database/v5.4-portability-cbt-metrics.sql','database/v5.5-registered-cbt-identity.sql','database/v5.6-daily-fees-cbt-reset-teacher-scope.sql','database/demo-seed.sql']
 for rel in common:
  data=[(r/rel).read_bytes() for r in REPOS]
  ok(f'Runtime parity: {rel}',data[0]==data[1]==data[2])
@@ -65,10 +65,10 @@ for f in ['cbt-exam.html','cbt-multi.html','cbt.html','report-cards.html','stude
 # Critical regressions
 cbt=(ROOT/'cbt-exam.html').read_text();engine=(ROOT/'assets/js/cbt-engine.js').read_text();multi=(ROOT/'cbt-multi.html').read_text();manager=(ROOT/'cbt.html').read_text();report=(ROOT/'assets/js/report-engine.js').read_text();rc=(ROOT/'report-cards.html').read_text();crud=(ROOT/'assets/js/crud.js').read_text();gen=(ROOT/'assets/js/generator.js').read_text()
 ok('CBT page displays dynamic school logo/name/motto/contact',all(x in cbt for x in ['exam-school-logo','exam-school-name','exam-school-name-banner','exam-school-motto','exam-school-contact','applySchoolIdentity']))
-ok('CBT uses explicit V5 getter diagnostics and normalised codes',"rpc('cbt_get_public_exam_v5'" in cbt and 'canonicalCode' in cbt and 'not_open' in schema)
+ok('CBT uses explicit V6 getter diagnostics and normalised codes',"rpc('cbt_get_public_exam_v6'" in cbt and 'canonicalCode' in cbt and 'not_open' in schema)
 ok('V5.1.1 getter tolerates missing optional school settings','select to_jsonb(ss)into settings_json' in schema and (ROOT/'database/cbt-v5.1.1-getter-school-settings-fix.sql').exists())
 ok('CBT submission is idempotent and original-index aware',all(x in cbt for x in ['client_ref','_orig_index','answers_data']))
-ok('CBT uses distinct V5.1 server RPC and network-first exam refresh',"rpc('cbt_submit_v5'" in cbt and "rpc('cbt_get_public_exam_v5'" in cbt and 'Network-first' in cbt and "engine_version||''" in cbt)
+ok('CBT uses admission-enforcing V6 server RPCs and network-first refresh',"rpc('cbt_submit_v6'" in cbt and "rpc('cbt_get_public_exam_v6'" in cbt and 'Network-first' in cbt and "engine_version||''" in cbt)
 ok('Server-authoritative matcher handles legacy aliases, option text and multi-select',all(x in schema for x in ['sc_cbt_answer_matches','sc_cbt_json_value','correctanswer','answerkey','sc_cbt_canonical_option',"typ='multi_select'",'qidx:=case']))
 ok('Canonical and v2 compatibility RPCs delegate to V5.1',all(x in schema for x in ['create or replace function public.cbt_submit_v5(p_payload jsonb)','create or replace function public.cbt_submit(p_payload jsonb)','create or replace function public.cbt_submit_v2(p_payload jsonb)','public.cbt_submit_v5(p_payload)']))
 ok('Missing answer keys cannot be saved as silent zero',"'answer_key_missing'" in schema and 'missing_answer_indexes' in schema)
@@ -93,6 +93,19 @@ ok('Portable JSON/CSV archives are paginated and re-importable',all(x in port+ad
 ok('Every CRUD module exposes a portable JSON companion export','ensurePortableButton' in crud and 'exportPortable' in crud)
 ok('CBT library is single-list grouped, filterable and archivable',all(x in manager for x in ['Archive view','bulkArchiveFiltered','setArchived','No session','Active exams','Archived']))
 ok('Student term metrics are enterable and printed on reports',all(x in schema+rc+report for x in ['student_term_metrics','openMetrics','saveMetrics','height_cm','weight_kg','Blood pressure','loadStudentMetrics']))
+ok('Report assessment headings and maxima are dynamic admin settings',all(x in report+rc for x in ['assessmentLayout','dynamicScoreCell','scoreHead','editCol','saveColEdit','Heading shown on reports']))
+ok('Registered CBT mode uses admission-only official identity',all(x in schema+cbt for x in ['cbt_get_public_exam_v6','cbt_submit_v6','admission_required','there is no editable name field','data.candidate.full_name']))
+login=(ROOT/'login.html').read_text();forgot=(ROOT/'forgot-password.html').read_text();css=(ROOT/'assets/css/style.css').read_text();analytics=(ROOT/'analytics.html').read_text();rubrics=(ROOT/'rubrics.html').read_text();transcripts=(ROOT/'transcripts.html').read_text()
+ok('Forgot-password recovery is available and redirects securely','forgot-password.html' in login and 'resetPasswordForEmail' in forgot and 'change-password.html?recovery=1' in forgot)
+ok('Navigation icon size is normalized across layouts','font-size: 18px !important' in css and '.app-nav-icon img,.app-nav-icon svg' in css)
+ok('Assistant builds detailed coverage for every current/catalog page','dynamicPageInfo' in (ROOT/'assets/js/super.js').read_text() and 'SC.MODULES' in (ROOT/'assets/js/super.js').read_text())
+ok('Rubrics and transcripts have first-user operational guidance','Worked example' in rubrics and 'Rubric definitions do not automatically create marks' in rubrics and 'Academic Transcripts — cumulative official history' in transcripts)
+ok('Term/session academic decision center analyses official report scores','Academic Performance Decision Center' in analytics and 'report_subject_totals' in analytics and 'Subject performance' in analytics)
+fees=(ROOT/'fees.html').read_text()
+ok('Daily fees dashboard provides date totals and management breakdowns',all(x in schema+fees for x in ['payment_date','fee_payments_daily_idx','Daily Fee Collection Dashboard','Previous day','Month-to-date','By collector']))
+ok('CBT results can be exported then securely reset for reuse','cbt_clear_exam_results' in schema and 'Export then clear results' in manager and 'clearResults' in manager)
+ok('Teacher edits are subject/class scoped in UI and PostgreSQL RLS',all(x in schema+crud for x in ['teacher_can_manage_subject_class','teacher_can_manage_student','results_scope_update','report_score_scope_update','cbt_exam_scope_update','An explicit empty rule is a hard admin-only boundary']))
+ok('Demo coverage completion and audit tool exist','specialised page coverage' in seed.lower() and (ROOT/'tools/audit-demo-coverage.py').exists())
 ok('E-receipt matches sample class structure',all(x in crud for x in ['class="receipt"','class="rh"','class="paid"','OFFICIAL E-RECEIPT','Remaining Balance']))
 ok('Demo alumni seed uses current_occupation (42703 fixed)','current_occupation' in seed and 'insert into public.alumni (full_name, graduation_year, last_class, occupation' not in seed)
 ok('Demo contains multi-subject live test exam',all(x in seed for x in ['DEMO-UTME','multi_subject','English Language","start":0','Mathematics","start":4']))
