@@ -1,12 +1,14 @@
 {
   "name": "school-connect-generator-v5-tests",
   "private": true,
-  "version": "5.2.0",
+  "version": "5.3.0",
   "description": "Development-only verification dependencies for School Connect generator outputs",
   "scripts": {
     "verify": "bash verify.sh",
     "test:cbt": "node tools/test-cbt-scoring.js && node tools/test-cbt-sql-engine.mjs",
-    "test:reports": "node tools/test-report-output.js",
+    "test:reports": "node tools/test-report-output.js && node tools/test-report-bulk.js",
+    "test:timetable": "node tools/test-timetable-sql-engine.mjs",
+    "test:demo-seed": "node tools/test-demo-seed-sql.mjs",
     "test:builds": "node tools/test-generator-build.js"
   },
   "devDependencies": {
