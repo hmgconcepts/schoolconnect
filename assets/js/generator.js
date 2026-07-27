@@ -245,7 +245,8 @@ const Generator = {
       'assets/js/analytics.js',
       'assets/js/license.js',
       'assets/js/demo.js',
-      'assets/js/data-portability.js'
+      'assets/js/data-portability.js',
+      'assets/js/v57-enhancements.js'
     ];
 
     const jsContents = {};
@@ -483,7 +484,7 @@ const Generator = {
     for (const [f, content] of Object.entries(sqlContents)) {
       if (content) zip.file(f, Generator.schoolSQL ? Generator.schoolSQL(content, resolvedConfig) : content);
     }
-    zip.file('database/README.md', '# Database installation — V5.6.1\n\nBack up Supabase and run the entire `complete-schema.sql`. It is the only production SQL, includes every V5.1–V5.6.1 change and is safe to run repeatedly. Do not run focused SQL afterward. Demo Mode additionally includes `demo-users.sql` and `demo-seed.sql`; never run those in production.\n');
+    zip.file('database/README.md', '# Database installation — V5.7\n\nBack up Supabase and run the entire `complete-schema.sql`. It is the only production SQL, includes every V5.1–V5.7 change and is safe to run repeatedly. Do not run focused SQL afterward. Demo Mode additionally includes `demo-users.sql` and `demo-seed.sql`; never run those in production.\n');
 
     // ---- 16a-1b. SAMPLE document templates (ENTERPRISE FINAL #4): report card,
     // class broadsheet, subject broadsheet, e-receipt — so users see exactly
