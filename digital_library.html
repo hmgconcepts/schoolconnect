@@ -610,8 +610,7 @@ const DL={ qs:[],
     if (!isStaff) { toast('Only staff can delete readings.', 'warning'); return; }
     if (!confirm('Delete "' + (b.title || 'this reading') + '"?\n\nThis also removes the comprehension questions and the quiz history linked to it.')) return;
     try { await window.sb.from('reading_scores').delete().eq('book_id', b.id); } catch (e) {}
-    const { error } = await window.sb.from('digital_library').delete().eq('id', b.id);
-    if (error) { toast('Delete failed: ' + error.message, 'danger', 6000); return; }
+    const r=await SCDelete.byId(window.sb,'digital_library',b.id);if(!r.ok){toast('Delete failed: '+r.error,'danger',6000);return;}
     if (window.App) App.logActivity('delete', 'digital_library', b.id);
     toast('Reading deleted ✓', 'success');
     this.list();

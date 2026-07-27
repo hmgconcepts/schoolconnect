@@ -515,7 +515,7 @@ const ADM={
     const {data,error}=await sb.from('admission_links').insert({label:document.getElementById('al-label').value,applying_for_class:document.getElementById('al-class').value,session:document.getElementById('al-session').value}).select().single();
     if(error){toast(error.message,'danger');return;} toast('Link generated ✓','success'); ADM.links();
   },
-  async deleteLink(id){ if(!confirm('Delete this application link? Existing applications remain, but the link will no longer be usable.')) return; const {error}=await sb.from('admission_links').delete().eq('id',id); if(error){toast(error.message,'danger');return;} toast('Application link deleted.','info'); ADM.links(); },
+  async deleteLink(id){if(!confirm('Delete this application link? Existing applications remain.'))return;const r=await SCDelete.byId(sb,'admission_links',id);if(!r.ok){toast(r.error,'danger');return;}toast('Application link deleted permanently.','success');ADM.links();},
   async toggleLink(id,active){ const {error}=await sb.from('admission_links').update({active:!!active}).eq('id',id); if(error){toast(error.message,'danger');return;} ADM.links(); },
   async links(){ if(!sb)return; const {data}=await sb.from('admission_links').select('*').order('created_at',{ascending:false});
     const base=location.origin+location.pathname.replace(/admissions\.html$/,'apply.html');

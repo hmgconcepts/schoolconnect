@@ -649,9 +649,7 @@ const DRY={
   },
   async del(id){
     if(!confirm('Delete this diary entry?')) return;
-    const {error}=await sb.from('diary').delete().eq('id', id);
-    if(error){toast(error.message,'danger');return;}
-    toast('🗑 Deleted','info'); DRY.refresh();
+    const r=await SCDelete.byId(sb,'diary',id);if(!r.ok){toast(r.error,'danger');return;}toast('🗑 Diary entry deleted permanently.','success');DRY.refresh();
   },
   async ack(id){
     const rec = this.rows.find(x=>x.id===id);
