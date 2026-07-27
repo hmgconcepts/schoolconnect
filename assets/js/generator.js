@@ -257,17 +257,8 @@ const Generator = {
     const CSS = await Generator.loadFile('assets/css/style.css');
 
     // ---- 5. Fetch SQL files ----
-    const sqlFiles = [
-      // ONE authoritative fresh-install path plus one narrowly-scoped,
-      // idempotent upgrade hotfix for existing databases affected by zero marks.
-      'database/complete-schema.sql',
-      'database/cbt-v5.1-zero-score-hotfix.sql',
-      'database/cbt-v5.1.1-getter-school-settings-fix.sql',
-      'database/v5.3-platform-enhancements.sql',
-      'database/v5.4-portability-cbt-metrics.sql',
-      'database/v5.5-registered-cbt-identity.sql',
-      'database/v5.6-daily-fees-cbt-reset-teacher-scope.sql'
-    ];
+    // One production SQL path; Demo Mode adds only the two demo SQL files.
+    const sqlFiles = ['database/complete-schema.sql'];
     const sqlContents = {};
     for (const f of sqlFiles) {
       sqlContents[f] = await Generator.loadFile(f);
@@ -492,7 +483,7 @@ const Generator = {
     for (const [f, content] of Object.entries(sqlContents)) {
       if (content) zip.file(f, Generator.schoolSQL ? Generator.schoolSQL(content, resolvedConfig) : content);
     }
-    zip.file('database/README.md', '# Database installation\n\n## Fresh project\nRun `complete-schema.sql` once. It is the single self-contained schema. Do not run the hotfix afterward on a fresh project.\n\n## Existing project recording zero CBT marks\nBack up Supabase, then run `cbt-v5.1-zero-score-hotfix.sql` once and deploy the matching CBT files. It includes the V5.1.1 legacy school-settings getter repair. If V5.1 is already installed and the only error is `column motto does not exist`, run only `cbt-v5.1.1-getter-school-settings-fix.sql`.\n');
+    zip.file('database/README.md', '# Database installation — V5.6.1\n\nBack up Supabase and run the entire `complete-schema.sql`. It is the only production SQL, includes every V5.1–V5.6.1 change and is safe to run repeatedly. Do not run focused SQL afterward. Demo Mode additionally includes `demo-users.sql` and `demo-seed.sql`; never run those in production.\n');
 
     // ---- 16a-1b. SAMPLE document templates (ENTERPRISE FINAL #4): report card,
     // class broadsheet, subject broadsheet, e-receipt — so users see exactly
