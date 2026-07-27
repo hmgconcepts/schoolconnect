@@ -1,7 +1,7 @@
 {
   "name": "school-connect-generator-v5-tests",
   "private": true,
-  "version": "5.6.1",
+  "version": "5.7.0",
   "description": "Development-only verification dependencies for School Connect generator outputs",
   "scripts": {
     "verify": "bash verify.sh",
