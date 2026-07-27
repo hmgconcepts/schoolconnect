@@ -454,7 +454,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
           <div class="form-group"><label>Primary colour</label><input class="form-input" type="color" id="ct-pc" value="#0506ae" oninput="CTUI.render()"></div>
           <div class="form-group"><label>Accent colour</label><input class="form-input" type="color" id="ct-ac" value="#964eec" oninput="CTUI.render()"></div>
           <div class="form-group"><label>Border style</label><select class="form-select" id="ct-border" onchange="CTUI.render()"><option value="double">Double</option><option value="solid">Solid</option><option value="ridge">Ridge</option><option value="dashed">Dashed</option></select></div>
-          <div class="form-group"><label>Signature image (PNG)</label><input class="form-input" type="file" accept="image/*" id="ct-sigimg" onchange="CTUI.sigUpload(event)"></div>
+          <div class="form-group"><label>Signature link (Google Drive / external URL)</label><input class="form-input" type="url" id="ct-sigurl" placeholder="https://drive.google.com/file/d/..." oninput="CTUI.sigLink(this.value)"><small>No file is uploaded or stored in Supabase.</small></div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-primary" onclick="CTUI.save()">💾 Save &amp; Print</button><button class="btn btn-outline" onclick="CTUI.saveDesign()">💾 Save design template</button></div>
       </div>
@@ -498,7 +498,7 @@ const CTUI={ code:'', sig:'',
   v(id){ var e=document.getElementById(id); return e?e.value:''; },
   async loadStudents(){ if(!sb)return; const sel=document.getElementById('ct-student'); const {data}=await sb.from('students').select('full_name').order('full_name').limit(1000); while(sel.options.length>1)sel.remove(1); var seen=new Set(); (data||[]).forEach(s=>{var v=String(s.full_name||'').trim(),k=v.toLowerCase(); if(!v||seen.has(k))return; seen.add(k); var o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o);}); },
   pickStudent(v){ if(v){document.getElementById('ct-name').value=v;} this.render(); },
-  sigUpload(ev){ var f=ev.target.files[0]; if(!f)return; if(f.size>500*1024){toast('Signature should be under 500KB','warning');return;} var r=new FileReader(); r.onload=()=>{ CTUI.sig=r.result; CTUI.render(); }; r.readAsDataURL(f); },
+  sigLink(u){CTUI.sig=(window.SCSignature?SCSignature.direct(u):(window.Super&&Super.idcard?Super.idcard.driveDirect(u):u));CTUI.render();},
   opts(){ return { name:this.v('ct-name'), title:this.v('ct-title'), signatory:this.v('ct-sig'), date:this.v('ct-date'), body:this.v('ct-body'),
     layout:this.v('ct-layout'), font:this.v('ct-font'), pc:this.v('ct-pc'), ac:this.v('ct-ac'), border:this.v('ct-border'), sig:this.sig, code:this.code }; },
   html(o){ var sc=(window.SCHOOL||{}); var logo='assets/img/logo.'+(sc.logoExt||'svg');
@@ -576,7 +576,7 @@ const CTUI={ code:'', sig:'',
     this.print();
   },
   async saveDesign(){ if(!sb){toast('DB not configured','warning');return;} const o=this.opts();
-    const {error}=await sb.from('certificate_designs').insert({ name:o.title+' design', title:o.title, primary_color:o.pc, accent_color:o.ac, font:o.font, layout:o.layout, body_text:o.body, signatory:o.signatory, signature_data:o.sig, border_style:o.border });
+    const {error}=await sb.from('certificate_designs').insert({ name:o.title+' design', title:o.title, primary_color:o.pc, accent_color:o.ac, font:o.font, layout:o.layout, body_text:o.body, signatory:o.signatory,signature_url:o.sig,signature_data:null,border_style:o.border });
     if(error){toast(error.message,'danger');return;} toast('Design template saved ✓','success');
   }
 };
