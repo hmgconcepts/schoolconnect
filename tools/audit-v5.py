@@ -33,8 +33,36 @@ try:
   if t not in cols: issues.append(f'line {seed.count(chr(10),0,m.start())+1}: missing table {t}')
   elif missing: issues.append(f'line {seed.count(chr(10),0,m.start())+1}: {t} missing {missing}')
  ok('Every demo-seed INSERT column exists in complete schema',not issues,'; '.join(issues[:8]))
+ complete_indexes={raw.stmt.idxname for raw in st if isinstance(raw.stmt,ast.IndexStmt) and raw.stmt.idxname};focused_ddl=[]
+ for fp in sorted((ROOT/'database').glob('*.sql')):
+  if fp.name in ('complete-schema.sql','demo-users.sql','demo-seed.sql'):continue
+  for raw in parse_sql(fp.read_text()):
+   n=raw.stmt
+   if isinstance(n,ast.CreateStmt) and n.relation:
+    t=n.relation.relname
+    if t not in cols:focused_ddl.append(f'{fp.name}:table:{t}')
+    for x in n.tableElts or ():
+     if isinstance(x,ast.ColumnDef) and x.colname and x.colname not in cols.get(t,set()):focused_ddl.append(f'{fp.name}:{t}.{x.colname}')
+   elif isinstance(n,ast.AlterTableStmt) and n.relation:
+    t=n.relation.relname
+    for c in n.cmds or ():
+     if isinstance(c.def_,ast.ColumnDef) and c.def_.colname and c.def_.colname not in cols.get(t,set()):focused_ddl.append(f'{fp.name}:{t}.{c.def_.colname}')
+   elif isinstance(n,ast.IndexStmt) and n.idxname and n.idxname not in complete_indexes:focused_ddl.append(f'{fp.name}:index:{n.idxname}')
+ ok('Complete schema contains every focused-upgrade table, column and index',not focused_ddl,'; '.join(focused_ddl[:8]))
 except Exception as e:
  ok('PostgreSQL parser available and SQL valid',False,str(e))
+
+# Complete-schema self-sufficiency and client contract.
+complete_functions=re.findall(r'create\s+(?:or\s+replace\s+)?function\s+public\.([a-zA-Z0-9_]+)',schema,re.I)
+dup=sorted({x for x in complete_functions if complete_functions.count(x)>1});ok('Complete schema has one authoritative definition per function',not dup,', '.join(dup))
+focused=[]
+for fp in sorted((ROOT/'database').glob('*.sql')):
+ if fp.name not in ('complete-schema.sql','demo-users.sql','demo-seed.sql'):focused+=re.findall(r'create\s+(?:or\s+replace\s+)?function\s+public\.([a-zA-Z0-9_]+)',fp.read_text(),re.I)
+missing=sorted(set(focused)-set(complete_functions));ok('Complete schema contains every focused-upgrade RPC',not missing,', '.join(missing))
+client_rpcs=set()
+for fp in list(ROOT.glob('*.html'))+list((ROOT/'assets/js').glob('*.js')):client_rpcs.update(re.findall(r"\.rpc\(\s*['\"]([a-zA-Z0-9_]+)",fp.read_text(errors='ignore')))
+missing=sorted(client_rpcs-set(complete_functions));ok('Complete schema contains every statically named client RPC',not missing,f'{len(client_rpcs)} RPCs checked')
+ok('Complete schema ends with V5.6.1 self-sufficiency check','FINAL V5.6.1 SELF-SUFFICIENCY CHECK'in schema and'no other production SQL is required'in schema)
 
 class Links(HTMLParser):
  def __init__(self):super().__init__();self.links=[]
@@ -95,6 +123,7 @@ ok('CBT library is single-list grouped, filterable and archivable',all(x in mana
 ok('Student term metrics are enterable and printed on reports',all(x in schema+rc+report for x in ['student_term_metrics','openMetrics','saveMetrics','height_cm','weight_kg','Blood pressure','loadStudentMetrics']))
 ok('Report assessment headings and maxima are dynamic admin settings',all(x in report+rc for x in ['assessmentLayout','dynamicScoreCell','scoreHead','editCol','saveColEdit','Heading shown on reports']))
 ok('Registered CBT mode uses admission-only official identity',all(x in schema+cbt for x in ['cbt_get_public_exam_v6','cbt_submit_v6','admission_required','there is no editable name field','data.candidate.full_name']))
+ok('Open/multi-subject CBT never dereferences an unassigned record',all(x in schema for x in ["candidate jsonb:='null'::jsonb",'Never read an unassigned record','identity_engine_version']))
 login=(ROOT/'login.html').read_text();forgot=(ROOT/'forgot-password.html').read_text();css=(ROOT/'assets/css/style.css').read_text();analytics=(ROOT/'analytics.html').read_text();rubrics=(ROOT/'rubrics.html').read_text();transcripts=(ROOT/'transcripts.html').read_text()
 ok('Forgot-password recovery is available and redirects securely','forgot-password.html' in login and 'resetPasswordForEmail' in forgot and 'change-password.html?recovery=1' in forgot)
 ok('Navigation icon size is normalized across layouts','font-size: 18px !important' in css and '.app-nav-icon img,.app-nav-icon svg' in css)
@@ -106,6 +135,7 @@ ok('Daily fees dashboard provides date totals and management breakdowns',all(x i
 ok('CBT results can be exported then securely reset for reuse','cbt_clear_exam_results' in schema and 'Export then clear results' in manager and 'clearResults' in manager)
 ok('Teacher edits are subject/class scoped in UI and PostgreSQL RLS',all(x in schema+crud for x in ['teacher_can_manage_subject_class','teacher_can_manage_student','results_scope_update','report_score_scope_update','cbt_exam_scope_update','An explicit empty rule is a hard admin-only boundary']))
 ok('Demo coverage completion and audit tool exist','specialised page coverage' in seed.lower() and (ROOT/'tools/audit-demo-coverage.py').exists())
+ok('Demo specialised seed has no exam_id ambiguity',all(x in seed for x in ['v_exam_id','select v_exam_id,st.admission_no','cr.exam_id=v_exam_id'])and'course_id uuid;exam_id uuid'not in seed)
 ok('E-receipt matches sample class structure',all(x in crud for x in ['class="receipt"','class="rh"','class="paid"','OFFICIAL E-RECEIPT','Remaining Balance']))
 ok('Demo alumni seed uses current_occupation (42703 fixed)','current_occupation' in seed and 'insert into public.alumni (full_name, graduation_year, last_class, occupation' not in seed)
 ok('Demo contains multi-subject live test exam',all(x in seed for x in ['DEMO-UTME','multi_subject','English Language","start":0','Mathematics","start":4']))
