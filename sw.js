@@ -1,6 +1,6 @@
 // School Connect — Service Worker (V5 cumulative release, generator v8)
 // Bump this literal on every runtime release so previously cached CBT/report code is purged.
-const CACHE = 'sc-builder-v5.6.1-20260727-9';
+const CACHE = 'sc-builder-v5.7-20260727-10';
 const CORE = [
   './', './index.html', './builder.html', './voting.html', './notifications.html',
   './install.html', './ecosystem.html', './about.html', './guide.html', './offline.html',
