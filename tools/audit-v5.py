@@ -62,7 +62,7 @@ missing=sorted(set(focused)-set(complete_functions));ok('Complete schema contain
 client_rpcs=set()
 for fp in list(ROOT.glob('*.html'))+list((ROOT/'assets/js').glob('*.js')):client_rpcs.update(re.findall(r"\.rpc\(\s*['\"]([a-zA-Z0-9_]+)",fp.read_text(errors='ignore')))
 missing=sorted(client_rpcs-set(complete_functions));ok('Complete schema contains every statically named client RPC',not missing,f'{len(client_rpcs)} RPCs checked')
-ok('Complete schema ends with V5.6.1 self-sufficiency check','FINAL V5.6.1 SELF-SUFFICIENCY CHECK'in schema and'no other production SQL is required'in schema)
+ok('Complete schema ends with V5.7 self-sufficiency check','FINAL V5.7 SELF-SUFFICIENCY CHECK'in schema and'no other production SQL is required'in schema)
 
 class Links(HTMLParser):
  def __init__(self):super().__init__();self.links=[]
@@ -83,11 +83,11 @@ for repo in REPOS:
  ok(f'{repo.name}: static HTML href/src targets exist',not broken,', '.join(broken[:8]))
 
 # Cross-repository runtime parity
-common=['assets/css/style.css','assets/js/cbt-engine.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/v5.3-platform-enhancements.sql','database/v5.4-portability-cbt-metrics.sql','database/v5.5-registered-cbt-identity.sql','database/v5.6-daily-fees-cbt-reset-teacher-scope.sql','database/demo-seed.sql']
+common=['assets/css/style.css','assets/js/cbt-engine.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','assets/js/v57-enhancements.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/v5.3-platform-enhancements.sql','database/v5.4-portability-cbt-metrics.sql','database/v5.5-registered-cbt-identity.sql','database/v5.6-daily-fees-cbt-reset-teacher-scope.sql','database/demo-seed.sql']
 for rel in common:
  data=[(r/rel).read_bytes() for r in REPOS]
  ok(f'Runtime parity: {rel}',data[0]==data[1]==data[2])
-for f in ['cbt-exam.html','cbt-multi.html','cbt.html','report-cards.html','student-profile.html','academic-records.html','profile.html','timetable-generator.html']:
+for f in ['cbt-exam.html','cbt-multi.html','cbt.html','report-cards.html','student-profile.html','academic-records.html','profile.html','timetable-generator.html','settings.html','entrance.html','exam-register.html']:
  ok(f'Generator source/template parity: {f}',(ROOT/f).read_bytes()==(ROOT/'assets/templates/pages'/f).read_bytes())
 
 # Critical regressions
