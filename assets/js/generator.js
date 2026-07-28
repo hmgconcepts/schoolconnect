@@ -517,6 +517,26 @@ const Generator = {
     // versions copied too early, leaving modern/public without the logo.
     const includeModern = (config.buildType || '').toLowerCase() === 'modern';
 
+    // ---- 16c. SUPABASE FREE-TIER PROTECTION KIT (automated for every client) ----
+    // FIX SUPA-01: earlier builds mentioned keep-alive in docs but never shipped
+    // the actual files, so client Supabase projects paused after 7 idle days.
+    // Every ZIP now includes the full 4-layer kit:
+    //   Layer 1: site-visit heartbeat (already inside app.js — zero setup)
+    //   Layer 2: .github/workflows/keep-supabase-alive.yml (GitHub Actions, Mon+Thu)
+    //   Layer 3: supabase/functions/ping (real DB write for UptimeRobot/cron)
+    //   Layer 4: pg_cron job installed by database/keep-alive.sql (also embedded
+    //            inside complete-schema.sql)
+    for (const [src, dest] of [
+      ['.github/workflows/keep-supabase-alive.yml', '.github/workflows/keep-supabase-alive.yml'],
+      ['database/keep-alive.sql',                   'database/keep-alive.sql'],
+      ['supabase/functions/ping/index.ts',          'supabase/functions/ping/index.ts'],
+      ['SUPABASE_FREE_TIER_PROTECTION.md',          'SUPABASE_FREE_TIER_PROTECTION.md']
+    ]) {
+      const content = await Generator.loadFile(src);
+      if (content) zip.file(dest, content);
+      else console.warn('[Generator] Free-tier protection file missing from generator host:', src);
+    }
+
     // ---- 17. README with setup instructions ----
     zip.file('README.md', Generator.generateREADME(resolvedConfig));
 
@@ -771,6 +791,14 @@ re-run demo-seed.sql.
     const ext = (cfg.logoExt || 'svg').toLowerCase();
     const mime = ext === 'svg' ? 'image/svg+xml' : 'image/' + (ext === 'jpg' ? 'jpeg' : ext);
     return String(html || '')
+      // FIX META-01: earlier template snapshots contained literal "$1" regex
+      // artifacts in <meta keywords>/<meta og:description>. Scrub them so no
+      // generated client page can ever ship a "$1" placeholder again.
+      .replace(/<meta name="keywords" content="\$1">/g,
+        '<meta name="keywords" content="' + safeName + ', school management, ' + shortName + ', HMG Concepts">')
+      .replace(/content="\$1 — Comprehensive school management platform"/g,
+        'content="' + safeName + ' — Comprehensive school management platform"')
+      .replace(/School Connect Demonstration College/g, safeName)
       .replace(/School Connect Demo School/g, safeName)
       .replace(/God of Seed Academy/g, safeName)
       .replace(/Gosa Academy/g, safeName)
@@ -806,10 +834,10 @@ re-run demo-seed.sql.
       .replace(/https:\/\/(1gosaportal|2gosaportal|schoolconnect)\.(vercel\.app|pages\.dev)\//g, './')
       .replace(/type="image\/(png|jpeg|webp|svg\+xml)"(\s+href="assets\/img\/logo\.)/g, 'type="' + mime + '"$2')
       .replace(/logoExt: '(png|jpe?g|webp|svg)'/g, "logoExt: '" + ext + "'")
-      // ENTERPRISE V9 SEO + Lead Gen
-      .replace(/<title>(.*?)<\/title>/i, '<title>$1</title>')
-      .replace(/<meta property="og:site_name" content="(.*?)"/i, '<meta property="og:site_name" content="$1"')
-      .replace(/<\/body>/i, '</body>');
+      // FIX META-02: removed the old no-op "SEO" replaces (<title>$1</title> etc.)
+      // — they did nothing and their $1-style templates were the origin of the
+      // literal "$1" artifacts that leaked into shipped pages.
+      ;
   },
 
   /** Generate the school-specific config.js */
@@ -1473,6 +1501,12 @@ All tables have RLS policies enabled. Each role sees only their data:
 2. Upload all files from this package
 3. Enable GitHub Pages (Settings → Pages → Source: main branch)
 4. Your site will be live at: \`https://yourusername.github.io/repo-name\`
+
+### 6. Supabase Free-Tier Protection (IMPORTANT — prevents 7-day pause)
+Supabase pauses free projects after ~7 days without database activity. This package ships a fully automated 4-layer keep-alive:
+1. **Automatic (no setup):** every site visit writes one heartbeat per day (\`assets/js/app.js\`), and a \`pg_cron\` job inside the database fires every 2 days (installed by \`complete-schema.sql\`).
+2. **Recommended (2 minutes):** add repo secrets \`SUPABASE_URL\` and \`SUPABASE_ANON_KEY\` (Settings → Secrets and variables → Actions) to activate \`.github/workflows/keep-supabase-alive.yml\`.
+3. Full details and verification query: see \`SUPABASE_FREE_TIER_PROTECTION.md\`.
 
 ## 📱 PWA Install
 Users can install this as a mobile app via their browser's "Add to Home Screen".
