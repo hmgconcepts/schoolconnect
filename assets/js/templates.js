@@ -351,7 +351,9 @@ ${T.setupRequiredBanner()}
       'cbt','cbt_prompts','entrance','assignments','timetable','timetable_generator','sow',
       'lesson_plans','library','digital_library','eresources','announcements','events','messages','inbox',
       'complaints','broadcast','diary','checkin','checkin_staff','checkin-staff','punctuality','behaviour','conduct','health','support_plans',
-      'certificates','reports','directory','rubrics','counselling','substitutions','helpdesk','book_request', 'ecosystem_products','hmg_digital_products'
+      'certificates','reports','directory','rubrics','counselling','substitutions','helpdesk','book_request', 'ecosystem_products','hmg_digital_products',
+      /* V6.4 #5: teachers fill domain ratings & report comments for their students */
+      'affective_traits','psychomotor_traits','report_comments'
     ]);
     const parentSet = new Set([
       'dashboard','profile','change_password','notifications','feature_guide','student_profile','fees','payments_online','results',
@@ -1063,6 +1065,28 @@ ${T.setupRequiredBanner()}
           toast('Purged '+(r.data||0)+' old entrie(s) ✓ Database space reclaimed.','success',7000);
           if(window.CRUD)CRUD.renderList('activity_log');}
       };
+      </script>` : ''}
+      ${moduleId === 'leave' ? `<div class="card" data-admin-only style="margin-bottom:16px;border:2px solid #86efac">
+        <h3>✅ Leave Decision Panel (admin only)</h3>
+        <p style="color:var(--gray-600);margin-top:4px">Every pending request appears here. Click <b>Approve</b> or <b>Reject</b> — the decision is stamped with your name and time by the database. Staff cannot alter the status; only administrators decide.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><button class="btn btn-outline" onclick="LV.load()">↻ Refresh pending requests</button></div>
+        <div id="lv-pending"><span class="pulse">Loading pending leave requests…</span></div>
+      </div>
+      <script>
+      const LV={
+        esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');},
+        async load(){const box=document.getElementById('lv-pending');if(!box)return;if(!window.sb){box.textContent='Database not configured.';return;}
+          const r=await sb.from('leave_requests').select('*, staff:staff_id(full_name,staff_no)').eq('status','pending').order('created_at',{ascending:true});
+          if(r.error){box.innerHTML='<p style="color:#b91c1c">'+this.esc(r.error.message)+'</p>';return;}
+          const rows=r.data||[];if(!rows.length){box.innerHTML='<p style="color:var(--gray-500)">No pending requests — everything is decided. 🎉</p>';return;}
+          box.innerHTML='<div class="table-wrap"><table><thead><tr><th>Staff</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Decision</th></tr></thead><tbody>'+rows.map(x=>{const nm=(x.staff&&x.staff.full_name)||'Staff';return '<tr><td><b>'+this.esc(nm)+'</b></td><td>'+this.esc(x.type||'')+'</td><td>'+this.esc(x.start_date||'')+'</td><td>'+this.esc(x.end_date||'')+'</td><td>'+this.esc(x.days||'')+'</td><td style="max-width:220px">'+this.esc(x.reason||'')+'</td><td style="white-space:nowrap"><button class="btn btn-sm btn-primary" onclick="LV.decide(&#39;'+x.id+'&#39;,&#39;approved&#39;)">✅ Approve</button> <button class="btn btn-sm btn-outline" style="color:#dc2626;border-color:#dc2626" onclick="LV.decide(&#39;'+x.id+'&#39;,&#39;rejected&#39;)">✖ Reject</button></td></tr>';}).join('')+'</tbody></table></div>';},
+        async decide(id,status){if(!confirm((status==='approved'?'APPROVE':'REJECT')+' this leave request? The decision is stamped and final.'))return;
+          const r=await sb.from('leave_requests').update({status:status}).eq('id',id).select('id');
+          if(r.error){toast('Decision failed: '+r.error.message,'danger',8000);return;}
+          if(!r.data||!r.data.length){toast('Decision not saved — only admin-tier roles decide leave.','danger',8000);return;}
+          toast('Leave '+status+' ✓','success',6000);this.load();if(window.CRUD)CRUD.renderList('leave');}
+      };
+      document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>LV.load(),900);});
       </script>` : ''}
       ${moduleId === 'birthdays' ? '<div id="birthdays-bymonth"></div>' : ''}
       ${moduleId === 'parents' ? '<div class="card" style="margin:16px 0"><h3>Linked Parent–Child Records</h3><p style="color:var(--gray-600)">Existing mappings are shown here. Use this to confirm that parents are already linked to their children.</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><button class="btn btn-primary" onclick="CRUD.openForm(\'parent_child\')" data-admin-only>+ Link parent to child</button><button class="btn btn-outline" onclick="CRUD.renderList(\'parent_child\')">↻ Refresh links</button></div><div class="table-wrap"><table id="parent_child-table"><thead><tr><th>Loading…</th></tr></thead><tbody><tr><td><span class="pulse">Loading…</span></td></tr></tbody></table></div></div><script>document.addEventListener("DOMContentLoaded",function(){ if(window.CRUD) CRUD.renderList("parent_child"); });</script>' : ''}

@@ -547,6 +547,7 @@ const Generator = {
       // V6.0 Sovereign Edition: runtime security settings + owner cockpit
       ['database/security-hardening.sql',           'database/security-hardening.sql'],
       ['database/v6.3-role-access-fixes.sql',       'database/v6.3-role-access-fixes.sql'],
+      ['database/v6.4-hard-scope-fixes.sql',        'database/v6.4-hard-scope-fixes.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
