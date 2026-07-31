@@ -250,6 +250,7 @@ const Generator = {
       'assets/js/data-portability.js',
       'assets/js/drive-sync.js',
       'assets/js/security-guard.js',
+      'assets/js/proctor.js',
       'assets/js/v57-enhancements.js'
     ];
 
@@ -545,7 +546,10 @@ const Generator = {
       ['docs/GOOGLE-DRIVE-SYNC-GUIDE.md',           'docs/GOOGLE-DRIVE-SYNC-GUIDE.md'],
       // V6.0 Sovereign Edition: runtime security settings + owner cockpit
       ['database/security-hardening.sql',           'database/security-hardening.sql'],
+      ['database/v6.3-role-access-fixes.sql',       'database/v6.3-role-access-fixes.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
+      ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
+      ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
       ['supabase/functions/ping/index.ts',          'supabase/functions/ping/index.ts'],
       ['SUPABASE_FREE_TIER_PROTECTION.md',          'SUPABASE_FREE_TIER_PROTECTION.md'],
       ['docs/FREE-TIER-CAPACITY-GUIDE.md',          'docs/FREE-TIER-CAPACITY-GUIDE.md']
