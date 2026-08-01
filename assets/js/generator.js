@@ -251,6 +251,7 @@ const Generator = {
       'assets/js/drive-sync.js',
       'assets/js/security-guard.js',
       'assets/js/proctor.js',
+      'assets/js/demo-sample-data.js',
       'assets/js/v57-enhancements.js'
     ];
 
