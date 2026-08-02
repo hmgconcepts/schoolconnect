@@ -552,9 +552,11 @@ const Generator = {
       ['database/branding-bucket.sql',              'database/branding-bucket.sql'],
       ['database/v6.9-report-score-save.sql',       'database/v6.9-report-score-save.sql'],
       ['database/demo-sample-data.sql',             'database/demo-sample-data.sql'],
+      ['database/v7.0-clean-data-lifecycle.sql',    'database/v7.0-clean-data-lifecycle.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
+      ['docs/SEO-AND-LEAD-GENERATION-GUIDE.md',     'docs/SEO-AND-LEAD-GENERATION-GUIDE.md'],
       ['supabase/functions/ping/index.ts',          'supabase/functions/ping/index.ts'],
       ['SUPABASE_FREE_TIER_PROTECTION.md',          'SUPABASE_FREE_TIER_PROTECTION.md'],
       ['docs/FREE-TIER-CAPACITY-GUIDE.md',          'docs/FREE-TIER-CAPACITY-GUIDE.md']
@@ -859,6 +861,8 @@ re-run demo-seed.sql.
       .replace(/https:\/\/hmgconcepts\.pages\.dev\//g, hmgLink)
       .replace(/assets\/img\/logo\.(png|jpe?g|webp|svg)/g, 'assets/img/logo.' + ext)
       .replace(/https:\/\/(1gosaportal|2gosaportal|schoolconnect)\.(vercel\.app|pages\.dev)\//g, './')
+      // V7.0 SEO: point the structured-data URL at the school's real domain
+      .replace(/"url": "https:\/\/schoolconnect\.example\/"/g, '"url": ' + JSON.stringify((cfg.siteUrl||'').replace(/\/+$/,'') + '/'))
       .replace(/type="image\/(png|jpeg|webp|svg\+xml)"(\s+href="assets\/img\/logo\.)/g, 'type="' + mime + '"$2')
       .replace(/logoExt: '(png|jpe?g|webp|svg)'/g, "logoExt: '" + ext + "'")
       // FIX META-02: removed the old no-op "SEO" replaces (<title>$1</title> etc.)
