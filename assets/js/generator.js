@@ -556,6 +556,7 @@ const Generator = {
       ['database/v7.3-missing-policies.sql',        'database/v7.3-missing-policies.sql'],
       ['database/v7.5-rls-gap-and-self-service.sql','database/v7.5-rls-gap-and-self-service.sql'],
       ['database/v7.6-history-and-alumni.sql',      'database/v7.6-history-and-alumni.sql'],
+      ['database/v7.7-promotion-department.sql',    'database/v7.7-promotion-department.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
