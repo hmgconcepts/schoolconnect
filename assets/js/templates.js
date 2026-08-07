@@ -532,8 +532,10 @@ ${T.setupRequiredBanner()}
           <div class="stat-card"><div class="stat-value" id="stat-students">—</div><div class="stat-label">Students</div></div>
           <div class="stat-card"><div class="stat-value" id="stat-staff">—</div><div class="stat-label">Staff</div></div>
           <div class="stat-card"><div class="stat-value" id="stat-fees">—</div><div class="stat-label">Fees Paid</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-outstanding" style="color:#b45309">—</div><div class="stat-label">Fees Outstanding</div></div>
           <div class="stat-card"><div class="stat-value" id="stat-announcements">—</div><div class="stat-label">Notices</div></div>
         </div>
+        <div id="dash-actions" class="card" style="display:none;margin-bottom:16px;background:#fff7ed;border-color:#fdba74"><h3 style="margin:0 0 8px">⚡ Action needed today</h3><div id="dash-actions-body" style="display:flex;gap:10px;flex-wrap:wrap"></div></div>
         <div class="grid grid-2">
           <div class="card"><h3>🏛️ Admin / Super Admin Command Centre</h3><p>Full school-control dashboard: setup, users, approvals, academics, finance, HR, compliance, records, backups and communications.</p><div style="display:flex;gap:8px;flex-wrap:wrap">${buttons(adminLinks)}</div></div>
           <div class="card"><h3>📊 Executive Analytics</h3><p style="color:var(--gray-600);margin-bottom:10px">Whole-school KPIs for proprietor/principal oversight.</p><canvas id="dash-chart" style="margin-top:12px;max-height:240px"></canvas></div>
