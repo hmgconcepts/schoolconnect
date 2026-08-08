@@ -538,6 +538,8 @@ const Generator = {
     //            inside complete-schema.sql)
     for (const [src, dest] of [
       ['.github/workflows/keep-supabase-alive.yml', '.github/workflows/keep-supabase-alive.yml'],
+      ['api/keepalive.js',                          'api/keepalive.js'],
+      ['vercel.json',                               'vercel.json'],
       ['database/keep-alive.sql',                   'database/keep-alive.sql'],
       // V5.9: File-Storage Archive Vault — private "archives" bucket so cold rows
       // can be offloaded from the 500 MB database into the 1 GB File Storage.
