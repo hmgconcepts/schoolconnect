@@ -558,6 +558,7 @@ const Generator = {
       ['database/v7.6-history-and-alumni.sql',      'database/v7.6-history-and-alumni.sql'],
       ['database/v7.7-promotion-department.sql',    'database/v7.7-promotion-department.sql'],
       ['database/v7.9-timetable-flex-and-class-scope.sql','database/v7.9-timetable-flex-and-class-scope.sql'],
+      ['database/v8.2-voting-scope-and-dl.sql',      'database/v8.2-voting-scope-and-dl.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
@@ -634,7 +635,10 @@ const Generator = {
     ]);
     const names = Object.keys(zip.files).filter(n => !zip.files[n].dir);
     const fileSet = new Set(names);
-    const rootHtml = names.filter(f => /^[^/]+\.html$/.test(f));
+    // V8.2: modern builds keep the single canonical portal under modern/public/ —
+    // audit that set when the root has no html (traditional builds unchanged).
+    let rootHtml = names.filter(f => /^[^/]+\.html$/.test(f));
+    if (!rootHtml.length) rootHtml = names.filter(f => /^modern\/public\/[^/]+\.html$/.test(f));
 
     const linkRe = /(?:href|src)\s*=\s*["']([^"']+)["']/g;
     const inbound = new Map();   // target file -> count
@@ -660,7 +664,7 @@ const Generator = {
         }
       }
     }
-    const orphans = rootHtml.filter(h => !ALLOWED_ORPHANS.has(h) && !(inbound.get(h) > 0));
+    const orphans = rootHtml.filter(h => !ALLOWED_ORPHANS.has(h.split('/').pop()) && !(inbound.get(h) > 0));
     return { orphans, brokenLinks };
   },
 
@@ -1569,13 +1573,22 @@ ${(Array.isArray(cfg.modules) ? cfg.modules : []).map(m => `- ${m.replace(/_/g, 
 
   async addModernScaffold(zip, cfg) {
     // A modern delivery must contain the same working portal, not merely a
-    // placeholder shell. Copy the files already assembled at ZIP root into
-    // Next.js public/ before adding the scaffold.
+    // placeholder shell. MOVE the files assembled at ZIP root into Next.js
+    // public/ — V8.2: previously they were COPIED, leaving the entire portal
+    // duplicated at the ZIP root AND under modern/public (465 entries instead
+    // of ~240, confusing "which copy do I deploy?"). The modern ZIP now has
+    // ONE canonical portal (modern/public/) plus top-level guides.
     const portalFiles = [];
     zip.forEach((path, file) => { if (!file.dir && !path.startsWith('modern/')) portalFiles.push([path, file]); });
+    const KEEP_AT_ROOT = /^(README\.md|DEPLOYMENT-GUIDE\.md|DEMO-SETUP\.md|CBT_AND_REPORTCARD_GUIDE\.md|SUPABASE_FREE_TIER_PROTECTION\.md|docs\/|database\/|samples\/|supabase\/|\.github\/)/;
     await Promise.all(portalFiles.map(async ([path, file]) => {
-      zip.file('modern/public/' + path, await file.async('uint8array'));
+      const data = await file.async('uint8array');
+      zip.file('modern/public/' + path, data);
+      // keep top-level docs/database/ops folders at root for the school's DBA;
+      // remove the duplicated site files (html/assets/config) from the root.
+      if (!KEEP_AT_ROOT.test(path)) zip.remove(path);
     }));
+    zip.file('README.md', '# ' + cfg.schoolName + ' — Modern full-stack delivery\n\nThe complete school portal lives in **modern/public/** and is served by the Next.js wrapper in **modern/**. Deploy the `modern/` folder (Vercel: set the project root to `modern`).\n\n- `modern/public/` — the whole generated portal (single canonical copy; no duplicates)\n- `database/` — run `complete-schema.sql` once in Supabase SQL Editor\n- `docs/` — operations guides (backups, term-end, capacity, SEO…)\n- `samples/` — sample documents\n- `.github/` — free keep-alive workflow (add repo secrets per SUPABASE_FREE_TIER_PROTECTION.md)\n\nQuick start: see DEPLOYMENT-GUIDE.md Part B, then `modern/README.md`.\n');
     zip.file('modern/README.md', '# '+cfg.schoolName+' — HMG Concepts Modern Delivery\n\nThis Next.js wrapper includes the complete generated static PWA under `public/`, so `/index.html` works immediately after deployment. It is an HMG Concepts controlled scaffold for future server APIs and tenant routing; it is not a claim that the browser-only portal has server-side business logic.\n\n## Run\n1. Copy `.env.example` to `.env.local` and set only public Supabase values. Never expose a service-role key in the browser.\n2. `npm install`\n3. `npm run build`\n4. `npm start` or deploy this `modern/` folder to Vercel.\n\nDatabase/RLS remains the authority for all portal data. No AI API is used.');
     zip.file('modern/package.json', JSON.stringify({private:true,scripts:{dev:'next dev',build:'next build',start:'next start'},dependencies:{'@supabase/supabase-js':'^2.49.0','next':'^14.2.0','react':'^18.3.0','react-dom':'^18.3.0'},devDependencies:{}}, null, 2));
     zip.file('modern/app/layout.jsx', "export const metadata={title:"+JSON.stringify(cfg.schoolName+" | HMG Concepts")+",robots:{index:false,follow:false}}; export default function RootLayout({children}){return <html lang='en'><body>{children}</body></html>}");
