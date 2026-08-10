@@ -538,6 +538,9 @@ const Generator = {
     //            inside complete-schema.sql)
     for (const [src, dest] of [
       ['.github/workflows/keep-supabase-alive.yml', '.github/workflows/keep-supabase-alive.yml'],
+      // V8.9: Layer 9 is now built into keep-supabase-alive.yml (self-commit);
+      // Layer 10 auto-restore watchdog ships as its own workflow file.
+      ['.github/workflows/supabase-auto-restore.yml','.github/workflows/supabase-auto-restore.yml'],
       ['api/keepalive.js',                          'api/keepalive.js'],
       ['vercel.json',                               'vercel.json'],
       ['database/keep-alive.sql',                   'database/keep-alive.sql'],
