@@ -210,7 +210,7 @@ const Generator = {
     // v7-15 robustness sync: the remaining rich bespoke pages (copied from the
     // field-proven GoSA site into assets/templates/pages/) are probed here too,
     // so generated client ZIPs ship the REAL pages instead of generic fallbacks.
-    'academic_setup','admissions','approvals','storage','health','fees','rubrics','transcripts','diary','digital_library','flyer','gallery','students','sow','payments_online','timetable','timetable-generator','admin-data','feature-guide','hmg-ecosystem','contact','about','index','login',
+    'academic_setup','admissions','approvals','storage','health','fees','rubrics','transcripts','diary','digital_library','flyer','gallery','students','sow','payments_online','timetable','timetable-generator','admin-data','feature-guide','hmg-ecosystem','contact','about','index','login','assignments','punctuality',
     // V6.0 Sovereign Edition owner cockpit
     'platform-health'];
     // NOTE: 'admissions', 'academic_records', 'academic_setup', 'settings',
@@ -561,6 +561,8 @@ const Generator = {
       ['database/v7.7-promotion-department.sql',    'database/v7.7-promotion-department.sql'],
       ['database/v7.9-timetable-flex-and-class-scope.sql','database/v7.9-timetable-flex-and-class-scope.sql'],
       ['database/v8.2-voting-scope-and-dl.sql',      'database/v8.2-voting-scope-and-dl.sql'],
+      ['database/v8.4-assignment-dl-points.sql',    'database/v8.4-assignment-dl-points.sql'],
+      ['database/v8.5-payroll-net-fix.sql',         'database/v8.5-payroll-net-fix.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
