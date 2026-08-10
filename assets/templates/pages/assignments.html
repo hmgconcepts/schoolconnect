@@ -3,61 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Punctuality Points •  God of Seed Academy</title></title>
-<meta name="description" content="Punctuality Points: reward on-time check-in and closing check-out, build term totals, and push them into student results when the school chooses.">
-<meta name="keywords" content="God of Seed Academy, school management, GoSA, HMG Concepts">
-<meta name="theme-color" content="#1c72e7">
-<link rel="icon" type="image/png" href="assets/img/logo.svg">
+<title>Assignments / Homework • School Connect Demo School</title>
+<meta name="description" content="School Connect Demo School — Assignments / Homework. Comprehensive school management platform.">
+<meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
+<meta name="theme-color" content="#0506ae">
+<link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/img/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<meta property="og:title" content="Punctuality Points •  God of Seed Academy">
-<meta property="og:description" content="Reward student punctuality and push points into report cards.">
-<meta property="og:image" content="assets/img/og-cover.svg">
+<meta property="og:title" content="Assignments / Homework • School Connect Demo School">
+<meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
+<meta property="og:image" content="assets/img/logo.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
 /* === Critical app-shell CSS (inlined as a safety net) ===
-   Guarantees the logged-in dashboard layout renders correctly even if the
-   external stylesheet is cached/blocked/fails to load. Mirrors style.css. */
-:root{--sc-primary:#1c72e7;--sc-accent:#5e2174}
-.app-layout{display:flex;min-height:100vh;background:#f8fafc}
-.app-sidebar{width:250px;flex-shrink:0;background:#fff;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:40}
-.app-brand{display:flex;align-items:center;gap:12px;padding:18px;border-bottom:1px solid #e2e8f0}
-.app-brand img{width:40px;height:40px;border-radius:10px;object-fit:contain;flex-shrink:0;background:#f8fafc}
-.app-brand strong{display:block;font-size:.95rem;font-weight:800;color:#0f172a;line-height:1.2}
-.app-nav{display:flex;flex-direction:column;gap:2px;padding:12px 10px;flex:1}
-.app-nav a{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;color:#475569;text-decoration:none;font-size:.9rem;font-weight:600;line-height:1;white-space:nowrap}
-.app-nav a:hover{background:#f1f5f9;color:#1c72e7}
-.app-nav a.active{background:#1c72e7;color:#fff}
-.app-nav-icon{width:24px;min-width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0}
+   Final UI/UX repair: stable, professional navigation for every layout.
+   Prevents scattered icons/labels, fixes unsupported layout IDs, and keeps
+   large module lists readable on desktop and mobile. */
+:root{--primary:#0506ae;--primary-dark:#0506ae;--primary-light:#964eec;--accent:#964eec;--gradient:linear-gradient(135deg,#0506ae,#964eec);--gradient-dark:linear-gradient(135deg,#0506ae,#964eec);--font:'Plus Jakarta Sans',system-ui,sans-serif;--sc-primary:#0506ae;--sc-accent:#964eec}
+body{font-family:var(--font)!important;background:#f8fafc}
+.app-layout{display:flex;min-height:100vh;background:#f8fafc;color:#0f172a}
+.app-sidebar{width:286px;flex-shrink:0;background:rgba(255,255,255,.98);border-right:1px solid #e2e8f0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden;z-index:40;box-shadow:0 10px 25px rgba(15,23,42,.04)}
+.app-brand{display:flex;align-items:center;gap:12px;padding:18px 16px;border-bottom:1px solid #e2e8f0;min-height:78px}
+.app-brand img{width:44px;height:44px;border-radius:12px;object-fit:contain;flex-shrink:0;background:#f8fafc;border:1px solid #e2e8f0}
+.app-brand strong{display:block;font-size:.98rem;font-weight:900;color:#0f172a;line-height:1.2;max-width:190px;white-space:normal}
+.app-nav{display:flex;flex-direction:column;gap:4px;padding:12px 10px 18px;flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
+.app-nav a{display:grid;grid-template-columns:32px minmax(0,1fr);align-items:center;gap:10px;min-height:42px;padding:8px 10px;border-radius:12px;color:#475569;text-decoration:none;font-size:.875rem;font-weight:700;line-height:1.2;white-space:normal;word-break:normal;transition:background .18s ease,color .18s ease,transform .18s ease}
+.app-nav a:hover{background:#f1f5f9;color:var(--primary);transform:translateX(2px)}
+.app-nav a.active{background:var(--gradient);color:#fff;box-shadow:0 8px 20px rgba(79,70,229,.22)}
+body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!important}.app-nav a[style*="display: none"]{display:none!important}
+.app-nav a.nav-locked{opacity:.62}.app-nav a.nav-locked .app-nav-icon{filter:grayscale(.35)}.app-nav a.nav-locked::after{content:'🔒';font-size:.72rem;opacity:.65;justify-self:end}.app-nav a.nav-locked.active{opacity:1}
+.app-nav-icon{width:32px;height:32px;min-width:32px;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem;line-height:1;border-radius:10px;background:rgba(79,70,229,.09);color:var(--primary);flex-shrink:0;overflow:hidden}
+.app-nav a.active .app-nav-icon{background:rgba(255,255,255,.22);color:#fff}
+.app-nav a span:last-child{overflow:hidden;text-overflow:ellipsis;display:block}
 .app-main{flex:1;min-width:0;display:flex;flex-direction:column}
-.app-topbar{display:flex;align-items:center;gap:14px;padding:14px 24px;background:#fff;border-bottom:1px solid #e2e8f0;position:sticky;top:0;z-index:30}
-.app-page-title{font-size:1.25rem;font-weight:800;color:#0f172a;margin:0}
-.app-content{padding:24px;flex:1;max-width:1280px;width:100%}
-.app-layout.topnav{flex-direction:column}
-.app-layout.topnav .app-sidebar{width:100%;height:auto;flex-direction:row;align-items:center;overflow-x:auto;overflow-y:hidden;border-right:none;border-bottom:1px solid #e2e8f0}
-.app-layout.topnav .app-nav{flex-direction:row;flex:1;padding:8px;gap:4px}
-.app-layout.topnav .app-nav a{flex-direction:column;gap:4px;font-size:.7rem;padding:8px 12px;text-align:center}
-@media(max-width:900px){.app-sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 20px 25px -5px rgba(0,0,0,.2)}.app-sidebar.open{transform:translateX(0)}.app-layout.topnav .app-sidebar{position:sticky;transform:none}.app-content{padding:16px}.app-topbar .mobile-toggle{display:inline-flex;align-items:center;justify-content:center;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;width:40px;height:40px;font-size:1.2rem;cursor:pointer}}
+.app-topbar{display:flex;align-items:center;gap:14px;padding:13px 22px;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid #e2e8f0;position:sticky;top:0;z-index:30;box-shadow:0 4px 18px rgba(15,23,42,.035)}
+.app-page-title{font-size:1.2rem;font-weight:900;color:#0f172a;margin:0;letter-spacing:-.01em}
+.app-content{padding:24px;flex:1;max-width:1400px;width:100%;margin:0 auto}
+.card{border-radius:18px!important;border:1px solid #e2e8f0!important;box-shadow:0 8px 24px rgba(15,23,42,.06)!important}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:18px}.stat-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;box-shadow:0 6px 18px rgba(15,23,42,.05)}.stat-value{font-size:1.8rem;font-weight:900;color:var(--primary)}.stat-label{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:800}
+/* Stable variants for all builder layout choices. Unsupported visual ideas are
+   expressed as professional variations, not broken experimental layouts. */
+.app-layout.topnav,.app-layout.cardhub,.app-layout.mega-menu,.app-layout.tabbed,.app-layout.dashboard-pro{flex-direction:column}
+.app-layout.topnav .app-sidebar,.app-layout.cardhub .app-sidebar,.app-layout.mega-menu .app-sidebar,.app-layout.tabbed .app-sidebar,.app-layout.dashboard-pro .app-sidebar{width:100%;height:auto;max-height:210px;position:sticky;top:0;flex-direction:row;align-items:stretch;overflow:hidden;border-right:none;border-bottom:1px solid #e2e8f0}
+.app-layout.topnav .app-brand,.app-layout.cardhub .app-brand,.app-layout.mega-menu .app-brand,.app-layout.tabbed .app-brand,.app-layout.dashboard-pro .app-brand{width:260px;min-width:260px;border-bottom:none;border-right:1px solid #e2e8f0}
+.app-layout.topnav .app-nav,.app-layout.cardhub .app-nav,.app-layout.mega-menu .app-nav,.app-layout.tabbed .app-nav,.app-layout.dashboard-pro .app-nav{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(116px,150px);overflow-x:auto;overflow-y:hidden;padding:10px;align-items:center}
+.app-layout.topnav .app-nav a,.app-layout.cardhub .app-nav a,.app-layout.mega-menu .app-nav a,.app-layout.tabbed .app-nav a,.app-layout.dashboard-pro .app-nav a{grid-template-columns:1fr;text-align:center;justify-items:center;gap:4px;min-height:68px;padding:8px 10px;font-size:.75rem}
+.app-layout.topnav .app-nav-icon,.app-layout.cardhub .app-nav-icon,.app-layout.mega-menu .app-nav-icon,.app-layout.tabbed .app-nav-icon,.app-layout.dashboard-pro .app-nav-icon{margin:auto}
+.app-layout.compact .app-sidebar,.app-layout.dock .app-sidebar{width:224px}.app-layout.compact .app-nav a,.app-layout.dock .app-nav a{font-size:.8rem;grid-template-columns:28px minmax(0,1fr)}.app-layout.compact .app-nav-icon,.app-layout.dock .app-nav-icon{width:28px;height:28px;min-width:28px}
+.app-layout.expanded .app-sidebar{width:330px}.app-layout.minimalist .app-sidebar{box-shadow:none}.app-layout.floating .app-sidebar{margin:14px;border-radius:22px;height:calc(100vh - 28px);border:1px solid #e2e8f0}.app-layout.split-view .app-content,.app-layout.grid-master .app-content,.app-layout.masonry .app-content{max-width:1500px}
+@media(max-width:900px){.app-sidebar,.app-layout.floating .app-sidebar{position:fixed!important;left:0;top:0;bottom:0;width:min(86vw,310px)!important;height:100vh!important;margin:0!important;border-radius:0!important;transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 20px 40px rgba(0,0,0,.22);z-index:100}.app-sidebar.open{transform:translateX(0)}.app-layout.topnav .app-sidebar,.app-layout.cardhub .app-sidebar,.app-layout.mega-menu .app-sidebar,.app-layout.tabbed .app-sidebar,.app-layout.dashboard-pro .app-sidebar{flex-direction:column;align-items:stretch}.app-layout.topnav .app-brand,.app-layout.cardhub .app-brand,.app-layout.mega-menu .app-brand,.app-layout.tabbed .app-brand,.app-layout.dashboard-pro .app-brand{width:auto;min-width:0;border-right:none;border-bottom:1px solid #e2e8f0}.app-layout.topnav .app-nav,.app-layout.cardhub .app-nav,.app-layout.mega-menu .app-nav,.app-layout.tabbed .app-nav,.app-layout.dashboard-pro .app-nav{display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}.app-layout.topnav .app-nav a,.app-layout.cardhub .app-nav a,.app-layout.mega-menu .app-nav a,.app-layout.tabbed .app-nav a,.app-layout.dashboard-pro .app-nav a{display:grid;grid-template-columns:32px minmax(0,1fr);justify-items:stretch;text-align:left;min-height:42px;font-size:.875rem}.app-content{padding:16px}.app-topbar{padding:12px 14px;gap:10px}.app-topbar .mobile-toggle{display:inline-flex;align-items:center;justify-content:center;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;width:40px;height:40px;font-size:1.2rem;cursor:pointer}.user-chip{max-width:150px;overflow:hidden}.user-chip strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
 @media(min-width:901px){.app-topbar .mobile-toggle{display:none}}
 </style>
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+
+    <meta name="description" content="School Connect Demo School — Assignments / Homework. Comprehensive school management platform.">
+    <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
     <meta name="author" content="HMG Concepts">
-    <link rel="canonical" href="https://gosasite.vercel.app/cbt.html">
-    <meta property="og:url" content="https://gosasite.vercel.app/cbt.html">
-<style>
-/* V6.3 NAV-UNIFY: single canonical navigation look on every page. */
-.app-sidebar{width:286px!important;overflow:hidden!important}
-.app-nav{display:flex!important;flex-direction:column!important;gap:4px!important;padding:12px 10px!important;flex:1!important;overflow-y:auto!important}
-.app-nav a{display:grid!important;grid-template-columns:32px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;min-height:42px!important;padding:8px 10px!important;border-radius:12px!important;font-size:.875rem!important;font-weight:700!important;line-height:1.2!important;white-space:normal!important;text-align:left!important;flex-direction:row!important}
-.app-nav a span:first-child,.app-nav .app-nav-icon{width:32px!important;height:32px!important;min-width:32px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;font-size:1.05rem!important;line-height:1!important;border-radius:10px!important;background:rgba(79,70,229,.09)!important;color:var(--primary)!important;flex-shrink:0!important;overflow:hidden!important}
-.app-nav a.active span:first-child,.app-nav a.active .app-nav-icon{background:rgba(255,255,255,.22)!important;color:#fff!important}
-</style>
-</head>
-<body data-theme="theme2" data-school="God of Seed Academy" data-font="raleway">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="./assignments.html">
+    <meta property="og:title" content="Assignments / Homework • School Connect Demo School">
+    <meta property="og:description" content="School Connect Demo School — Assignments / Homework. Comprehensive school management platform.">
+    <meta property="og:url" content="./assignments.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="School Connect v5 — School Connect Demo School">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Assignments / Homework • School Connect Demo School">
+    <meta name="twitter:description" content="School Connect Demo School — Assignments / Homework. Comprehensive school management platform.">
+    <link rel="alternate" href="https://hmgconcepts.pages.dev/" title="HMG Concepts Ecosystem">
+  </head>
+<body data-theme="theme15" data-school="School Connect Demo School" data-font="plusjakarta">
 
 <div id="notif-bell" class="notif-bell" title="Notifications" data-chatbot>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -73,7 +92,7 @@
 
 <div id="pwa-install-banner" class="pwa-install">
   <div class="pwa-install-header">
-    <img src="assets/img/logo.svg" alt="" class="pwa-install-icon">
+    <img src="assets/img/logo.png" alt="" class="pwa-install-icon">
     <div style="flex:1">
       <div class="pwa-install-title">📲 Install School Connect</div>
       <div class="pwa-install-msg">Get push notifications for messages, broadcasts, polls and result slips — even when the app is closed.</div>
@@ -97,13 +116,13 @@
     <div id="modal-footer" class="modal-footer"></div>
   </div>
 </div>
-<div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher">
+<div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher parent student">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.svg" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
+        <img src="assets/img/logo.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
         <div>
-          <strong>God of Seed Academy</strong>
-          <div style="font-size:0.7rem;color:var(--gray-500)">GoSA</div>
+          <strong>School Connect Demo School</strong>
+          <div style="font-size:0.7rem;color:var(--gray-500)">SCD</div>
         </div>
       </div>
       <nav class="app-nav">
@@ -455,85 +474,65 @@
   <main class="app-main">
     <header class="app-topbar">
       <button class="mobile-toggle" onclick="App.toggleSidebar()" title="Menu">☰</button>
-      <h1 class="app-page-title">⏱ Punctuality Points</h1>
+      <h1 class="app-page-title">Assignments / Homework</h1>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
         
         <button class="btn btn-sm btn-outline" onclick="if(window.Super)Super.chatbot.explainPage()" title="About this page">ℹ️ Help</button>
+        <div class="user-chip" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--gray-200);border-radius:999px;background:var(--white)"><span>👤</span><span><strong id="user-display-name">Connecting…</strong><small id="user-display-role" style="display:block;color:var(--gray-500);line-height:1">restoring session</small></span></div>
         <button class="btn btn-sm btn-outline" onclick="App.toggleDarkMode()" title="Toggle theme">🌙</button>
-        <button class="btn btn-sm btn-outline" onclick="App.signOut()" data-signout style="display:none">Sign out</button>
+        <button class="btn btn-sm btn-outline" onclick="App.signOut()" data-signout >Sign out</button>
       </div>
     </header>
     <div class="app-content">
-
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px" data-staff-only>
-        <button class="btn btn-primary" onclick="Punct.compute()">⚡ Compute awards (chosen date)</button>
-        <button class="btn btn-outline" onclick="Punct.pushModal()">🚀 Push points → Report Card</button>
-        <button class="btn btn-outline" onclick="Punct.exportCSV()">⬇ Export CSV</button>
-        <button class="btn btn-outline" onclick="Punct.refresh()">↻ Refresh</button>
+      
+      <div class="card" style="margin-bottom:16px;background:#eef2ff;border-color:#c7d2fe">
+        <h3 style="margin-top:0">ℹ️ What is this page?</h3>
+        <p style="color:var(--gray-700);line-height:1.75;margin:0 0 8px"><strong>Assignments</strong> is part of the School Connect portal. Post &amp; track assignments with submission and grading.</p>
+        <p style="color:var(--gray-700);line-height:1.75;margin:0 0 8px"><strong>Who should use it:</strong> Super admin Admin principal proprietor head Teacher bursar Super admin Admin principal proprietor head Teacher bursar Staff Teacher Parent Student. Admin/Super Admin may see management overviews, while non-admin roles only see pages relevant to their duties.</p>
+        <ol style="margin:8px 0 0 20px;color:var(--gray-700);line-height:1.75">
+          <li>Read this guide first so you understand the purpose of the page.</li>
+          <li>Use <strong>+ Add new</strong> only if your role is allowed to create records.</li>
+          <li>Use <strong>Refresh</strong>, <strong>Export CSV</strong> or <strong>Export PDF</strong> for records and reporting.</li>
+          <li>Ask the 💬 assistant, or open <a href="feature-guide.html">Feature Guide</a>, for a fuller explanation.</li>
+        </ol>
       </div>
-
-      <div class="card" style="margin-bottom:18px">
-        <p style="color:var(--gray-600);margin:0">
-          Encourage punctuality: students who <strong>check in at/before the deadline</strong> and
-          <strong>check out during the closing period</strong> earn points every school day.
-          Points build up across the term and — only if the school wants — can be
-          <strong>pushed into the students' Results</strong> (any report-card column) exactly like CBT scores.
-          Check-ins/outs come from the student QR <a href="checkin.html">check-in page</a> (<em>student_clock</em>).
-        </p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <button class="btn btn-primary" onclick="CRUD.openForm('assignments')" data-staff-only>+ Add new</button>
+        <button class="btn btn-outline" onclick="CRUD.renderList('assignments')">↻ Refresh</button>
+        <button class="btn btn-outline" onclick="CRUD.exportCSV('assignments')" data-staff-only>⬇ Export CSV</button>
+        <button class="btn btn-outline" onclick="CRUD.exportPDF('assignments')" data-staff-only>📄 Export PDF</button>
+        <button class="btn btn-outline" onclick="CRUD.importCSV('assignments')" data-admin-only>⬆ Import CSV</button>
+        
+        
+        
+        
+        
       </div>
-
-      <div class="card" id="punct-setup" style="display:none;border-left:4px solid #f59e0b"></div>
-
-      <div class="grid grid-2" style="gap:18px;margin-bottom:18px">
-        <div class="card">
-          <h3 style="margin-top:0">⚙️ Scoring rules</h3>
-          <div class="grid grid-3">
-            <div class="form-group"><label>Check-in deadline</label><input type="time" id="c-deadline" class="form-input" value="07:30"></div>
-            <div class="form-group"><label>Closing starts</label><input type="time" id="c-close" class="form-input" value="12:30"></div>
-            <div class="form-group"><label>Points / punctual day</label><input type="number" id="c-full" class="form-input" value="2" min="0" step="0.5"></div>
-          </div>
-          <div class="grid grid-3">
-            <div class="form-group"><label>Points, on-time check-in only</label><input type="number" id="c-partial" class="form-input" value="0" min="0" step="0.5"><small style="color:var(--gray-500">0 = strict (both required)</small></div>
-            <div class="form-group"><label>&nbsp;</label><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="c-req" checked> Require closing check-out</label></div>
-            <div class="form-group"><label>&nbsp;</label><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="c-enabled" checked> Engine enabled</label></div>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="Punct.saveConfig()">💾 Save rules</button>
-          <small style="color:var(--gray-500);margin-left:8px">Times are compared in your server's timezone. Saved in <code>punctuality_config</code>.</small>
+      
+      <div class="table-wrap"><table id="assignments-table"><thead><tr><th>Loading…</th></tr></thead><tbody><tr><td><span class="pulse">Loading…</span></td></tr></tbody></table></div>
+      <!-- V8.5 #2: students SEE why assignments matter — the accumulation is the incentive. -->
+      <div class="card" style="margin-top:16px;background:linear-gradient(135deg,#eef2ff,#faf5ff);border-color:#c7d2fe" data-role-allow="student parent">
+        <h3>🏆 Why your assignments earn points</h3>
+        <p style="line-height:1.7;margin:4px 0">Every assignment you complete — written homework, projects, practicals, presentations and CBT assignments — earns points that <b>accumulate for each subject</b> through the term. Your teacher can push your total straight into your <b>report card</b>. Every assignment counts: the more you do, the higher your report-card score climbs. 💪</p>
+        <div id="ap-my-points" style="margin-top:8px"><span class="pulse">Loading your points…</span></div>
+      </div>
+      <div class="card" style="margin-top:16px" data-staff-only>
+        <h3>🏅 Assignment points → Report card</h3>
+        <p class="help">Score any assignment per student (✍️ Score class). Every scored assignment for the same class + subject + term ACCUMULATES; the running totals below can be pushed into any report-card column in one click (scaled to the column's maximum mark).</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+          <div class="form-group"><label>Class</label><select class="form-select" id="ap-class"><option value="">— class —</option></select></div>
+          <div class="form-group"><label>Subject</label><select class="form-select" id="ap-subject"><option value="">— subject —</option></select></div>
+          <button class="btn btn-outline" onclick="AP.totals()">Σ Show accumulated totals</button>
+          <button class="btn btn-primary" onclick="AP.pushModal()" data-staff-only>🚀 Push totals → Report card</button>
+          <button class="btn btn-outline" onclick="AP.pullCBT()" data-staff-only title="Import CBT-assignment results into the accumulated totals">🖥️ Pull CBT assignment scores</button>
+          <a class="btn btn-outline" href="cbt.html" data-staff-only title="Create an automated CBT assignment — its scores can be pulled here">＋ Create CBT assignment</a>
         </div>
-        <div class="card">
-          <h3 style="margin-top:0">⚡ Compute daily awards</h3>
-          <div class="grid grid-3">
-            <div class="form-group"><label>Date</label><input type="date" id="f-date" class="form-input"></div>
-            <div class="form-group"><label>Class (optional)</label><input id="f-class" class="form-input" placeholder="all classes"></div>
-            <div class="form-group"><label>&nbsp;</label><button class="btn btn-primary" onclick="Punct.compute()">Compute</button></div>
-          </div>
-          <p style="color:var(--gray-500);font-size:.85rem;margin:8px 0 0">Run after morning check-in, and again after closing — re-running the same
-          day simply re-grades it (late check-outs still earn their point afterwards). Tip: compute each
-          school day once the gate closes.</p>
-        </div>
+        <div id="ap-totals" style="margin-top:10px"></div>
       </div>
-
-      <div class="card" style="margin-bottom:18px">
-        <h3 style="margin-top:0">📅 Daily awards</h3>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:10px">
-          <div class="form-group" style="margin:0"><label>From</label><input type="date" id="f-from" class="form-input"></div>
-          <div class="form-group" style="margin:0"><label>To</label><input type="date" id="f-to" class="form-input"></div>
-          <div class="form-group" style="margin:0"><label>&nbsp;</label><button class="btn btn-outline btn-sm" onclick="Punct.refresh()">Apply filter</button></div>
-        </div>
-        <div id="punct-list"><span class="pulse">Loading…</span></div>
-      </div>
-
-      <div class="card">
-        <h3 style="margin-top:0">🏆 Term leaderboard (filtered range)</h3>
-        <div id="punct-board"><span class="pulse">Loading…</span></div>
-        <p style="color:var(--gray-500);font-size:.85rem;margin-top:8px">Ready for end-of-term? Use
-        <strong>Push points → Report Card</strong> to write these totals into the Results table
-        (e.g. a dedicated "Punctuality" column or CA2). Re-pushing updates the same rows — never duplicates.</p>
-      </div>
-
+      <script>document.addEventListener('DOMContentLoaded',function(){ if(window.CRUD) CRUD.renderList('assignments'); });</script>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
-      © 2026 God of Seed Academy · Licensed by <a href="https://hmgtechnologies.pages.dev" target="_blank" rel="noopener">HMG Technologies</a> · <a href="https://whatsapp.com/channel/0029Vb7kGoN2ER6feTzs8q2f" target="_blank" rel="noopener" title="Product news, tips and updates">📢 HMG Channel</a>
+      © 2026 School Connect Demo School · Licensed by <a href="https://hmgtechnologies.pages.dev" target="_blank" rel="noopener">HMG Technologies</a> · <a href="https://whatsapp.com/channel/0029Vb7kGoN2ER6feTzs8q2f" target="_blank" rel="noopener" title="Product news, tips and updates">📢 HMG Channel</a>
     </footer>
   </main>
 </div>
@@ -545,10 +544,12 @@
 <script src="assets/js/notifications.js"></script>
 <script src="assets/js/voting.js"></script>
 <script src="assets/js/pwa-install.js"></script>
+<script src="assets/js/site-help.js"></script>
 <script src="assets/js/super.js"></script>
 <script src="assets/js/enterprise.js"></script>
-<script src="assets/js/report-engine.js"></script>
 <script src="assets/js/crud.js"></script>
+<script src="assets/js/report-engine.js"></script>
+<script src="assets/js/analytics.js"></script>
 <script src="assets/js/app.js"></script>
 <script>
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(reg => { Notifications.init(sb, reg); Voting.init(sb); });
@@ -558,189 +559,158 @@
   if (window.Enterprise) Enterprise.init(sb);
   if (window.CRUD) CRUD.init(sb);
 </script>
+
 <script>
-var Punct = {
-  cfg: { deadline:'07:30', checkout_open:'12:30', points_full:2, points_partial:0, require_checkout:true, enabled:true },
-  rows: [],
-  esc: function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); },
-  el: function (id) { return document.getElementById(id); },
-  _missing: function (err) { return /PGRST20[45]|schema cache|Could not find the (table|function)|does not exist|404|42P01/i.test(String(err && (err.message || err.code || err.details) || '')); },
-  async init() {
-    if (typeof sb === 'undefined' || !sb) { const z = this.el('punct-setup'); z.style.display = 'block'; z.innerHTML = '<h3>⚠️ Database not configured</h3><p>Add your Supabase keys in assets/js/config.js.</p>'; return; }
-    const probe = await sb.from('punctuality_config').select('id').limit(1);
-    if (probe.error && this._missing(probe.error)) { this.setupNeeded(); return; }
-    this.pickDefaults();
-    await Promise.all([this.loadConfig(), this.refresh()]);
+/* ====================================================================
+   V8.4 #2 — Assignment points engine (AP)
+   Score each assignment per student · totals accumulate per class+subject+term
+   · push accumulated % into ANY report-card column (scaled to its max mark).
+   ==================================================================== */
+const AP={
+  esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));},
+  async init(){ if(!window.sb)return;
+    this.myPoints();
+    try{const {data}=await sb.from('classes').select('name').order('name');const el=document.getElementById('ap-class');(data||[]).forEach(c=>{const o=document.createElement('option');o.value=c.name;o.textContent=c.name;el.appendChild(o);});}catch(_){ }
+    try{const {data}=await sb.from('subjects').select('name').order('name');const el=document.getElementById('ap-subject');(data||[]).forEach(s0=>{const o=document.createElement('option');o.value=s0.name;o.textContent=s0.name;el.appendChild(o);});}catch(_){ }
+    /* add a ✍️ Score button on every assignment row (staff only) */
+    setInterval(()=>{try{
+      const role=String((window.App&&App.currentRole)||(window.SC_PROFILE&&SC_PROFILE.role)||'').toLowerCase();
+      const isStaff=(window.App&&App.isAdminRole&&App.isAdminRole(role))||['staff','teacher'].includes(role);
+      if(!isStaff)return;
+      document.querySelectorAll('#assignments-table tbody tr[data-id]').forEach(tr=>{
+        if(tr.querySelector('.ap-score-btn'))return;
+        const td=tr.querySelector('td:last-child'); if(!td||!/Edit|🔒/.test(td.textContent))return;
+        const b=document.createElement('button'); b.className='btn btn-sm btn-primary ap-score-btn'; b.textContent='✍️ Score class';
+        b.onclick=(e)=>{e.stopPropagation();AP.scoreModal(tr.getAttribute('data-id'));};
+        td.insertBefore(b, td.firstChild);
+      });
+    }catch(_){}} ,1200);
   },
-  setupNeeded() {
-    const z = this.el('punct-setup'); z.style.display = 'block';
-    z.innerHTML = '<h3>🛠 One-time database step needed</h3><p>The Punctuality Points engine needs its tables + functions. Run <b>database/punctuality-points.sql</b> (or simply re-run the full <b>database/complete-schema.sql</b> — it is idempotent) in your Supabase SQL Editor, then reload this page. New builds (schema v12.4+) already include it.</p>';
+  async myPoints(){
+    const box=document.getElementById('ap-my-points'); if(!box)return;
+    try{
+      for(let w=0;w<25&&!(window.SC_PROFILE&&SC_PROFILE.role);w++)await new Promise(r=>setTimeout(r,200));
+      const role=String((window.SC_PROFILE||{}).role||'').toLowerCase();
+      if(!['student','parent'].includes(role)){box.innerHTML='';return;}
+      let sids=[];
+      if(role==='student'){const st=await sb.from('students').select('id,full_name').eq('user_id',SC_PROFILE.id);sids=(st.data||[]);}
+      else{const l=await sb.from('parent_child').select('student_id').eq('parent_id',SC_PROFILE.id);const ids=(l.data||[]).map(x=>x.student_id);if(ids.length){const st=await sb.from('students').select('id,full_name').in('id',ids);sids=(st.data||[]);}}
+      if(!sids.length){box.innerHTML='<p style="color:var(--gray-500);font-size:.85rem">Your account is not linked to a student record yet — points appear here once the admin links it.</p>';return;}
+      let cp={};try{cp=await (window.CRUD&&CRUD.currentPeriod?CRUD.currentPeriod():{});}catch(_){ }
+      let q=sb.from('assignment_scores').select('*').in('student_id',sids.map(s=>s.id));
+      if(cp.term)q=q.eq('term',cp.term);
+      const r=await q.limit(2000);
+      if(r.error){box.innerHTML='';return;}
+      const by={};(r.data||[]).forEach(x=>{const k=x.student_name+'|'+x.subject;(by[k]=by[k]||{name:x.student_name,sub:x.subject,got:0,max:0,n:0});by[k].got+=Number(x.score)||0;by[k].max+=Number(x.max_score)||0;by[k].n++;});
+      const list=Object.values(by);
+      box.innerHTML=list.length?'<div class="table-wrap"><table><thead><tr><th>Student</th><th>Subject</th><th>Assignments</th><th>Points</th><th>%</th></tr></thead><tbody>'+list.map(t=>'<tr><td>'+AP.esc(t.name)+'</td><td>'+AP.esc(t.sub)+'</td><td>'+t.n+'</td><td>'+t.got+' / '+t.max+'</td><td><b>'+(t.max?Math.round(t.got/t.max*1000)/10:0)+'%</b></td></tr>').join('')+'</tbody></table></div>':'<p style="color:var(--gray-500);font-size:.85rem">No scored assignments yet this term — every one you submit earns points here.</p>';
+    }catch(_){box.innerHTML='';}
   },
-  pickDefaults() {
-    const today = new Date().toISOString().slice(0, 10);
-    if (this.el('f-date') && !this.el('f-date').value) this.el('f-date').value = today;
-    if (this.el('f-from') && !this.el('f-from').value) { const d = new Date(); d.setDate(d.getDate() - 30); this.el('f-from').value = d.toISOString().slice(0, 10); this.el('f-to').value = today; }
-  },
-  async loadConfig() {
-    const r = await sb.from('punctuality_config').select('*').eq('id', 1).maybeSingle();
-    const data = r && r.data;
-    if (data) this.cfg = { deadline: String(data.deadline).slice(0, 5), checkout_open: String(data.checkout_open).slice(0, 5), points_full: data.points_full, points_partial: data.points_partial, require_checkout: data.require_checkout !== false, enabled: data.enabled !== false };
-    this.el('c-deadline').value = this.cfg.deadline; this.el('c-close').value = this.cfg.checkout_open;
-    this.el('c-full').value = this.cfg.points_full; this.el('c-partial').value = this.cfg.points_partial;
-    this.el('c-req').checked = this.cfg.require_checkout; this.el('c-enabled').checked = this.cfg.enabled;
-  },
-  async saveConfig() {
-    const patch = { id: 1, deadline: this.el('c-deadline').value || '07:30', checkout_open: this.el('c-close').value || '12:30',
-      points_full: parseFloat(this.el('c-full').value) || 0, points_partial: parseFloat(this.el('c-partial').value) || 0,
-      require_checkout: this.el('c-req').checked, enabled: this.el('c-enabled').checked, updated_at: new Date().toISOString() };
-    const r = await sb.from('punctuality_config').upsert(patch);
-    if (r.error) { toast('Could not save rules: ' + r.error.message, 'danger'); return; }
-    this.cfg = { deadline: patch.deadline.slice(0, 5), checkout_open: patch.checkout_open.slice(0, 5), points_full: patch.points_full, points_partial: patch.points_partial, require_checkout: patch.require_checkout, enabled: patch.enabled };
-    toast('✅ Punctuality rules saved.', 'success');
-  },
-  async compute() {
-    const date = this.el('f-date').value || new Date().toISOString().slice(0, 10);
-    const cls = this.el('f-class').value.trim();
-    toast('Grading punctuality for ' + date + '…', 'info', 1500);
-    let awarded = null;
-    try {
-      const r = await sb.rpc('compute_punctuality_awards', { p_date: date, p_class: cls });
-      if (r.error) { if (!this._missing(r.error)) { toast('Compute failed: ' + r.error.message, 'danger'); return; } } else awarded = r.data;
-    } catch (e) { awarded = null; }
-    if (awarded == null) { awarded = await this.computeClient(date, cls); if (awarded === false) return; }
-    toast('✅ ' + awarded + ' punctual award(s) for ' + date + '.', 'success');
-    this.refresh();
-  },
-  async computeClient(date, cls) { // fallback when the RPC is absent — identical rule
-    const r = await sb.from('student_clock').select('student_id,clock_in,clock_out').eq('date', date).limit(5000);
-    if (r.error) { toast('Could not read check-ins: ' + r.error.message, 'danger'); return false; }
-    const byId = {};
-    (r.data || []).forEach(function (x) { if (!x.student_id) return; const b = byId[x.student_id] || (byId[x.student_id] = { in: null, out: null }); if (x.clock_in && (!b.in || x.clock_in < b.in)) b.in = x.clock_in; if (x.clock_out && (!b.out || x.clock_out > b.out)) b.out = x.clock_out; });
-    const ids = Object.keys(byId); if (!ids.length) { toast('No check-ins found for ' + date + '.', 'info'); return 0; }
-    const st = await sb.from('students').select('id,full_name,admission_no,class').in('id', ids);
-    let awarded = 0;
-    for (const s of (st.data || [])) {
-      if (cls && s.class !== cls) continue;
-      const b = byId[s.id] || {}; const tIn = b.in ? b.in.slice(11, 16) : null, tOut = b.out ? b.out.slice(11, 16) : null;
-      let pts = 0, rule = 'late';
-      if (!this.cfg.enabled) rule = 'config_disabled';
-      else if (tIn && tIn <= this.cfg.deadline) {
-        if (!this.cfg.require_checkout) { pts = this.cfg.points_full; rule = 'full'; }
-        else if (tOut && tOut >= this.cfg.checkout_open) { pts = this.cfg.points_full; rule = 'full'; }
-        else { pts = this.cfg.points_partial; rule = 'no_checkout'; }
-      }
-      if (pts > 0) awarded++;
-      await sb.from('punctuality_awards').upsert({ student_id: s.id, student_id_ref: s.admission_no || '', student_name: s.full_name || '', class: s.class || '', date: date, checkin_at: b.in, checkout_at: b.out, points: pts, rule: rule }, { onConflict: 'student_id,date' });
+  async pullCBT(){
+    const cls=(document.getElementById('ap-class')||{}).value,sub=(document.getElementById('ap-subject')||{}).value;
+    if(!cls||!sub){toast('Pick a class AND subject first.','warning');return;}
+    let cp={};try{cp=await (window.CRUD&&CRUD.currentPeriod?CRUD.currentPeriod():{});}catch(_){ }
+    let eq=sb.from('cbt_exams').select('id,title,class,subject,term,session,assessment_type,max_score').eq('class',cls).eq('subject',sub);
+    if(cp.term)eq=eq.eq('term',cp.term);
+    const er=await eq.limit(200);
+    if(er.error){toast(er.error.message,'danger');return;}
+    const exams=(er.data||[]).filter(e=>/assign|homework|home work/i.test(String(e.assessment_type||'')+String(e.title||'')));
+    if(!exams.length){toast('No CBT ASSIGNMENTS found for '+cls+' · '+sub+' this term. Tip: put the word "Assignment" in the CBT title or assessment type, then pull again.','info',9000);return;}
+    const rr=await sb.from('cbt_results').select('*').in('exam_id',exams.map(e=>e.id)).limit(5000);
+    if(rr.error){toast(rr.error.message,'danger');return;}
+    const studs=(await sb.from('students').select('id,full_name,admission_no').eq('class',cls)).data||[];
+    const byName=new Map(studs.map(s0=>[String(s0.full_name||'').toLowerCase(),s0]));
+    let rows=[];
+    (rr.data||[]).forEach(x=>{
+      const st=byName.get(String(x.student_name||'').toLowerCase());
+      const ex=exams.find(e=>e.id===x.exam_id)||{};
+      if(!st)return;
+      rows.push({assignment_id:null,student_id:st.id,student_id_ref:st.admission_no||'',student_name:st.full_name,
+        class:cls,subject:sub,term:cp.term||null,session:cp.session||null,
+        score:Number(x.score)||0,max_score:Number(x.total||ex.max_score)||10,recorded_by:(window.SC_PROFILE&&SC_PROFILE.id)||null});
+    });
+    if(!rows.length){toast('CBT assignments exist but no student results yet.','info');return;}
+    let saved=0;
+    for(const row of rows){
+      const {error}=await sb.from('assignment_scores').insert(row);
+      if(!error)saved++;
     }
-    return awarded;
+    toast('🖥️ Pulled '+saved+' CBT assignment result(s) into the accumulated totals. Click Σ to refresh.',saved?'success':'warning',9000);
   },
-  async refresh() {
-    const from = this.el('f-from').value, to = this.el('f-to').value, cls = this.el('f-class').value.trim();
-    let q = sb.from('punctuality_awards').select('*').order('date', { ascending: false }).limit(2000);
-    if (from) q = q.gte('date', from); if (to) q = q.lte('date', to); if (cls) q = q.eq('class', cls);
-    const r = await q;
-    if (r.error) { this.el('punct-list').innerHTML = '<div class="card">Could not load awards: ' + this.esc(r.error.message) + '</div>'; return; }
-    this.rows = r.data || []; this.render();
+  async scoreModal(assignmentId){
+    if(!window.sb){toast('Database not configured','warning');return;}
+    const a=(await sb.from('assignments').select('*').eq('id',assignmentId).maybeSingle()).data;
+    if(!a){toast('Assignment not found','warning');return;}
+    const studs=(await sb.from('students').select('id,full_name,admission_no,class').eq('class',a.class||'').order('full_name')).data||[];
+    if(!studs.length){toast('No students registered in '+(a.class||'this class')+'.','warning');return;}
+    let cp={}; try{cp=await (window.CRUD&&CRUD.currentPeriod?CRUD.currentPeriod():{});}catch(_){ }
+    const existing=(await sb.from('assignment_scores').select('*').eq('assignment_id',assignmentId)).data||[];
+    const prior=new Map(existing.map(x=>[String(x.student_id),x]));
+    const maxDefault=10;
+    const rows=studs.map(s0=>{const pv=prior.get(String(s0.id));return '<tr data-sid="'+s0.id+'" data-ref="'+AP.esc(s0.admission_no||'')+'" data-name="'+AP.esc(s0.full_name)+'"><td>'+AP.esc(s0.full_name)+'<br><small>'+AP.esc(s0.admission_no||'')+'</small></td><td><input class="form-input ap-sc" type="number" min="0" style="width:90px" value="'+(pv?pv.score:'')+'" placeholder="—"></td></tr>';}).join('');
+    openModal('✍️ Score: '+AP.esc(a.title)+' ('+AP.esc(a.class||'')+' · '+AP.esc(a.subject||'')+')',
+      '<div style="display:flex;gap:12px;flex-wrap:wrap"><div class="form-group"><label>Assignment kind</label><select class="form-select" id="ap-kind" style="width:220px"><option>Written homework</option><option>Class exercise</option><option>Project</option><option>Practical</option><option>Presentation</option><option>Group work</option><option>Reading task</option><option>CBT assignment (auto-marked)</option></select></div>'+
+      '<div class="form-group"><label>Maximum mark for THIS assignment</label><input class="form-input" id="ap-max" type="number" value="'+((existing[0]&&existing[0].max_score)||maxDefault)+'" min="1" style="width:120px"></div></div>'+
+      '<div class="table-wrap" style="max-height:50vh;overflow:auto"><table><thead><tr><th>Student</th><th>Score</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<p style="font-size:.8rem;color:var(--gray-500)">Blank = not submitted (excluded from totals). Saved scores accumulate on the Σ totals below.</p>',
+      '<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="AP.saveScores(\''+assignmentId+'\')">💾 Save scores</button>');
+    this._ctx={a:a,cp:cp};
   },
-  render() {
-    const rows = this.rows;
-    if (!rows.length) {
-      this.el('punct-list').innerHTML = '<p style="color:var(--gray-500)">No awards in this range yet. Use <strong>Compute</strong> after morning check-in / closing check-out.</p>';
-      this.el('punct-board').innerHTML = ''; return;
+  async saveScores(assignmentId){
+    const a=this._ctx&&this._ctx.a, cp=(this._ctx&&this._ctx.cp)||{};
+    const max=Number((document.getElementById('ap-max')||{}).value)||10;
+    const rows=[...document.querySelectorAll('tr[data-sid]')].map(tr=>{
+      const v=tr.querySelector('.ap-sc').value;
+      if(v==='')return null;
+      return {assignment_id:assignmentId,student_id:tr.getAttribute('data-sid'),student_id_ref:tr.getAttribute('data-ref'),student_name:tr.getAttribute('data-name'),
+        class:(a&&a.class)||'',subject:(a&&a.subject)||'',term:cp.term||null,session:cp.session||null,
+        score:Math.min(Number(v)||0,max),max_score:max,recorded_by:(window.SC_PROFILE&&SC_PROFILE.id)||null};
+    }).filter(Boolean);
+    if(!rows.length){toast('Enter at least one score.','warning');return;}
+    const r=await sb.from('assignment_scores').upsert(rows,{onConflict:'assignment_id,student_id'});
+    if(r.error){toast(/assignment_scores/.test(r.error.message)?'Run database/v8.4-assignment-dl-points.sql (or the latest complete-schema.sql) first.':r.error.message,'danger',9000);return;}
+    closeModal();toast('💾 Saved '+rows.length+' score(s). They now count in the accumulated totals.','success',7000);
+  },
+  async totals(){
+    const cls=(document.getElementById('ap-class')||{}).value,sub=(document.getElementById('ap-subject')||{}).value;
+    const box=document.getElementById('ap-totals');
+    if(!cls||!sub){box.innerHTML='<p style="color:var(--gray-500)">Pick a class AND subject first.</p>';return;}
+    let cp={};try{cp=await (window.CRUD&&CRUD.currentPeriod?CRUD.currentPeriod():{});}catch(_){ }
+    let q=sb.from('assignment_scores').select('*').eq('class',cls).eq('subject',sub);
+    if(cp.term)q=q.eq('term',cp.term); if(cp.session)q=q.eq('session',cp.session);
+    const r=await q.limit(5000);
+    if(r.error){box.innerHTML='<p style="color:#b91c1c">'+AP.esc(/assignment_scores/.test(r.error.message)?'Run database/v8.4-assignment-dl-points.sql first.':r.error.message)+'</p>';return;}
+    const by={};(r.data||[]).forEach(x=>{const k=String(x.student_id);(by[k]=by[k]||{name:x.student_name,ref:x.student_id_ref,sid:x.student_id,got:0,max:0,n:0});by[k].got+=Number(x.score)||0;by[k].max+=Number(x.max_score)||0;by[k].n++;});
+    const list=Object.values(by).sort((a,b)=>(b.got/(b.max||1))-(a.got/(a.max||1)));
+    this._totals={list:list,cls:cls,sub:sub,cp:cp};
+    box.innerHTML=list.length?'<div class="table-wrap"><table><thead><tr><th>Student</th><th>Assignments scored</th><th>Points</th><th>%</th></tr></thead><tbody>'+list.map(t=>'<tr><td><b>'+AP.esc(t.name)+'</b><br><small>'+AP.esc(t.ref||'')+'</small></td><td>'+t.n+'</td><td>'+t.got+' / '+t.max+'</td><td><b>'+(t.max?Math.round(t.got/t.max*1000)/10:0)+'%</b></td></tr>').join('')+'</tbody></table></div>':'<p style="color:var(--gray-500)">No assignment scores recorded yet for '+AP.esc(cls)+' · '+AP.esc(sub)+(cp.term?' · '+AP.esc(cp.term):'')+'. Use ✍️ Score class on an assignment above.</p>';
+  },
+  async pushModal(){
+    if(!this._totals||!this._totals.list.length){toast('Click Σ Show accumulated totals first (pick class + subject).','warning');return;}
+    let cols=[];
+    try{if(window.ReportEngine&&ReportEngine.reportPickerOptions){const p=await ReportEngine.reportPickerOptions();cols=p.columns||[];}}catch(_){ }
+    if(!cols.length&&window.sb){try{const cr=await sb.from('assessment_columns').select('id,name,max_mark').order('position').limit(500);const seen=new Set();(cr.data||[]).forEach(c=>{const k=String(c.name||'').toLowerCase();if(!k||seen.has(k))return;seen.add(k);cols.push(c);});}catch(_){ }}
+    if(!cols.length){openModal('🚀 Push assignment points','<div class="notice">No report-card columns exist yet. Admin: Report Cards → “School-wide assessment columns” → add e.g. an “Assignment” column → return here.</div>','<button class="btn btn-outline" onclick="closeModal()">Close</button>');return;}
+    openModal('🚀 Push accumulated assignment points → Report card',
+      '<p>'+this._totals.list.length+' student total(s) for <b>'+AP.esc(this._totals.cls)+' · '+AP.esc(this._totals.sub)+'</b> will be written into the chosen column, scaled to its max mark.</p>'+
+      '<div class="form-group"><label>Destination column</label><select class="form-select" id="ap-col">'+cols.map(c=>'<option value="'+c.id+'" data-max="'+(c.max_mark||10)+'">'+AP.esc(c.name)+' (max '+(c.max_mark||10)+')</option>').join('')+'</select></div>',
+      '<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="AP.push()">🚀 Push now</button>');
+  },
+  async push(){
+    const sel=document.getElementById('ap-col'),colId=sel.value,colMax=Number(sel.selectedOptions[0].dataset.max)||10;
+    const t=this._totals;
+    const rows=t.list.map(x=>({column_id:colId,student_id:x.sid||null,student_id_ref:x.ref||'',student_name:x.name,
+      class:t.cls,subject:t.sub,term:(t.cp&&t.cp.term)||'',session:(t.cp&&t.cp.session)||'',
+      score:Math.round(((x.max?x.got/x.max:0)*colMax)*10)/10,source:'assignments'}));
+    let saved=0,failed=0;
+    try{const r=await sb.rpc('sc_save_report_score',{p_rows:rows});
+      if(r.data&&r.data.ok!==false){saved=Number(r.data.saved||rows.length);failed=Number(r.data.blocked||0);}else throw new Error((r.data&&r.data.error)||(r.error&&r.error.message)||'RPC failed');
+    }catch(e){
+      for(const row of rows){const q=await sb.from('report_scores').upsert(row,{onConflict:'column_id,student_id_ref,student_name,class,subject,term,session'});if(q.error)failed++;else saved++;}
     }
-    const tot = rows.reduce(function (a, r) { return a + Number(r.points || 0); }, 0);
-    this.el('punct-list').innerHTML = '<div class="table-wrap"><table><thead><tr><th>Date</th><th>Student</th><th>ID</th><th>Class</th><th>Check-in</th><th>Check-out</th><th>Rule</th><th>Points</th></tr></thead><tbody>' +
-      rows.map((r) => '<tr><td>' + this.esc(r.date) + '</td><td><strong>' + this.esc(r.student_name) + '</strong></td><td>' + this.esc(r.student_id_ref || '') + '</td><td>' + this.esc(r.class || '') + '</td><td>' + (r.checkin_at ? new Date(r.checkin_at).toLocaleTimeString() : '—') + '</td><td>' + (r.checkout_at ? new Date(r.checkout_at).toLocaleTimeString() : '—') + '</td><td><span class="badge">' + this.esc(r.rule) + '</span></td><td><strong>' + (r.points > 0 ? '+' + r.points : '0') + '</strong></td></tr>').join('') +
-      '</tbody></table></div><p style="color:var(--gray-500);font-size:.85rem">' + rows.length + ' day-award(s) · total ' + tot + ' point(s) in range.</p>';
-    const bySt = {};
-    rows.forEach(function (r) { const b = bySt[r.student_id] || (bySt[r.student_id] = { name: r.student_name, ref: r.student_id_ref, cls: r.class, pts: 0, days: 0 }); b.pts += Number(r.points || 0); if (Number(r.points) > 0) b.days++; });
-    const board = Object.values(bySt).sort(function (a, b) { return b.pts - a.pts; }).slice(0, 50);
-    this.el('punct-board').innerHTML = '<div class="table-wrap"><table><thead><tr><th>#</th><th>Student</th><th>ID</th><th>Class</th><th>Punctual days</th><th>Total points</th></tr></thead><tbody>' +
-      board.map((b, i) => '<tr><td>' + (i + 1) + '</td><td><strong>' + this.esc(b.name) + '</strong></td><td>' + this.esc(b.ref || '') + '</td><td>' + this.esc(b.cls || '') + '</td><td>' + b.days + '</td><td><strong>' + b.pts + '</strong></td></tr>').join('') + '</tbody></table></div>';
-  },
-  exportCSV() {
-    if (!this.rows.length) { toast('Nothing to export.', 'info'); return; }
-    const head = 'Date,Student,ID,Class,CheckIn,CheckOut,Rule,Points\n';
-    const body = this.rows.map(function (r) { return [r.date, '"' + (r.student_name || '').replace(/"/g, '""') + '"', r.student_id_ref || '', r.class || '', r.checkin_at || '', r.checkout_at || '', r.rule, r.points].join(','); }).join('\n');
-    const blob = new Blob([head + body], { type: 'text/csv' }); const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'punctuality-awards.csv'; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-  },
-  async pushModal() {
-    /* V6.4 #2: the destination dropdown lists ONLY the assessment columns the
-       admin created on the Report Cards page (by column id). No hard-coded
-       ca1/ca2/ca3/exam entries — if no columns exist yet, we say so and stop. */
-    let cols = [], terms = [], sessions = [];
-    try { if (window.ReportEngine && ReportEngine.reportPickerOptions) { const p = await ReportEngine.reportPickerOptions(); cols = p.columns || []; terms = p.terms || []; sessions = p.sessions || []; } } catch (_) {}
-    /* V8.4 #1 ROOT-CAUSE FIX: this page never loaded report-engine.js, so
-       ReportEngine was undefined and cols stayed [] even when the admin HAD
-       created columns — the "No report-card columns exist yet" message was a
-       false alarm. The script is now loaded above AND this direct fallback
-       reads assessment_columns itself so the modal can never lie again. */
-    if (!cols.length && window.sb) {
-      try {
-        const cr = await sb.from('assessment_columns').select('id,name,max_mark').order('position').limit(500);
-        const seen = new Set();
-        (cr.data || []).forEach(c => { const k = String(c.name||'').trim().toLowerCase(); if (!k || seen.has(k)) return; seen.add(k); cols.push({ id: c.id, name: c.name, max_mark: c.max_mark }); });
-        if (!terms.length) { const lr = await sb.from('lookups').select('kind,value').in('kind',['term','session']).order('position'); (lr.data||[]).forEach(l=>{ if(l.kind==='term'&&!terms.includes(l.value))terms.push(l.value); if(l.kind==='session'&&!sessions.includes(l.value))sessions.push(l.value); }); }
-      } catch (_) {}
-    }
-    if (!cols.length) { openModal('🚀 Push Punctuality Points → Report Card', '<div class="notice" style="background:#fef3c7;border-color:#fcd34d;color:#92400e"><b>No report-card columns exist yet.</b><br>Punctuality points are written into a column of the official report card, and only an administrator can create columns.<br><br><b>Admin:</b> open <a href="report-cards.html">Report Cards</a> → “School-wide assessment columns (admin only)” → add a column (e.g. a dedicated “Punctuality” column with its maximum mark) → come back and push.</div>', '<button class="btn btn-outline" onclick="closeModal()">Close</button>'); return; }
-    const opt = (v, l) => '<option value="' + this.esc(v) + '">' + this.esc(l) + '</option>';
-    openModal('🚀 Push Punctuality Points → Report Card',
-      '<p style="color:var(--gray-600)">Sum each student\'s punctuality points over a period and write the total into a <strong>report-card column</strong> (e.g. CA2 or a dedicated "Punctuality" column). Re-pushing the same term/class/range <strong>updates</strong> the same rows — never duplicates.</p>' +
-      '<div class="grid grid-3">' +
-      '<div class="form-group"><label>Report-card column (created by admin)</label><select id="pp-col" class="form-select">' + cols.map(function (c) { return opt(c.id, (c.name || 'Column') + (c.max_mark ? ' (max ' + c.max_mark + ')' : '')); }).join('') + '</select></div>' +
-      '<div class="form-group"><label>Term</label><input id="pp-term" class="form-input" list="pp-terms" placeholder="e.g. First Term"><datalist id="pp-terms">' + terms.map(function (t) { return opt(t, t); }).join('') + '</datalist></div>' +
-      '<div class="form-group"><label>Session</label><input id="pp-sess" class="form-input" list="pp-sessions" placeholder="e.g. 2025/2026"><datalist id="pp-sessions">' + sessions.map(function (t) { return opt(t, t); }).join('') + '</datalist></div>' +
-      '</div><div class="grid grid-3">' +
-      '<div class="form-group"><label>Class (optional)</label><input id="pp-class" class="form-input" placeholder="all classes"></div>' +
-      '<div class="form-group"><label>From date (optional)</label><input id="pp-from" type="date" class="form-input"></div>' +
-      '<div class="form-group"><label>To date (optional)</label><input id="pp-to" type="date" class="form-input"></div></div>',
-      '<button class="btn btn-outline" onclick="closeModal()">Cancel</button> <button class="btn btn-primary" onclick="Punct.doPush()">🚀 Push now</button>');
-  },
-  async doPush() {
-    /* V6.4 #2: push straight into report_scores under the admin-created column. */
-    const colSel = this.el('pp-col');
-    const p = { p_column_id: colSel.value, p_term: this.el('pp-term').value.trim(), p_session: this.el('pp-sess').value.trim(), p_class: this.el('pp-class').value.trim(), p_start: this.el('pp-from').value || null, p_end: this.el('pp-to').value || null };
-    if (!p.p_column_id) { toast('Choose the report-card column.', 'warning'); return; }
-    if (!p.p_term) { toast('Pick the term.', 'warning'); return; }
-    const colLabel = colSel.options[colSel.selectedIndex] ? colSel.options[colSel.selectedIndex].text : 'column';
-    closeModal(); toast('Pushing punctuality points into the report card…', 'info', 1800);
-    const r = await sb.rpc('sc_push_punctuality_to_report', p);
-    if (r.error) {
-      const em = String(r.error.message || '');
-      if (/could not find|does not exist|schema cache/i.test(em)) { toast('Push failed: your database is missing the V6.4 update. Admin: run database/v6.4-hard-scope-fixes.sql once in the Supabase SQL Editor, then push again.', 'danger', 10000); return; }
-      toast('Push failed: ' + em, 'danger', 8000); return;
-    }
-    toast('✅ Punctuality points pushed for ' + (r.data || 0) + ' student(s) into the report-card column "' + colLabel + '" (subject line: PUNCTUALITY). Open Report Cards to see them.', 'success', 9000);
-    if (window.App && App.logActivity) App.logActivity('push-punctuality', 'report_scores', colLabel);
-  },
-  async pushClient(p) { // fallback when the RPC is absent — identical upserts client-side
-    let q = sb.from('punctuality_awards').select('student_id,student_name,student_id_ref,class,date,points').limit(20000);
-    if (p.p_class) q = q.eq('class', p.p_class); if (p.p_start) q = q.gte('date', p.p_start); if (p.p_end) q = q.lte('date', p.p_end);
-    const r = await q; if (r.error) { toast('Could not read awards: ' + r.error.message, 'danger'); return false; }
-    if (!r.data || !r.data.length) { toast('No awards in that scope.', 'info'); return 0; }
-    const sums = {}; r.data.forEach(function (x) { const b = sums[x.student_id] || (sums[x.student_id] = { name: x.student_name, ref: x.student_id_ref, cls: x.class, pts: 0 }); b.pts += Number(x.points || 0); });
-    const col = (p.p_column || '').toLowerCase();
-    if (['ca1', 'ca2', 'ca3', 'exam'].indexOf(col) < 0) { toast('Fallback push supports ca1/ca2/ca3/exam only — run database/punctuality-points.sql for custom columns.', 'warning', 7000); return false; }
-    let ok = 0;
-    for (const id of Object.keys(sums)) {
-      const b = sums[id], ref = await this._uuid('punctuality|' + id + '|' + p.p_term + '|' + p.p_session + '|' + col + '|' + (p.p_class || b.cls || ''));
-      const payload = { student_id: id, student_name: b.name, student_id_ref: b.ref, subject: 'PUNCTUALITY', class: p.p_class || b.cls, term: p.p_term, session: p.p_session, assessment_source: 'punctuality', assessment_ref: ref };
-      payload[col] = b.pts;
-      const u = await sb.from('results').upsert(payload, { onConflict: 'assessment_source,assessment_ref' });
-      if (u.error) { const ins = await sb.from('results').insert(payload); if (!ins.error) ok++; } else ok++;
-    }
-    return ok;
-  },
-  async _uuid(txt) {
-    try { const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt)); const h = Array.from(new Uint8Array(buf).slice(0, 16)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join(''); return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20, 32); }
-    catch (e) { // deterministic non-secure-context fallback (cyrb53 ×2)
-      const h = function (str, seed) { let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed; for (let i = 0; i < str.length; i++) { const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0'); };
-      const x = h(txt, 7) + h(txt, 13); return x.slice(0, 8) + '-' + x.slice(8, 12) + '-' + x.slice(12, 16) + '-' + x.slice(16, 20) + '-' + x.slice(20, 32);
-    }
+    closeModal();toast('🚀 Pushed '+saved+' score(s) into the report card'+(failed?' · '+failed+' failed':'')+'. Open Report Cards to see them.',failed?'warning':'success',9000);
+    if(window.App&&App.logActivity)App.logActivity('push','assignment_scores',t.cls+'|'+t.sub);
   }
 };
-Punct.init();
-</script>
-</body></html>
+document.addEventListener('DOMContentLoaded',()=>AP.init());
+</script></body></html>
