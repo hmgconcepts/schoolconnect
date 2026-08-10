@@ -563,6 +563,7 @@ const Generator = {
       ['database/v8.2-voting-scope-and-dl.sql',      'database/v8.2-voting-scope-and-dl.sql'],
       ['database/v8.4-assignment-dl-points.sql',    'database/v8.4-assignment-dl-points.sql'],
       ['database/v8.5-payroll-net-fix.sql',         'database/v8.5-payroll-net-fix.sql'],
+      ['database/v8.7-payroll-rebuild.sql',         'database/v8.7-payroll-rebuild.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
