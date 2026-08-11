@@ -102,6 +102,7 @@ const Generator = {
       // canonical exam-register.html so the module loop and the dedicated page
       // emitter never write two separate files (exam-register.html + exam-register.html).
       exam_registrations: 'exam-register.html', 'exam-registrations': 'exam-register.html',
+      exam_timetable: 'exam-timetable.html', 'exam-timetable': 'exam-timetable.html',
       ecosystem_products: 'ecosystem.html', ecosystem: 'ecosystem.html', hmg_digital_products: 'hmg-digital-products.html'
     };
     return map[id] || (id + '.html');
@@ -210,7 +211,7 @@ const Generator = {
     // v7-15 robustness sync: the remaining rich bespoke pages (copied from the
     // field-proven GoSA site into assets/templates/pages/) are probed here too,
     // so generated client ZIPs ship the REAL pages instead of generic fallbacks.
-    'academic_setup','admissions','approvals','storage','health','fees','rubrics','transcripts','diary','digital_library','flyer','gallery','students','sow','payments_online','timetable','timetable-generator','admin-data','feature-guide','hmg-ecosystem','contact','about','index','login','assignments','punctuality',
+    'academic_setup','admissions','approvals','storage','health','fees','rubrics','transcripts','diary','digital_library','flyer','gallery','students','sow','payments_online','timetable','timetable-generator','exam-timetable','exam_timetable','admin-data','feature-guide','hmg-ecosystem','contact','about','index','login','assignments','punctuality',
     // V6.0 Sovereign Edition owner cockpit
     'platform-health'];
     // NOTE: 'admissions', 'academic_records', 'academic_setup', 'settings',
@@ -243,6 +244,7 @@ const Generator = {
       'assets/js/site-help.js',
       'assets/js/super.js',
       'assets/js/enterprise.js',
+      'assets/js/ai-assistant.js',
       'assets/js/pwa-install.js',
       'assets/js/analytics.js',
       'assets/js/license.js',
@@ -568,6 +570,7 @@ const Generator = {
       ['database/v8.5-payroll-net-fix.sql',         'database/v8.5-payroll-net-fix.sql'],
       ['database/v8.7-payroll-rebuild.sql',         'database/v8.7-payroll-rebuild.sql'],
       ['database/v9.0-user-lifecycle.sql',          'database/v9.0-user-lifecycle.sql'],
+      ['database/v9.1-enterprise-pack.sql',         'database/v9.1-enterprise-pack.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],

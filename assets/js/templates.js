@@ -181,6 +181,7 @@ ${T.modal()}
 <script src="assets/js/notifications.js"></script>
 <script src="assets/js/pwa-install.js"></script>
 <script src="assets/js/site-help.js"></script>
+<script src="assets/js/ai-assistant.js"></script>
 <script src="assets/js/super.js"></script>
 <script src="assets/js/enterprise.js"></script>
 <script src="assets/js/crud.js"></script>
@@ -218,6 +219,7 @@ ${T.modal()}
       student_profile: 'student-profile.html',
       verify_certificate: 'verify-certificate.html',
       feature_guide: 'feature-guide.html', profile:'profile.html', change_password:'change-password.html', cbt_multi:'cbt-multi.html',
+      exam_timetable: 'exam-timetable.html', 'exam-timetable': 'exam-timetable.html',
       ecosystem_products: 'ecosystem.html', ecosystem:'ecosystem.html', hmg_digital_products:'hmg-digital-products.html', school_fees:'school-fees.html', school_products:'school-products.html', status_manager:'status-manager.html'
     };
     return map[id] || (id + '.html');
@@ -266,6 +268,7 @@ ${T.setupRequiredBanner()}
 <script src="assets/js/voting.js"></script>
 <script src="assets/js/pwa-install.js"></script>
 <script src="assets/js/site-help.js"></script>
+<script src="assets/js/ai-assistant.js"></script>
 <script src="assets/js/super.js"></script>
 <script src="assets/js/enterprise.js"></script>
 <script src="assets/js/crud.js"></script>
@@ -349,7 +352,7 @@ ${T.setupRequiredBanner()}
       'dashboard','profile','change_password','notifications','feature_guide','teacher_overview',
       'students','classes','subjects','attendance','results','report_cards','academic_records',
       'cbt','cbt_prompts','entrance','assignments','timetable','timetable_generator','sow',
-      'lesson_plans','library','digital_library','eresources','announcements','events','messages','inbox',
+      'lesson_plans','library','digital_library','eresources','announcements','events','messages','inbox','exam_timetable',
       'complaints','broadcast','diary','checkin','checkin_staff','checkin-staff','punctuality','behaviour','conduct','health','support_plans',
       'certificates','reports','directory','rubrics','counselling','substitutions','helpdesk','book_request', 'ecosystem_products','hmg_digital_products',
       /* V6.4 #5: teachers fill domain ratings & report comments for their students */
@@ -357,12 +360,12 @@ ${T.setupRequiredBanner()}
     ]);
     const parentSet = new Set([
       'dashboard','profile','change_password','notifications','feature_guide','student_profile','fees','payments_online','results',
-      'report_cards','attendance','assignments','diary','timetable','announcements','events','messages','inbox',
+      'report_cards','attendance','assignments','diary','timetable','exam_timetable','announcements','events','messages','inbox',
       'complaints','eresources','certificates','school_calendar','voting','idcards', 'ecosystem_products','hmg_digital_products'
     ]);
     const studentSet = new Set([
       'dashboard','profile','change_password','notifications','feature_guide','student_profile','cbt_exam','assignments','digital_library',
-      'eresources','timetable','results','report_cards','attendance','announcements','events','messages','inbox',
+      'eresources','timetable','exam_timetable','results','report_cards','attendance','announcements','events','messages','inbox',
       'complaints','certificates','diary','school_calendar','voting','idcards', 'ecosystem_products','hmg_digital_products'
     ]);
 
@@ -376,7 +379,7 @@ ${T.setupRequiredBanner()}
   iconFor(id) {
     const map = {
       dashboard:'🏠', about:'🏫', contact:'☎️', apply:'📝', 'feature-guide':'📘', 'verify-certificate':'🔎', 'teacher-overview':'👨‍🏫', 'cbt-exam':'🧪', 'cbt-multi':'🧪', profile:'👤', 'change-password':'🔐', 'academic-records':'📄', academic_setup:'⚙️', students:'👨‍🎓', staff:'👨‍🏫', classes:'📚', attendance:'📋', results:'📊',
-      timetable:'🗓️', sow:'📋', cbt:'💻', assignments:'📝', library:'📖', conduct:'⚖️', health:'🩺',
+      timetable:'🗓️', exam_timetable:'🗓️', sow:'📋', cbt:'💻', assignments:'📝', library:'📖', conduct:'⚖️', health:'🩺',
       promotion:'🎓', fees:'💰', finance:'💵', leave:'🏖️', visitors:'🚪', transport:'🚌',
       announcements:'📢', events:'🎭', messages:'📱', inbox:'💬', complaints:'📨', broadcast:'📨',
       voting:'🗳️', gallery:'🖼️', eresources:'📁', birthdays:'🎂', idcards:'🪪', reports:'📈',
@@ -402,7 +405,7 @@ ${T.setupRequiredBanner()}
     const map = {
       dashboard:'Dashboard', about:'About', contact:'Contact', apply:'Apply', 'feature-guide':'Feature Guide', 'verify-certificate':'Verify Certificate', 'teacher-overview':'Teacher Overview', 'cbt-exam':'Take Exam', 'cbt-multi':'Multi-Subject CBT', profile:'My Profile', 'change-password':'Change Password', 'student-profile':'Student Profile', academic_records:'Academic Records', academic_setup:'Academic Setup', students:'Students', staff:'Staff', classes:'Classes',
       ecosystem_products:'HMG Ecosystem', ecosystem:'HMG Ecosystem', hmg_digital_products:'HMG Digital Products', school_fees:'School Fee Structure', school_products:'School Products', status_manager:'Role & Status Manager',
-      attendance:'Attendance', punctuality:'Punctuality', results:'Results', timetable:'Timetable',
+      attendance:'Attendance', punctuality:'Punctuality', results:'Results', timetable:'Timetable', exam_timetable:'Exam Timetable',
       'timetable-generator':'Auto-Timetable', sow:'Scheme', cbt:'CBT', assignments:'Assignments',
       library:'Library', conduct:'Conduct', health:'Health', promotion:'Promotion',
       fees:'Fees', finance:'Finance', leave:'Leave', visitors:'Visitors', transport:'Transport',
