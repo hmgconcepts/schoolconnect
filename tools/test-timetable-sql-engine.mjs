@@ -9,4 +9,30 @@ if(!out2.ok)throw Error('v7.9 generation failed '+JSON.stringify(out2));
 if(!pt2.every(x=>(x.day==='Monday'&&['1','2'].includes(x.period))||(x.day==='Thursday'&&['3','4'].includes(x.period))))throw Error('v7.9 period map violated');
 if(!rows2.filter(x=>x.day==='Friday').every(x=>Number(x.period)<=2))throw Error('v7.9 short Friday violated');
 if(!rows2.some(x=>x.day==='Wednesday'&&x.period==='3'&&x.subject.indexOf('⛔')===0))throw Error('v7.9 blocked slot missing');
-console.log(JSON.stringify({ok:true,placed:out.placed,unplaced:out.unplaced,restricted_days_respected:true,cross_class_teacher_conflict_avoided:true,break_period_type:numeric,v79_period_map:true,v79_blocked_slot:true,v79_short_friday:true},null,2));await db.close();
+// V9.1 regressions: (4a) double periods adjacent · (4b) teacher_availability ALWAYS enforced · (4c) max_period cap
+await db.exec(`alter table timetable_requirements add column if not exists double_periods int default 0;alter table timetable_requirements add column if not exists max_period int;
+delete from timetable where class='JSS 1';delete from timetable_requirements;delete from timetable_blocks;delete from teacher_availability;
+insert into timetable_requirements(class,subject,teacher,periods_per_week,double_periods)values('JSS 1','Physics','Lab Teacher',4,2);
+insert into timetable_requirements(class,subject,teacher,periods_per_week,max_period)values('JSS 1','Mathematics','Math Teacher',5,2);
+insert into timetable_requirements(class,subject,teacher,periods_per_week)values('JSS 1','English','Eng Teacher',5);
+insert into teacher_availability(teacher,available_days)values('Eng Teacher',array['Tuesday','Thursday']);`);
+const out3=(await db.query(`select public.generate_timetable('JSS 1','2026/2027','First Term',6)d`)).rows[0].d;
+if(!out3.ok)throw Error('v9.1 generation failed '+JSON.stringify(out3));
+const rows3=(await db.query(`select day,period,subject,teacher from timetable where class='JSS 1'`)).rows;
+// 4a: doubles adjacent on same day
+const dbl=rows3.filter(x=>x.subject==='Physics (double)');
+if(dbl.length!==4)throw Error('v9.1 expected 4 double-period slots, got '+dbl.length);
+const byDay={};dbl.forEach(x=>{(byDay[x.day]=byDay[x.day]||[]).push(Number(x.period));});
+for(const[day,ps]of Object.entries(byDay)){ps.sort((a,b)=>a-b);for(let i=0;i<ps.length;i+=2)if(ps[i+1]!==ps[i]+1)throw Error('v9.1 double periods not adjacent on '+day+': '+ps.join(','));}
+// 4c: max_period cap respected
+if(rows3.filter(x=>x.subject==='Mathematics').some(x=>Number(x.period)>2))throw Error('v9.1 max_period cap violated');
+// 4b: teacher_availability enforced even though requirement has no restriction
+if(rows3.filter(x=>x.teacher==='Eng Teacher').some(x=>!['Tuesday','Thursday'].includes(x.day)))throw Error('v9.1 teacher_availability ignored');
+// 4b bis: requirement restriction AND teacher restriction combine (intersection)
+await db.exec(`delete from timetable where class='JSS 1';delete from timetable_requirements;
+insert into timetable_requirements(class,subject,teacher,periods_per_week,available_days,is_part_time)values('JSS 1','Chemistry','PT2',2,array['Monday','Tuesday'],true);
+insert into teacher_availability(teacher,available_days)values('PT2',array['Tuesday','Friday']);`);
+const out4=(await db.query(`select public.generate_timetable('JSS 1','2026/2027','First Term',6)d`)).rows[0].d;
+const rows4=(await db.query(`select day from timetable where class='JSS 1' and subject like 'Chemistry%'`)).rows;
+if(rows4.some(x=>x.day!=='Tuesday'))throw Error('v9.1 intersection (req∩teacher days) violated: '+JSON.stringify(rows4));
+console.log(JSON.stringify({ok:true,placed:out.placed,unplaced:out.unplaced,restricted_days_respected:true,cross_class_teacher_conflict_avoided:true,break_period_type:numeric,v79_period_map:true,v79_blocked_slot:true,v79_short_friday:true,v91_double_adjacent:true,v91_max_period:true,v91_teacher_availability_always:true,v91_intersection:true},null,2));await db.close();
