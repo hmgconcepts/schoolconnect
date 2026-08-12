@@ -589,7 +589,12 @@ const CK={ done:[], stream:null, scanning:false, last:'', lastAt:0,
         resolve(true);
         return;
       }
-      navigator.geolocation.getCurrentPosition(
+      /* V9.3: same robust multi-stage GPS acquisition as the staff page —
+         5 s was shorter than a cold GPS fix, causing spurious "Timeout expired". */
+      const tryOnce = (opts) => new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, opts));
+      tryOnce({ enableHighAccuracy: true, timeout: 20000, maximumAge: 30000 })
+        .catch((e1) => { if (e1 && e1.code === 1) throw e1; return tryOnce({ enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }); })
+        .then(
         (pos) => {
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
@@ -615,10 +620,9 @@ const CK={ done:[], stream:null, scanning:false, last:'', lastAt:0,
           }
         },
         (err) => {
-          toast('⚠️ GPS error: ' + err.message + '. Defaulting to verified for safety.', 'warning');
+          toast('⚠️ GPS error: ' + (err && err.message || err) + '. Defaulting to verified for safety.', 'warning');
           resolve(true); 
-        },
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        }
       );
     });
   },
