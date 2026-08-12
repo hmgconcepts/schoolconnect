@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>QR Check-in • God of Seed Academy</title>
-<meta name="description" content="God of Seed Academy — QR Check-in. Comprehensive school management platform.">
-<meta name="keywords" content="God of Seed Academy, school management, GoSA, HMG Concepts">
+<title>QR Check-in • School Connect Demo School</title>
+<meta name="description" content="School Connect Demo School — QR Check-in. Comprehensive school management platform.">
+<meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="manifest" href="manifest.json">
@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<meta property="og:title" content="QR Check-in • God of Seed Academy">
-<meta property="og:description" content="God of Seed Academy — Comprehensive school management platform">
+<meta property="og:title" content="QR Check-in • School Connect Demo School">
+<meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
 <meta property="og:image" content="assets/img/logo.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -61,22 +61,22 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 @media(min-width:901px){.app-topbar .mobile-toggle{display:none}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-    <meta name="description" content="God of Seed Academy — QR Check-in. Comprehensive school management platform.">
-    <meta name="keywords" content="God of Seed Academy, school management, GoSA, HMG Concepts">
+    <meta name="description" content="School Connect Demo School — QR Check-in. Comprehensive school management platform.">
+    <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
     <meta name="author" content="HMG Concepts">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="./checkin.html">
-    <meta property="og:title" content="QR Check-in • God of Seed Academy">
-    <meta property="og:description" content="God of Seed Academy — QR Check-in. Comprehensive school management platform.">
+    <meta property="og:title" content="QR Check-in • School Connect Demo School">
+    <meta property="og:description" content="School Connect Demo School — QR Check-in. Comprehensive school management platform.">
     <meta property="og:url" content="./checkin.html">
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="School Connect v5 — God of Seed Academy">
+    <meta property="og:site_name" content="School Connect v5 — School Connect Demo School">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="QR Check-in • God of Seed Academy">
-    <meta name="twitter:description" content="God of Seed Academy — QR Check-in. Comprehensive school management platform.">
+    <meta name="twitter:title" content="QR Check-in • School Connect Demo School">
+    <meta name="twitter:description" content="School Connect Demo School — QR Check-in. Comprehensive school management platform.">
     <link rel="alternate" href="https://hmgconcepts.pages.dev/" title="HMG Concepts Ecosystem">
   </head>
-<body data-theme="theme15" data-school="God of Seed Academy" data-font="plusjakarta">
+<body data-theme="theme15" data-school="School Connect Demo School" data-font="plusjakarta">
 
 <div id="notif-bell" class="notif-bell" title="Notifications" data-chatbot>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -119,10 +119,10 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.png" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
+        <img src="assets/img/logo.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
         <div>
-          <strong>God of Seed Academy</strong>
-          <div style="font-size:0.7rem;color:var(--gray-500)">GoSA</div>
+          <strong>School Connect Demo School</strong>
+          <div style="font-size:0.7rem;color:var(--gray-500)">SCD</div>
         </div>
       </div>
       <nav class="app-nav">
@@ -479,7 +479,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       <button class="mobile-toggle" onclick="App.toggleSidebar()" title="Menu">☰</button>
       <h1 class="app-page-title">QR Check-in</h1>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
-
+        
         <button class="btn btn-sm btn-outline" onclick="if(window.Super)Super.chatbot.explainPage()" title="About this page">ℹ️ Help</button>
         <div class="user-chip" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--gray-200);border-radius:999px;background:var(--white)"><span>👤</span><span><strong id="user-display-name">Connecting…</strong><small id="user-display-role" style="display:block;color:var(--gray-500);line-height:1">restoring session</small></span></div>
         <button class="btn btn-sm btn-outline" onclick="App.toggleDarkMode()" title="Toggle theme">🌙</button>
@@ -487,7 +487,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       </div>
     </header>
     <div class="app-content">
-
+      
       <div class="card" style="margin-bottom:16px"><p style="color:var(--gray-600);margin:0">
         Students check in by <strong>scanning their ID-card QR with the device camera</strong>, or by typing
         their admission number. Free — uses your phone/laptop camera, no extra hardware, no AI.</p></div>
@@ -508,7 +508,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
             <input class="form-input" id="ck-id" placeholder="ADM/1001"></div>
           <div class="form-group"><label>Name (optional)</label><input class="form-input" id="ck-name"></div>
           <div class="form-group"><label>Class (optional)</label><input class="form-input" id="ck-class"></div>
-
+          
           <div class="form-group" style="margin-top: 14px; margin-bottom: 14px;">
             <label style="font-weight: 700; margin-bottom: 8px; display: block;">Select Attendance Action:</label>
             <div style="display: flex; gap: 20px;">
@@ -520,14 +520,14 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
               </label>
             </div>
           </div>
-
+          
           <button class="btn btn-primary" onclick="CK.go(document.getElementById('ck-id').value)">✅ Check in</button>
         </div>
       </div>
       <div class="card" style="margin-top:16px"><div id="ck-log"><p style="color:var(--gray-500)">No check-ins yet today.</p></div></div>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
-      © 2026 God of Seed Academy · Licensed by <a href="https://hmgtechnologies.pages.dev" target="_blank" rel="noopener">HMG Technologies</a> · <a href="https://whatsapp.com/channel/0029Vb7kGoN2ER6feTzs8q2f" target="_blank" rel="noopener" title="Product news, tips and updates">📢 HMG Channel</a>
+      © 2026 School Connect Demo School · Licensed by <a href="https://hmgtechnologies.pages.dev" target="_blank" rel="noopener">HMG Technologies</a> · <a href="https://whatsapp.com/channel/0029Vb7kGoN2ER6feTzs8q2f" target="_blank" rel="noopener" title="Product news, tips and updates">📢 HMG Channel</a>
     </footer>
   </main>
 </div>
@@ -589,14 +589,19 @@ const CK={ done:[], stream:null, scanning:false, last:'', lastAt:0,
         resolve(true);
         return;
       }
-      navigator.geolocation.getCurrentPosition(
+      /* V9.3: same robust multi-stage GPS acquisition as the staff page —
+         5 s was shorter than a cold GPS fix, causing spurious "Timeout expired". */
+      const tryOnce = (opts) => new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, opts));
+      tryOnce({ enableHighAccuracy: true, timeout: 20000, maximumAge: 30000 })
+        .catch((e1) => { if (e1 && e1.code === 1) throw e1; return tryOnce({ enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }); })
+        .then(
         (pos) => {
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
-          const schoolLat = (window.SCHOOL && window.SCHOOL.latitude) || 6.5244;
+          const schoolLat = (window.SCHOOL && window.SCHOOL.latitude) || 6.5244; 
           const schoolLng = (window.SCHOOL && window.SCHOOL.longitude) || 3.3792;
-          const radius = (window.SCHOOL && window.SCHOOL.geoRadius) || 200;
-          const R = 6371e3;
+          const radius = (window.SCHOOL && window.SCHOOL.geoRadius) || 200; 
+          const R = 6371e3; 
           const phi1 = lat * Math.PI/180;
           const phi2 = schoolLat * Math.PI/180;
           const deltaPhi = (schoolLat-lat) * Math.PI/180;
@@ -605,7 +610,7 @@ const CK={ done:[], stream:null, scanning:false, last:'', lastAt:0,
                     Math.cos(phi1) * Math.cos(phi2) *
                     Math.sin(deltaLambda/2) * Math.sin(deltaLambda/2);
           const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-          const dist = R * c;
+          const dist = R * c; 
           if (dist <= radius) {
             toast('📍 Location verified: Inside school premises (' + Math.round(dist) + 'm away).', 'success');
             resolve(true);
@@ -615,10 +620,9 @@ const CK={ done:[], stream:null, scanning:false, last:'', lastAt:0,
           }
         },
         (err) => {
-          toast('⚠️ GPS error: ' + err.message + '. Defaulting to verified for safety.', 'warning');
-          resolve(true);
-        },
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+          toast('⚠️ GPS error: ' + (err && err.message || err) + '. Defaulting to verified for safety.', 'warning');
+          resolve(true); 
+        }
       );
     });
   },
@@ -631,7 +635,7 @@ const CK={ done:[], stream:null, scanning:false, last:'', lastAt:0,
     const cl=document.getElementById('ck-class').value || '';
     const action = document.querySelector('input[name="clock_action"]:checked')?.value || 'in';
     const now = new Date();
-
+    
     const supabase = window.sb || sb;
     if (!supabase) { toast('Database not configured', 'warning'); return; }
 
@@ -673,7 +677,7 @@ const CK={ done:[], stream:null, scanning:false, last:'', lastAt:0,
       } else {
         await supabase.from('student_clock').insert({ student_id: studentId, clock_out: now.toISOString(), date: todayStr, note: 'Clock out only' });
       }
-
+      
       CK.done.unshift({id: id, name: studentName, at: now.toLocaleTimeString(), action: 'Clock Out' });
       toast('🚪 Student Clock-Out Successful!', 'success');
     }
