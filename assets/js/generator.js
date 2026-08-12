@@ -155,6 +155,13 @@ const Generator = {
       logoData:      config.logoData     || '',
       campuses:      config.campuses     || [],
       hmgLink:       config.hmgLink      || 'https://hmgconcepts.pages.dev/',
+      // V9.4 (#10): social handles — footer links + schema.org sameAs (SEO)
+      socials: {
+        facebook:  config.socialFacebook  || '', twitter:  config.socialTwitter  || '',
+        instagram: config.socialInstagram || '', youtube:  config.socialYouTube  || '',
+        whatsapp:  config.socialWhatsApp  || '', linkedin: config.socialLinkedIn || '',
+        tiktok:    config.socialTikTok    || ''
+      },
       // FIX C-03: address/phone/email/currency/siteUrl were collected by the
       // wizard but dropped here, so every generated config.js shipped with
       // empty contact details (see gosaportal: address:'', phone:'', email:'').
@@ -572,6 +579,7 @@ const Generator = {
       ['database/v9.0-user-lifecycle.sql',          'database/v9.0-user-lifecycle.sql'],
       ['database/v9.1-enterprise-pack.sql',         'database/v9.1-enterprise-pack.sql'],
       ['database/v9.2-access-and-fixes.sql',        'database/v9.2-access-and-fixes.sql'],
+      ['database/v9.4-fees-and-exams.sql',          'database/v9.4-fees-and-exams.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
@@ -920,6 +928,7 @@ window.SCHOOL = {
   siteUrl: ${JSON.stringify(cfg.siteUrl || '')},
   campuses: ${JSON.stringify(cfg.campuses || [])},
   hmgLink: ${JSON.stringify(cfg.hmgLink || 'https://hmgconcepts.pages.dev/')},
+  socials: ${JSON.stringify(cfg.socials || {})},
   logoExt: ${JSON.stringify(cfg.logoExt || 'svg')},
   primary: ${JSON.stringify(cfg.themePrimary || '#4f46e5')},
   accent: ${JSON.stringify(cfg.themeAccent || '#06b6d4')},
@@ -1050,6 +1059,10 @@ if (window.CRUD) CRUD.init(sb);
       ...(cfg.phone ? {"telephone": cfg.phone} : {}),
       ...(cfg.email ? {"email": cfg.email} : {}),
       ...(cfg.address ? {"address":{"@type":"PostalAddress","streetAddress": cfg.address}} : {}),
+      // V9.4 (#10): sameAs entity links — the strongest cross-platform identity
+      // signal Google reads. Includes the HMG ecosystem so every client site
+      // also strengthens HMG Concepts' own graph.
+      ...((() => { const s = Object.values(cfg.socials || {}).filter(Boolean); s.push('https://hmgconcepts.pages.dev/'); return { "sameAs": s }; })()),
       "application": {
         "@type":"SoftwareApplication",
         "name":"School Connect",
@@ -1059,6 +1072,10 @@ if (window.CRUD) CRUD.init(sb);
         "publisher":{"@type":"Organization","name":"HMG Concepts","url":"https://hmgconcepts.pages.dev/"}
       }
     };
+    const socialDefs = [['facebook','Facebook','📘'],['twitter','X (Twitter)','🐦'],['instagram','Instagram','📸'],['youtube','YouTube','▶️'],['whatsapp','WhatsApp','💬'],['linkedin','LinkedIn','💼'],['tiktok','TikTok','🎵']];
+    const socialLinks = socialDefs.filter(([k]) => (cfg.socials||{})[k]).map(([k,label,icon]) =>
+      `<a href="${esc(cfg.socials[k])}" target="_blank" rel="noopener" title="${label}" style="font-size:1.3rem;text-decoration:none">${icon}</a>`).join(' ');
+    const socialBar = socialLinks ? `<div style="display:flex;gap:14px;justify-content:center;margin:10px 0">${socialLinks}</div>` : '';
     const contactBits = [
       cfg.address ? `<li>📍 ${esc(cfg.address)}</li>` : '',
       cfg.phone ? `<li>📞 <a href="tel:${esc(cfg.phone)}">${esc(cfg.phone)}</a></li>` : '',
@@ -1150,6 +1167,7 @@ ${Generator.bellAndBanner(cfg)}
       </div>
     </div>
     <div class="footer-bottom">
+      ${socialBar}
       © ${new Date().getFullYear()} ${name} · Developed by <a href="https://hmgtechnologies.pages.dev" target="_blank" rel="noopener" style="color:#94a3b8">HMG Technologies</a>
     </div>
   </div>
