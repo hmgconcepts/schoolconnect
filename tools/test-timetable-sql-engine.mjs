@@ -35,4 +35,23 @@ insert into teacher_availability(teacher,available_days)values('PT2',array['Tues
 const out4=(await db.query(`select public.generate_timetable('JSS 1','2026/2027','First Term',6)d`)).rows[0].d;
 const rows4=(await db.query(`select day from timetable where class='JSS 1' and subject like 'Chemistry%'`)).rows;
 if(rows4.some(x=>x.day!=='Tuesday'))throw Error('v9.1 intersection (req∩teacher days) violated: '+JSON.stringify(rows4));
-console.log(JSON.stringify({ok:true,placed:out.placed,unplaced:out.unplaced,restricted_days_respected:true,cross_class_teacher_conflict_avoided:true,break_period_type:numeric,v79_period_map:true,v79_blocked_slot:true,v79_short_friday:true,v91_double_adjacent:true,v91_max_period:true,v91_teacher_availability_always:true,v91_intersection:true},null,2));await db.close();
+// V9.4 (#7) regression: MANY subjects with doubles — EVERY one must get its pairs
+await db.exec(`delete from timetable where class='JSS 1';delete from timetable_requirements;delete from teacher_availability;
+insert into timetable_requirements(class,subject,teacher,periods_per_week,double_periods)values
+('JSS 1','Physics','T1',4,2),('JSS 1','Chemistry','T2',4,2),('JSS 1','Biology','T3',4,2),('JSS 1','F-Maths','T4',4,2);
+insert into timetable_requirements(class,subject,teacher,periods_per_week)values('JSS 1','English','T5',6),('JSS 1','Maths','T6',6);`);
+const out5=(await db.query(`select public.generate_timetable('JSS 1','2026/2027','First Term',6)d`)).rows[0].d;
+if(!out5.ok)throw Error('v9.4 generation failed '+JSON.stringify(out5));
+const rows5=(await db.query(`select day,period,subject from timetable where class='JSS 1'`)).rows;
+for(const s of ['Physics','Chemistry','Biology','F-Maths']){
+  const dbls=rows5.filter(x=>x.subject===s+' (double)');
+  if(dbls.length!==4)throw Error('v9.4 two-phase failed: '+s+' has '+dbls.length+' double slots (expected 4)');
+  const byDay={};dbls.forEach(x=>{(byDay[x.day]=byDay[x.day]||[]).push(Number(x.period));});
+  for(const[day,ps]of Object.entries(byDay)){ps.sort((a,b)=>a-b);for(let i=0;i<ps.length;i+=2)if(ps[i+1]!==ps[i]+1)throw Error('v9.4 pair not adjacent for '+s+' on '+day);}
+  // weekly count exact: 2 doubles (4 slots) + 0 singles = 4 = ppw
+  if(rows5.filter(x=>x.subject===s||x.subject===s+' (double)').length!==4)throw Error('v9.4 weekly count wrong for '+s);
+}
+// ghost-subject guard: ONLY demanded subjects may appear
+const allowed=new Set(['Physics (double)','Chemistry (double)','Biology (double)','F-Maths (double)','Physics','Chemistry','Biology','F-Maths','English','Maths']);
+for(const r of rows5)if(!allowed.has(r.subject)&&!r.subject.startsWith('⛔'))throw Error('v9.4 ghost subject in grid: '+r.subject);
+console.log(JSON.stringify({ok:true,placed:out.placed,unplaced:out.unplaced,restricted_days_respected:true,cross_class_teacher_conflict_avoided:true,break_period_type:numeric,v79_period_map:true,v79_blocked_slot:true,v79_short_friday:true,v91_double_adjacent:true,v91_max_period:true,v91_teacher_availability_always:true,v91_intersection:true,v94_all_subjects_get_doubles:true,v94_no_ghost_subjects:true},null,2));await db.close();
