@@ -580,6 +580,7 @@ const Generator = {
       ['database/v9.1-enterprise-pack.sql',         'database/v9.1-enterprise-pack.sql'],
       ['database/v9.2-access-and-fixes.sql',        'database/v9.2-access-and-fixes.sql'],
       ['database/v9.4-fees-and-exams.sql',          'database/v9.4-fees-and-exams.sql'],
+      ['database/v9.7-leadership-access.sql',       'database/v9.7-leadership-access.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
