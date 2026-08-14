@@ -22,14 +22,18 @@ for (let i = 2; i < process.argv.length; i++) {
   const a = process.argv[i];
   if (a.startsWith('--')) { args[a.slice(2)] = process.argv[i + 1]; i++; }
 }
-if (!args.salt || !args.expires) {
-  console.error('Usage: node tools/make-license-key.mjs --salt "SECRET" --expires YYYY-MM-DD [--grace 7] [--status active] [--plan ...] [--cycle ...] [--renew-url ...] [--lock-message ...]');
+if (!args.salt || (!args.expires && args.model !== 'lifetime')) {
+  console.error('Usage: node tools/make-license-key.mjs --salt "SECRET" --expires YYYY-MM-DD [--model subscription|lifetime] [--grace 7] [--status active|suspended] [--plan ...] [--cycle ...] [--renew-url ...] [--lock-message ...]');
+  console.error('  Lifetime conversion: node tools/make-license-key.mjs --salt "SECRET" --model lifetime');
   process.exit(1);
 }
-if (!/^\d{4}-\d{2}-\d{2}$/.test(args.expires)) { console.error('--expires must be YYYY-MM-DD'); process.exit(1); }
+if (args.expires && !/^\d{4}-\d{2}-\d{2}$/.test(args.expires)) { console.error('--expires must be YYYY-MM-DD'); process.exit(1); }
+if (args.model === 'lifetime' && !args.expires) args.expires = '2099-12-31'; // ignored for lifetime, kept for payload shape
 
 const payload = {
-  model: 'subscription',
+  /* V9.9 (#8): --model lifetime converts a subscription client to one-time
+     ownership with a signed key — no database access needed at the school. */
+  model: args.model === 'lifetime' ? 'lifetime' : 'subscription',
   expires_on: args.expires,
   grace_days: args.grace != null ? Math.max(0, parseInt(args.grace, 10) || 0) : 7,
   status: args.status === 'suspended' ? 'suspended' : 'active',
