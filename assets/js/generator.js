@@ -103,6 +103,7 @@ const Generator = {
       // emitter never write two separate files (exam-register.html + exam-register.html).
       exam_registrations: 'exam-register.html', 'exam-registrations': 'exam-register.html',
       exam_timetable: 'exam-timetable.html', 'exam-timetable': 'exam-timetable.html',
+      hr: 'payroll.html',  /* V9.9: HR & Payroll merged into the Payroll Register */
       ecosystem_products: 'ecosystem.html', ecosystem: 'ecosystem.html', hmg_digital_products: 'hmg-digital-products.html'
     };
     return map[id] || (id + '.html');
@@ -581,6 +582,8 @@ const Generator = {
       ['database/v9.2-access-and-fixes.sql',        'database/v9.2-access-and-fixes.sql'],
       ['database/v9.4-fees-and-exams.sql',          'database/v9.4-fees-and-exams.sql'],
       ['database/v9.7-leadership-access.sql',       'database/v9.7-leadership-access.sql'],
+      ['database/v9.9-aid-editors-subjects.sql',    'database/v9.9-aid-editors-subjects.sql'],
+      ['database/v10.0-fee-match-and-staffpay.sql', 'database/v10.0-fee-match-and-staffpay.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
