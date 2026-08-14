@@ -584,6 +584,7 @@ const Generator = {
       ['database/v9.7-leadership-access.sql',       'database/v9.7-leadership-access.sql'],
       ['database/v9.9-aid-editors-subjects.sql',    'database/v9.9-aid-editors-subjects.sql'],
       ['database/v10.0-fee-match-and-staffpay.sql', 'database/v10.0-fee-match-and-staffpay.sql'],
+      ['database/v10.1-staffpay-attendance-vetting.sql','database/v10.1-staffpay-attendance-vetting.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
