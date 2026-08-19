@@ -64,7 +64,7 @@ dedicatedIds.forEach(id => {
 
 // ---- 3. Runtime assets shipped to every generated site ----
 const runtimeAssets = [
-  'assets/js/app.js', 'assets/js/crud.js', 'assets/js/cbt-engine.js',
+  'assets/js/app.js', 'assets/js/crud.js', 'assets/js/cbt-engine.js', 'assets/js/cbt-types.js',
   'assets/js/report-engine.js', 'assets/js/notifications.js', 'assets/js/voting.js',
   'assets/js/site-help.js', 'assets/js/super.js', 'assets/js/enterprise.js',
   'assets/js/pwa-install.js', 'assets/js/analytics.js'

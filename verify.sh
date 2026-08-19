@@ -28,6 +28,7 @@ echo "[5/6] CBT scoring/tabs and sample-document workflows"
 node verify-v5-cbt-tabs.js
 node tools/test-cbt-scoring.js
 node tools/test-cbt-sql-engine.mjs
+node tools/test-cbt-advanced-types.mjs
 node tools/test-report-output.js
 node tools/test-report-bulk.js
 node tools/test-timetable-sql-engine.mjs
