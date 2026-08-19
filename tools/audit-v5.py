@@ -83,7 +83,7 @@ for repo in REPOS:
  ok(f'{repo.name}: static HTML href/src targets exist',not broken,', '.join(broken[:8]))
 
 # Cross-repository runtime parity
-common=['assets/css/style.css','assets/js/cbt-engine.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','assets/js/v57-enhancements.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/v5.3-platform-enhancements.sql','database/v5.4-portability-cbt-metrics.sql','database/v5.5-registered-cbt-identity.sql','database/v5.6-daily-fees-cbt-reset-teacher-scope.sql','database/demo-seed.sql']
+common=['assets/css/style.css','assets/js/cbt-engine.js','assets/js/cbt-types.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','assets/js/v57-enhancements.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/v5.3-platform-enhancements.sql','database/v5.4-portability-cbt-metrics.sql','database/v5.5-registered-cbt-identity.sql','database/v5.6-daily-fees-cbt-reset-teacher-scope.sql','database/demo-seed.sql']
 for rel in common:
  data=[(r/rel).read_bytes() for r in REPOS]
  ok(f'Runtime parity: {rel}',data[0]==data[1]==data[2])
@@ -153,7 +153,7 @@ ok('V9.9 HR merged into Payroll Register (redirect + no dead links)','payroll.ht
 ok('V9.9 subjects map to classes + wizard mismatch alerts','multiref' in (ROOT/'assets/js/crud.js').read_text() and 'subjectClasses' in (ROOT/'timetable-generator.html').read_text() and 'MAPPING ALERT' in (ROOT/'timetable-generator.html').read_text() and 'add column if not exists classes' in schema)
 ok('V9.9 module access control: per-module leadership switch + grants',all(x in schema for x in ['sc_module_access','leadership text not null default']) and 'acl-card' in (ROOT/'settings.html').read_text() and '_moduleAccess' in (ROOT/'assets/js/app.js').read_text())
 ok('V9.9 license: lifetime-conversion keys + live monitor',"--model lifetime" in (ROOT/'tools/make-license-key.mjs').read_text() and 'lic-monitor' in (ROOT/'license.html').read_text())
-ok('V10 fee matcher: best-match scoring (arm/dept never hard-exclude) + matched flag','BEST-MATCH SCORING' in schema and "'matched', fs.id is not null" in schema and 'No fee structure found' in (ROOT/'assets/js/crud.js').read_text())
+ok('V10 fee matcher: best-match scoring (arm/dept never hard-exclude) + matched flag','BEST-MATCH SCORING' in schema and "'matched', overridden or fs.id is not null" in schema and 'No fee structure found' in (ROOT/'assets/js/crud.js').read_text())
 ok('V10 class fee structure: Current Term default + guidance',"default:'Current Term'" in (ROOT/'assets/js/crud.js').read_text())
 ok('V10 staff dashboard: My Pay & Benefits card + loader','dash-my-pay' in (ROOT/'dashboard.html').read_text() and 'loadDashMyPay' in (ROOT/'assets/js/app.js').read_text() and 'dash-my-pay' in (ROOT/'assets/js/templates.js').read_text())
 ok('V10.1 staff pay engine: RPC + payroll pre-fill + loan auto-balance',all(x in schema for x in ['sc_staff_pay_state','sc_payroll_posts_loan','sc_loan_status_sync','repaid_from_payroll']) and 'PAYROLL SMART-FILL' in (ROOT/'assets/js/crud.js').read_text() and 'Salary breakdown' in (ROOT/'assets/js/app.js').read_text())
@@ -166,6 +166,18 @@ ok('V10.2 dash-products fills all duplicate-id containers','querySelectorAll(\'[
 ok('V10.2 password visibility toggle (global + standalone pages)','scEye' in (ROOT/'assets/js/app.js').read_text() and 'scEye' in (ROOT/'change-password.html').read_text() and 'scEye' in (ROOT/'forgot-password.html').read_text())
 ok('V10.2 group auto-tick + hard block + self-heal + multi-class summary',all(x in (ROOT/'timetable-generator.html').read_text() for x in ['groupSubjectsChanged','Class–subject mismatch','SELF-HEAL','all ticked classes','🎓 group']))
 ok('V10.2 status_manager ACL-governed (seeded none)',"'status_manager','none'" in schema and 'status_manager' in (ROOT/'settings.html').read_text() and "LEADERSHIP_OWNER_ONLY:new Set(['site_license','license','developer'])" in (ROOT/'assets/js/app.js').read_text())
+# V10.3 (pass 51): advanced CBT question types + Prompt Studio + DL/Assignment prompts + fee override
+types_js=(ROOT/'assets/js/cbt-types.js').read_text();exam_pg=(ROOT/'cbt-exam.html').read_text();prompts=(ROOT/'cbt-prompts.html').read_text();dl=(ROOT/'digital_library.html').read_text();assign=(ROOT/'assignments.html').read_text();engine_js=(ROOT/'assets/js/cbt-engine.js').read_text()
+ok('V10.3 cbt-types engine: structured renderers + grader + legend + aliases',all(x in types_js for x in ['matching:','ordering:','categorization:','matrix:','hot_text:','multi_numeric:','cloze:','legendHTML','seededShuffle','w.CBTTypes = CBTTypes','isBlank','hasKey']))
+ok('V10.3 exam player integrates advanced types additively',all(x in exam_pg for x in ['cbt-types.js','CBTTypes.handles','scq-holder','refreshMeters','hasAnswer','showLegend','How to answer']))
+ok('V10.3 server engine: fraction grading + items reader + sanitised getter',all(x in schema for x in ['sc_cbt_grade_fraction','sc_cbt_items','RUNNING: School Connect CBT advanced types + fee override pack V10.3']) and schema.count('create or replace function public.sc_cbt_grade_fraction')==1)
+ok('V10.3 public getter strips structured keys but re-emits render shapes',all(x in schema for x in ["jsonb_build_object('blanks'","'pool',pool","filtered-'items'-'pairs'"]))
+ok('V10.3 Prompt Studio: pack-specific prompts incl. DL + assignment packs',all(x in prompts for x in ['ps-pack','dl_article','dl_video','assignment','PROMPT STUDIO','QUESTION TYPE DISTRIBUTION','OUTPUT CONTRACT','Save as .csv','subjectTopics'.replace('subjectTopics','ps-subject-topics')]))
+ok('V10.3 DL + assignments deep-link into the Prompt Studio','cbt-prompts.html?pack=dl_article' in dl and 'cbt-prompts.html?pack=dl_video' in dl and 'cbt-prompts.html?pack=assignment' in assign and "get('pack')" in prompts)
+ok('V10.3 Digital Library Send-to-CBT bridge','sendToCBT' in dl and '🧪 Send to CBT' in dl and 'Reading CBT' in dl)
+ok('V10.3 fee override honoured end-to-end (issue 4 root cause)','total_overridden' in schema and "'override', overridden" in schema and 'total_overridden' in (ROOT/'assets/js/crud.js').read_text() and 'scOverridden' in (ROOT/'assets/js/crud.js').read_text() and 'personal total' in (ROOT/'assets/js/app.js').read_text())
+ok('V10.3 client engine: 17-col CSV parse + structured validation + fraction preview',all(x in engine_js for x in ['QUESTION_TYPES_ADVANCED','mrq_aon','pairs: get','items: get','CBTTypes.handles','structuredTypes']))
+ok('V10.3 template CSV demonstrates structured JSON shapes',all(x in (ROOT/'cbt.html').read_text() for x in ['matching,','ordering,','multi_numeric,','hot_text,','assertion_reason,','cloze,']))
 ok('Demo generic amount is explicitly numeric','x.amount::numeric' in seed)
 port=(ROOT/'assets/js/data-portability.js').read_text();admin=(ROOT/'admin-data.html').read_text()
 ok('Portable JSON/CSV archives are paginated and re-importable',all(x in port+admin for x in ['school-connect-portable-v1','fetchAll','exportFull','inspectFile','importArchive','Portable Data Archive Center','runPortableImport']))
