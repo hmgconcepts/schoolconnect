@@ -588,6 +588,7 @@ const Generator = {
       ['database/v10.1-staffpay-attendance-vetting.sql','database/v10.1-staffpay-attendance-vetting.sql'],
       ['database/v10.2-acl-status-manager.sql',     'database/v10.2-acl-status-manager.sql'],
       ['database/v10.3-cbt-advanced-types.sql',     'database/v10.3-cbt-advanced-types.sql'],
+      ['database/v10.4-cbt-multisubject-rls.sql',   'database/v10.4-cbt-multisubject-rls.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
