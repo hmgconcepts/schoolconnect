@@ -590,6 +590,7 @@ const Generator = {
       ['database/v10.3-cbt-advanced-types.sql',     'database/v10.3-cbt-advanced-types.sql'],
       ['database/v10.4-cbt-multisubject-rls.sql',   'database/v10.4-cbt-multisubject-rls.sql'],
       ['database/v10.5-dl-cbt-link.sql',            'database/v10.5-dl-cbt-link.sql'],
+      ['database/v10.6-cbt-review-community.sql',   'database/v10.6-cbt-review-community.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
