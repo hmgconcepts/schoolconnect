@@ -595,6 +595,8 @@ const Generator = {
       ['database/v10.6-cbt-review-community.sql',   'database/v10.6-cbt-review-community.sql'],
       ['database/v10.7-fee-locks-arrears.sql',      'database/v10.7-fee-locks-arrears.sql'],
       ['database/v10.8-fee-recompute.sql',          'database/v10.8-fee-recompute.sql'],
+      ['database/v10.9-lock-coverage.sql',          'database/v10.9-lock-coverage.sql'],
+      ['database/v10.9b-fee-doctor.sql',            'database/v10.9b-fee-doctor.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
