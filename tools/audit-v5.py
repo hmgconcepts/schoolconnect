@@ -83,7 +83,7 @@ for repo in REPOS:
  ok(f'{repo.name}: static HTML href/src targets exist',not broken,', '.join(broken[:8]))
 
 # Cross-repository runtime parity
-common=['assets/css/style.css','assets/js/cbt-engine.js','assets/js/cbt-types.js','assets/js/cbt-richtext.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','assets/js/v57-enhancements.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/v5.3-platform-enhancements.sql','database/v5.4-portability-cbt-metrics.sql','database/v5.5-registered-cbt-identity.sql','database/v5.6-daily-fees-cbt-reset-teacher-scope.sql','database/demo-seed.sql']
+common=['assets/css/style.css','assets/js/cbt-engine.js','assets/js/cbt-types.js','assets/js/cbt-richtext.js','assets/js/cbt-speech.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','assets/js/v57-enhancements.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/v5.3-platform-enhancements.sql','database/v5.4-portability-cbt-metrics.sql','database/v5.5-registered-cbt-identity.sql','database/v5.6-daily-fees-cbt-reset-teacher-scope.sql','database/demo-seed.sql']
 for rel in common:
  data=[(r/rel).read_bytes() for r in REPOS]
  ok(f'Runtime parity: {rel}',data[0]==data[1]==data[2])
@@ -214,6 +214,13 @@ ok('V10.7 fee-discipline locks end-to-end',all(x in schema for x in ['sc_set_stu
 ok('V10.7 manual opening arrears end-to-end','opening_arrears' in schema and "'opening','term','Before School Connect'".replace("'opening','term'","'term'") in schema and 'opening_arrears' in crud7 and 'pre-School-Connect balance' in crud7)
 ok('V10.7 community feed: server-side module filter + audience trigger','safeModuleRows' in app7 and 'sc_community_audience' in schema and 'trg_community_audience' in schema)
 ok('V10.7 calculator/keyboard exhaustive (hyperbolic, constants, stats groups)',all(x in engine7 for x in ['sinh','cosh','tanh','6.02214076E23','Vectors & more','Statistics','ⁿ√']))
+# V10.8 (pass 56): report-lock full block, fee ledger self-heal, read-aloud with Nigerian languages
+speech8=(ROOT/'assets/js/cbt-speech.js').read_text();exam8=(ROOT/'cbt-exam.html').read_text();app8=(ROOT/'assets/js/app.js').read_text();crud8=(ROOT/'assets/js/crud.js').read_text()
+ok('V10.8 report lock blocks the WHOLE page + nav + results/cbt_results RLS','Report card unavailable' in app8 and 'reportPages' in app8 and 'sc_report_hidden_for(auth.uid(), s.id)' in schema and schema.count('not public.sc_report_hidden_for')>=4 and 'RUNNING: School Connect fee-recompute pack V10.8' in schema)
+ok('V10.8 fee ledger self-heal: RPC + statement triggers + client hooks',all(x in schema for x in ['sc_recompute_fee_rows','sc_fee_rows_autoheal','trg_fee_rows_autoheal_ins','trg_fee_rows_autoheal_upd','trg_fee_rows_autoheal_del','pg_trigger_depth']) and 'recomputeFeeLedger' in crud8 and 'RECOMPUTE every remaining payment row' in crud8)
+ok('V10.8 read-aloud engine shipped + mounted in exam player',(ROOT/'assets/js/cbt-speech.js').exists() and 'CBTSpeech' in exam8 and 'cbt-speech.js' in exam8 and 'sc-speech-host' in exam8)
+ok('V10.8 read-aloud speaks Yoruba/Igbo/Hausa (detection + voices + samples)',all(x in speech8 for x in ['detectLang','yo-NG','ig-NG','ha-NG','voiceByLang','Yorùbá','Sannu','Kedu','Báwo ni']))
+ok('V10.8 multi-subject pack carries all auto-graded types','Multi-subject paper (all auto-graded types)' in (ROOT/'cbt-prompts.html').read_text() and 'TYPE SPREAD PER SUBJECT' in (ROOT/'cbt-prompts.html').read_text())
 ok('Demo generic amount is explicitly numeric','x.amount::numeric' in seed)
 port=(ROOT/'assets/js/data-portability.js').read_text();admin=(ROOT/'admin-data.html').read_text()
 ok('Portable JSON/CSV archives are paginated and re-importable',all(x in port+admin for x in ['school-connect-portable-v1','fetchAll','exportFull','inspectFile','importArchive','Portable Data Archive Center','runPortableImport']))
