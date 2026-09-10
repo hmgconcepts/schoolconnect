@@ -32,6 +32,8 @@ node tools/test-cbt-advanced-types.mjs
 node tools/test-cbt-rls-multisubject.mjs
 node tools/test-cbt-review.mjs
 node tools/test-fee-locks-arrears.mjs
+node tools/test-fee-recompute.mjs
+node tools/test-lock-coverage.mjs
 node tools/test-report-output.js
 node tools/test-report-bulk.js
 node tools/test-timetable-sql-engine.mjs
