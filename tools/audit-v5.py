@@ -83,7 +83,7 @@ for repo in REPOS:
  ok(f'{repo.name}: static HTML href/src targets exist',not broken,', '.join(broken[:8]))
 
 # Cross-repository runtime parity
-common=['assets/css/style.css','assets/js/cbt-engine.js','assets/js/cbt-types.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','assets/js/v57-enhancements.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/v5.3-platform-enhancements.sql','database/v5.4-portability-cbt-metrics.sql','database/v5.5-registered-cbt-identity.sql','database/v5.6-daily-fees-cbt-reset-teacher-scope.sql','database/demo-seed.sql']
+common=['assets/css/style.css','assets/js/cbt-engine.js','assets/js/cbt-types.js','assets/js/cbt-richtext.js','assets/js/report-engine.js','assets/js/crud.js','assets/js/site-help.js','assets/js/v57-enhancements.js','database/complete-schema.sql','database/cbt-v5.1-zero-score-hotfix.sql','database/cbt-v5.1.1-getter-school-settings-fix.sql','database/v5.3-platform-enhancements.sql','database/v5.4-portability-cbt-metrics.sql','database/v5.5-registered-cbt-identity.sql','database/v5.6-daily-fees-cbt-reset-teacher-scope.sql','database/demo-seed.sql']
 for rel in common:
  data=[(r/rel).read_bytes() for r in REPOS]
  ok(f'Runtime parity: {rel}',data[0]==data[1]==data[2])
@@ -204,6 +204,16 @@ ok('V10.6 community records default audience=all (Lost & Found feed)','community
 ok('V10.6 notifications: audience filter BEFORE limit (badge == dropdown)','filter(n => Notifications.allowedForMe(n)).slice(0, limit)' in notif6 and 'const scan' in notif6)
 ok('V10.6 sticky tables: frozen headers + pinned identity column everywhere','applyStickyTable' in crud6 and 'sc-col-pin' in crud6 and 'applyStickyTable' in (ROOT/'assets/js/app.js').read_text())
 ok('V10.6 bank validation is self-sufficient (no CBTTypes dependency)','LOCAL_ALIAS' in engine6 and 'localParseList' in engine6)
+# V10.7 (pass 55): ultimate pack, richtext, locks, arrears, community feed
+prompts7=(ROOT/'cbt-prompts.html').read_text();app7=(ROOT/'assets/js/app.js').read_text();crud7=(ROOT/'assets/js/crud.js').read_text();engine7=(ROOT/'assets/js/cbt-engine.js').read_text()
+ok('V10.7 Auto-Graded Ultimate Pack (renamed, auto-graded only, no code type)','Auto-Graded Ultimate Pack' in prompts7 and 'Enterprise — full 17+ type paper' not in prompts7 and "Col8: code'" not in prompts7 and 'Type=code' not in prompts7)
+ok('V10.7 Explanation Standard injected + checked in every prompt','EXPLANATION_STANDARD' in prompts7 and 'DISTRACTOR AUTOPSY' in prompts7 and 'EXPLANATION STANDARD — APPLIES TO EVERY ROW' in prompts7 and 'all four moves' in prompts7)
+ok('V10.7 STEM & materials packs (multiline math + upload + link)',all(x in prompts7 for x in ['multiline_math','material_upload','material_link','ENCODING RULES (MANDATORY)','frac{NUMERATOR}{DENOMINATOR}'.replace('frac','\\\\frac')]))
+ok('V10.7 richtext engine shipped + exam player renders maths',(ROOT/'assets/js/cbt-richtext.js').exists() and 'CBTRich' in (ROOT/'cbt-exam.html').read_text() and 'cbt-richtext.js' in (ROOT/'cbt-exam.html').read_text())
+ok('V10.7 fee-discipline locks end-to-end',all(x in schema for x in ['sc_set_student_locks','sc_my_access_state','sc_report_hidden_for','portal_locked','report_lock_message','RUNNING: School Connect fee-locks/arrears/community pack V10.7']) and 'toggleStudentLock' in crud7 and 'bulkStudentLock' in crud7 and 'Portal access suspended' in app7 and 'sc-report-lock-banner' in app7)
+ok('V10.7 manual opening arrears end-to-end','opening_arrears' in schema and "'opening','term','Before School Connect'".replace("'opening','term'","'term'") in schema and 'opening_arrears' in crud7 and 'pre-School-Connect balance' in crud7)
+ok('V10.7 community feed: server-side module filter + audience trigger','safeModuleRows' in app7 and 'sc_community_audience' in schema and 'trg_community_audience' in schema)
+ok('V10.7 calculator/keyboard exhaustive (hyperbolic, constants, stats groups)',all(x in engine7 for x in ['sinh','cosh','tanh','6.02214076E23','Vectors & more','Statistics','ⁿ√']))
 ok('Demo generic amount is explicitly numeric','x.amount::numeric' in seed)
 port=(ROOT/'assets/js/data-portability.js').read_text();admin=(ROOT/'admin-data.html').read_text()
 ok('Portable JSON/CSV archives are paginated and re-importable',all(x in port+admin for x in ['school-connect-portable-v1','fetchAll','exportFull','inspectFile','importArchive','Portable Data Archive Center','runPortableImport']))
