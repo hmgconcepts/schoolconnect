@@ -253,6 +253,15 @@ if _fcroot.exists():
     ok('V11.2 standalone fleet console: multi-page, keep-alive + health + incidents + reports + wallboard + toolkit, privacy-safe',all(x in _fcall for x in ['sc_keep_alive','sc_license_status','pingAll','checkAll','exportList','importList','PAUSE RISK','localStorage','Incident','Wallboard','FLEET_TARGETS','uptimePct','sparkline','renewalDays',"payload.role !== 'anon'"]))
 else:
     ok('V11.2 standalone fleet console: lives in its own repo (hmg-fleet-console) outside the generator',True)
+# V11.3 (pass 61): console login gate, bot, brand, forced PWA install; SC license page advertises the console
+lic113=(ROOT/'license.html').read_text();tpl113=(ROOT/'assets/templates/pages/license.html').read_text()
+ok('V11.3 license page (live + template) points reps at the standalone Fleet Console','HMG Fleet Console' in lic113 and 'HMG Fleet Console' in tpl113)
+if _fcroot.exists():
+    _fcauth='\n'.join((_fcroot/f).read_text() for f in ['login.html','assets/js/auth.js','assets/js/auth-config.js','assets/js/bot.js','assets/js/brand.js','assets/js/pwa-install.js','settings.html','sw.js'] if (_fcroot/f).exists())
+    ok('V11.3 console login gate: single-config credentials, hashed+salted, throttled, session tokens',all(x in _fcauth for x in ['FLEET_AUTH','PASS_HASH','SALT','MAX_ATTEMPTS','makeToken','hmg-fleet-lock','genAuth']) and 'ChangeMe#2026' not in (_fcroot/'assets/js/auth-config.js').read_text().split("PASS_HASH")[1][:200])
+    ok('V11.3 Fleet Bot: rules-based, page descriptions for all pages, live fleet answers, no AI API',all(x in _fcauth for x in ['FleetBot','PAGES','liveAnswer','who is at risk','sc_keep_alive']) and 'api.openai.com' not in _fcauth)
+    ok('V11.3 console brand: HMG CONCEPTS identity + ecosystem embedded (About page, footer, bot)',all(x in _fcauth+((_fcroot/'about.html').read_text()) for x in ['His Marvellous Grace','Adewale Samson Adeagbo','hmgconcepts.pages.dev','hmgtechnologies.pages.dev','wa.me/2348100866322']))
+    ok('V11.3 console forced-install PWA: banner + iOS guidance + shortcuts + real icons',all(x in _fcauth+((_fcroot/'manifest.json').read_text()) for x in ['beforeinstallprompt','Add to Home Screen','logo-maskable-512.png','shortcuts','pwa-banner']) and (_fcroot/'assets/img/logo-512.png').exists())
 ok('Demo generic amount is explicitly numeric','x.amount::numeric' in seed)
 port=(ROOT/'assets/js/data-portability.js').read_text();admin=(ROOT/'admin-data.html').read_text()
 ok('Portable JSON/CSV archives are paginated and re-importable',all(x in port+admin for x in ['school-connect-portable-v1','fetchAll','exportFull','inspectFile','importArchive','Portable Data Archive Center','runPortableImport']))
