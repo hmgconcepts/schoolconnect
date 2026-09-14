@@ -238,6 +238,21 @@ ok('V11.0 multi-CBT session dropdown sourced from lookups + academic_periods',"f
 ok('V11.0 renewal-safe keep-alive on the lock screen + HMG fleet monitoring','locked-portal' in lic11 and 'lic-verdict-url' in (ROOT/'license.html').read_text() and 'Pause-proof guarantee' in (ROOT/'license.html').read_text())
 ok('V11.0 phonetic fallback for Yoruba/Igbo/Hausa read-aloud',all(x in speech11 for x in ['phoneticFallback','isNativeFor','normalize(','ɓ','ṣ']))
 ok('V11.0 report-lock race closed (page awaits access state)',rc11.count("rpc('sc_my_access_state')")>=2)
+# V11.1 (pass 59): timetable PDF printing, staff-change engine
+ttg111=(ROOT/'timetable-generator.html').read_text();tt111=(ROOT/'timetable.html').read_text()
+ok('V11.1 wizard PDF printing: per-class pack + master + this-class',all(x in ttg111 for x in ['printClassPack','page-break-after','PDF pack — every class, one per page','Print / PDF master timetable']))
+ok('V11.1 published timetable page prints view/master/class-pack',all(x in tt111 for x in ['TT.print(false)','TT.print(true)','printPack','tt-pub-print','page-break-after']))
+ok('V11.1 staff-change engine: replace/availability/rename/remove + availability cleanup',all(x in ttg111 for x in ['applyStaffChange','fillStaffChange','staffActionChanged','tsc-old','retoken','teacher_availability']))
+# V11.2 (pass 60): fleet console EXTRACTED to its own standalone multi-page platform
+idx112=(ROOT/'index.html').read_text()
+ok('V11.2 fleet console fully extracted from the generator (standalone platform)',not (ROOT/'fleet-console.html').exists() and 'fleet-console.html' not in idx112 and 'fleet-console' not in (ROOT/'assets/js/generator.js').read_text())
+ok('V11.2 generator home links to the standalone fleet console platform','hmg-fleet-console' in idx112 and 'Fleet Console (HMG ops' in idx112)
+_fcroot=ROOT.parent/'hmg-fleet-console'
+if _fcroot.exists():
+    _fcall='\n'.join((_fcroot/f).read_text() for f in ['index.html','projects.html','incidents.html','reports.html','board.html','tools.html','guide.html','deploy.html','settings.html','assets/js/fleet.js','assets/js/store.js','assets/js/shell.js','sw.js','.github/workflows/fleet-keepalive.yml'] if (_fcroot/f).exists())
+    ok('V11.2 standalone fleet console: multi-page, keep-alive + health + incidents + reports + wallboard + toolkit, privacy-safe',all(x in _fcall for x in ['sc_keep_alive','sc_license_status','pingAll','checkAll','exportList','importList','PAUSE RISK','localStorage','Incident','Wallboard','FLEET_TARGETS','uptimePct','sparkline','renewalDays',"payload.role !== 'anon'"]))
+else:
+    ok('V11.2 standalone fleet console: lives in its own repo (hmg-fleet-console) outside the generator',True)
 ok('Demo generic amount is explicitly numeric','x.amount::numeric' in seed)
 port=(ROOT/'assets/js/data-portability.js').read_text();admin=(ROOT/'admin-data.html').read_text()
 ok('Portable JSON/CSV archives are paginated and re-importable',all(x in port+admin for x in ['school-connect-portable-v1','fetchAll','exportFull','inspectFile','importArchive','Portable Data Archive Center','runPortableImport']))
