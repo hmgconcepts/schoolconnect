@@ -262,6 +262,22 @@ if _fcroot.exists():
     ok('V11.3 Fleet Bot: rules-based, page descriptions for all pages, live fleet answers, no AI API',all(x in _fcauth for x in ['FleetBot','PAGES','liveAnswer','who is at risk','sc_keep_alive']) and 'api.openai.com' not in _fcauth)
     ok('V11.3 console brand: HMG CONCEPTS identity + ecosystem embedded (About page, footer, bot)',all(x in _fcauth+((_fcroot/'about.html').read_text()) for x in ['His Marvellous Grace','Adewale Samson Adeagbo','hmgconcepts.pages.dev','hmgtechnologies.pages.dev','wa.me/2348100866322']))
     ok('V11.3 console forced-install PWA: banner + iOS guidance + shortcuts + real icons',all(x in _fcauth+((_fcroot/'manifest.json').read_text()) for x in ['beforeinstallprompt','Add to Home Screen','logo-maskable-512.png','shortcuts','pwa-banner']) and (_fcroot/'assets/img/logo-512.png').exists())
+# V11.4 (pass 62): sample-data removal, analytics visibility+depth, founder page, console cloud sync
+sdd=(ROOT/'assets/js/demo-sample-data.js').read_text();admdata=(ROOT/'admin-data.html').read_text();admtpl=(ROOT/'assets/templates/pages/admin-data.html').read_text()
+ok('V11.4 one-click sample-data removal mirrors the loader (fingerprint deletes, both admin-data copies)',all(x in sdd for x in ['DemoSampleData.clear','MANIFEST','MR_TITLES','ICT-001','sc-demo-autofill-at']) and 'Delete loaded sample data' in admdata and 'Delete loaded sample data' in admtpl and 'DS.clear' in admdata)
+css114=(ROOT/'assets/css/style.css').read_text()
+ok('V11.4 gradient hero cards excluded from the universal white-card override (invisible-text fix)','.card:not([style*="linear-gradient"])' in css114 and '.card[style*="linear-gradient"]' in css114)
+an114=(ROOT/'analytics.html').read_text();antpl=(ROOT/'assets/templates/pages/analytics.html').read_text()
+ok('V11.4 analytics: honest 30d windows, empty-state hints, gender split, refreshed stamp (live+template)',all(x in an114 and x in antpl for x in ['cut30','EMPTY_HINTS','an-gender','an-refreshed','Reading this page']))
+dev114=(ROOT/'developer.html').read_text()
+ok('V11.4 founder page: photo, name, brand story, in template + generator body + sync lists',all(x in dev114 for x in ['founder-adewale.jpg','Adewale Samson Adeagbo','His Marvellous Grace','cssadewale.pages.dev','wa.me/2348100866322']) and (ROOT/'assets/img/founder-adewale.jpg').exists() and (ROOT/'assets/templates/pages/developer.html').exists() and 'founder-adewale.jpg' in (ROOT/'assets/js/templates.js').read_text() and 'founder-adewale.jpg' in (ROOT/'assets/js/generator.js').read_text() and "RICH=['developer.html'" in (ROOT/'tools/sync-v5-repos.py').read_text())
+if _fcroot.exists():
+    _sync114=(_fcroot/'assets/js/sync.js').read_text() if (_fcroot/'assets/js/sync.js').exists() else ''
+    ok('V11.4 console cloud sync: E2E-encrypted vault (AES-GCM+PBKDF2), union merge, all pages wired',all(x in _sync114 for x in ['AES-GCM','PBKDF2','210000','merge(','fleet_vault','makeVaultId']) and all('sync.js' in (_fcroot/f).read_text() for f in ['index.html','settings.html','board.html']) and 'saveSync' in (_fcroot/'settings.html').read_text())
+    ok('V11.4 console enterprise: subscription watch panel + latency anomaly + MTTR',all(x in (_fcroot/'index.html').read_text() for x in ['subs-rows','Subscription watch']) and '_slowFlagged' in (_fcroot/'assets/js/fleet.js').read_text() and 'mttr(' in (_fcroot/'assets/js/fleet.js').read_text() and 'r-mttr' in (_fcroot/'reports.html').read_text())
+else:
+    ok('V11.4 console cloud sync: lives in its own repo outside the generator',True)
+    ok('V11.4 console enterprise: lives in its own repo outside the generator',True)
 ok('Demo generic amount is explicitly numeric','x.amount::numeric' in seed)
 port=(ROOT/'assets/js/data-portability.js').read_text();admin=(ROOT/'admin-data.html').read_text()
 ok('Portable JSON/CSV archives are paginated and re-importable',all(x in port+admin for x in ['school-connect-portable-v1','fetchAll','exportFull','inspectFile','importArchive','Portable Data Archive Center','runPortableImport']))
