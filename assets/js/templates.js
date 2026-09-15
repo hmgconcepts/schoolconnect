@@ -355,7 +355,7 @@ ${T.setupRequiredBanner()}
       'cbt','cbt_prompts','entrance','assignments','timetable','timetable_generator','sow',
       'lesson_plans','library','digital_library','eresources','announcements','events','messages','inbox','exam_timetable',
       'complaints','broadcast','diary','checkin','checkin_staff','checkin-staff','punctuality','behaviour','conduct','health','support_plans',
-      'certificates','reports','directory','rubrics','counselling','substitutions','helpdesk','book_request', 'ecosystem_products','hmg_digital_products',
+      'certificates','reports','directory','idcards','rubrics','counselling','substitutions','helpdesk','book_request', 'ecosystem_products','hmg_digital_products',
       /* V6.4 #5: teachers fill domain ratings & report comments for their students */
       'affective_traits','psychomotor_traits','report_comments','developer'
     ]);
