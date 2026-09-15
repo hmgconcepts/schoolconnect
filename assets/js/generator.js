@@ -317,6 +317,7 @@ const Generator = {
     if (CSS) zip.file('assets/css/style.css', CSS);
     const hmgLogo=await Generator.loadFile('assets/img/hmg-technologies.svg'); if(hmgLogo) zip.file('assets/img/hmg-technologies.svg',hmgLogo);
     const demoSig=await Generator.loadFile('assets/img/demo-signature.svg');if(demoSig)zip.file('assets/img/demo-signature.svg',demoSig);
+    const founderPic=await Generator.loadBinary('assets/img/founder-adewale.jpg');if(founderPic)zip.file('assets/img/founder-adewale.jpg',founderPic,{binary:true});
     // HMG Ecosystem service flyers are first-party marketing assets used by the generated client page.
     for (let i=1;i<=8;i++){ const flyer=await Generator.loadBinary('assets/img/ecosystem-flyers/flyer-'+i+'.jpg'); if(flyer) zip.file('assets/img/ecosystem-flyers/flyer-'+i+'.jpg',flyer,{binary:true}); }
 
