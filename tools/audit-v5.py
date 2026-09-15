@@ -165,7 +165,7 @@ ok('V10.1 module access: No-access level end-to-end',"'none'" in schema[schema.r
 ok('V10.2 dash-products fills all duplicate-id containers','querySelectorAll(\'[id="dash-products"]\')' in (ROOT/'assets/js/app.js').read_text())
 ok('V10.2 password visibility toggle (global + standalone pages)','scEye' in (ROOT/'assets/js/app.js').read_text() and 'scEye' in (ROOT/'change-password.html').read_text() and 'scEye' in (ROOT/'forgot-password.html').read_text())
 ok('V10.2 group auto-tick + hard block + self-heal + multi-class summary',all(x in (ROOT/'timetable-generator.html').read_text() for x in ['groupSubjectsChanged','Class–subject mismatch','SELF-HEAL','all ticked classes','🎓 group']))
-ok('V10.2 status_manager ACL-governed (seeded none)',"'status_manager','none'" in schema and 'status_manager' in (ROOT/'settings.html').read_text() and "LEADERSHIP_OWNER_ONLY:new Set(['site_license','license','developer'])" in (ROOT/'assets/js/app.js').read_text())
+ok('V10.2 status_manager ACL-governed (seeded none)',"'status_manager','none'" in schema and 'status_manager' in (ROOT/'settings.html').read_text() and "LEADERSHIP_OWNER_ONLY:new Set(['site_license','license'])" in (ROOT/'assets/js/app.js').read_text())
 # V10.3 (pass 51): advanced CBT question types + Prompt Studio + DL/Assignment prompts + fee override
 types_js=(ROOT/'assets/js/cbt-types.js').read_text();exam_pg=(ROOT/'cbt-exam.html').read_text();prompts=(ROOT/'cbt-prompts.html').read_text();dl=(ROOT/'digital_library.html').read_text();assign=(ROOT/'assignments.html').read_text();engine_js=(ROOT/'assets/js/cbt-engine.js').read_text()
 ok('V10.3 cbt-types engine: structured renderers + grader + legend + aliases',all(x in types_js for x in ['matching:','ordering:','categorization:','matrix:','hot_text:','multi_numeric:','cloze:','legendHTML','seededShuffle','w.CBTTypes = CBTTypes','isBlank','hasKey']))
@@ -278,6 +278,18 @@ if _fcroot.exists():
 else:
     ok('V11.4 console cloud sync: lives in its own repo outside the generator',True)
     ok('V11.4 console enterprise: lives in its own repo outside the generator',True)
+# V11.5 (pass 63): developer page for every role; console Drive backup + webhooks + palette + timeouts
+app115=(ROOT/'assets/js/app.js').read_text();tpl115=(ROOT/'assets/js/templates.js').read_text()
+ok('V11.5 developer page visible to every role (engine: whitelists + roleAllow; cockpit stays owner-only)',"LEADERSHIP_OWNER_ONLY:new Set(['site_license','license'])" in app115 and app115.count("'hmg_digital_products','developer'")>=2 and tpl115.count(",'developer'\n    ]);")==3)
+ok('V11.5 developer nav link carries family roles in baked pages','data-module-id="developer" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student"' in (ROOT/'dashboard.html').read_text())
+if _fcroot.exists():
+    _gd115=((_fcroot/'assets/js/gdrive.js').read_text() if (_fcroot/'assets/js/gdrive.js').exists() else '')+((_fcroot/'assets/js/gdrive-config.js').read_text() if (_fcroot/'assets/js/gdrive-config.js').exists() else '')
+    ok('V11.5 console Google Drive backup: appdata scope only, GIS token flow, rotation, merge-restore, committed client id pattern',all(x in _gd115 for x in ['drive.appdata','initTokenClient','pruneList','appDataFolder','SyncVault.merge','CLIENT_ID']) and 'client_secret' not in _gd115.lower().replace('client *secret*','').replace('client secret','X'))
+    _fl115=(_fcroot/'assets/js/fleet.js').read_text();_sh115=(_fcroot/'assets/js/shell.js').read_text()
+    ok('V11.5 console enterprise: webhook alerts + probe timeouts + command palette',all(x in _fl115 for x in ['webhook(','discord','slack','telegram','tFetch','AbortController']) and all(x in _sh115 for x in ['openPalette','bindPalette','cmdk-in']))
+else:
+    ok('V11.5 console Google Drive backup: lives in its own repo outside the generator',True)
+    ok('V11.5 console enterprise: lives in its own repo outside the generator',True)
 ok('Demo generic amount is explicitly numeric','x.amount::numeric' in seed)
 port=(ROOT/'assets/js/data-portability.js').read_text();admin=(ROOT/'admin-data.html').read_text()
 ok('Portable JSON/CSV archives are paginated and re-importable',all(x in port+admin for x in ['school-connect-portable-v1','fetchAll','exportFull','inspectFile','importArchive','Portable Data Archive Center','runPortableImport']))
