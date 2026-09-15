@@ -357,17 +357,17 @@ ${T.setupRequiredBanner()}
       'complaints','broadcast','diary','checkin','checkin_staff','checkin-staff','punctuality','behaviour','conduct','health','support_plans',
       'certificates','reports','directory','rubrics','counselling','substitutions','helpdesk','book_request', 'ecosystem_products','hmg_digital_products',
       /* V6.4 #5: teachers fill domain ratings & report comments for their students */
-      'affective_traits','psychomotor_traits','report_comments'
+      'affective_traits','psychomotor_traits','report_comments','developer'
     ]);
     const parentSet = new Set([
       'dashboard','profile','change_password','notifications','feature_guide','student_profile','fees','payments_online','results',
       'report_cards','attendance','assignments','diary','timetable','exam_timetable','announcements','events','messages','inbox',
-      'complaints','eresources','certificates','school_calendar','voting','idcards', 'ecosystem_products','hmg_digital_products'
+      'complaints','eresources','certificates','school_calendar','voting','idcards', 'ecosystem_products','hmg_digital_products','developer'
     ]);
     const studentSet = new Set([
       'dashboard','profile','change_password','notifications','feature_guide','student_profile','cbt_exam','assignments','digital_library',
       'eresources','timetable','exam_timetable','results','report_cards','attendance','announcements','events','messages','inbox',
-      'complaints','certificates','diary','school_calendar','voting','idcards', 'ecosystem_products','hmg_digital_products'
+      'complaints','certificates','diary','school_calendar','voting','idcards', 'ecosystem_products','hmg_digital_products','developer'
     ]);
 
     const roles = [admin];
