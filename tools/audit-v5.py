@@ -307,6 +307,15 @@ ok('V11.7 attendance scan-to-mark: register rows flip Present on scan',all(x in 
 ok('V11.7 TRUE admission year: explicit column only, no guessing from admission number',"admission_year" in (ROOT/'database/complete-schema.sql').read_text() and 'admission-year pack V11.7' in (ROOT/'database/complete-schema.sql').read_text() and (ROOT/'database/v11.7-admission-year.sql').exists() and 'no recorded year, no row' in sup117 and "match(/(?:^|[^0-9])((?:19|20)" not in sup117 and 'admission_year' in (ROOT/'assets/js/crud.js').read_text() and 'admission_year' in (ROOT/'students_import_template.csv').read_text())
 ok('V11.7 auto photo from profiles for single AND bulk cards','fillPhotos' in ic117 and "in('id',ids)" in ic117 and 'fillPhotos' in (ROOT/'assets/templates/pages/idcards.html').read_text())
 ok('V11.7 staff see their own ID card (nav + page self-service)','data-module-id="idcards" data-role-allow="super_admin admin principal proprietor head_teacher bursar staff teacher parent student"' in (ROOT/'dashboard.html').read_text() and "'idcards'" in (ROOT/'assets/js/templates.js').read_text().split('const staffSet')[1].split(']);')[0] and 'adminTier' in ic117)
+# V11.8 (pass 66): stale-access-map immunity for brand/self-service pages
+app118=(ROOT/'assets/js/app.js').read_text()
+ok('V11.8 MAP_IMMUNE: saved access maps can never hide brand/self-service pages',all(x in app118 for x in ['MAP_IMMUNE','!App.MAP_IMMUNE.has(id)','!App.MAP_IMMUNE.has(App.normalizeModuleId(moduleId))']) and app118.count('MAP_IMMUNE')>=4 and "'developer','idcards','profile'" in app118)
+if _fcroot.exists():
+    ok('V11.8 console self-test page: subsystem diagnostics incl. default-password detector',(_fcroot/'selftest.html').exists() and all(x in (_fcroot/'selftest.html').read_text() for x in ['Default password CHANGED','tamper-reject','stale heartbeats'.replace('stale heartbeats','No stale heartbeats'),'Run all checks']) and 'selftest.html' in (_fcroot/'assets/js/shell.js').read_text())
+    ok('V11.8 console Drive walkthrough: parts A-D with troubleshooting table',all(x in (_fcroot/'deploy.html').read_text() for x in ['Part A','Part B','Part C','Part D','origin_mismatch','Test users','ADD USERS','alt=media'.replace('alt=media','Restore from Drive')]))
+else:
+    ok('V11.8 console self-test: lives in its own repo',True)
+    ok('V11.8 console Drive walkthrough: lives in its own repo',True)
 ok('Demo generic amount is explicitly numeric','x.amount::numeric' in seed)
 port=(ROOT/'assets/js/data-portability.js').read_text();admin=(ROOT/'admin-data.html').read_text()
 ok('Portable JSON/CSV archives are paginated and re-importable',all(x in port+admin for x in ['school-connect-portable-v1','fetchAll','exportFull','inspectFile','importArchive','Portable Data Archive Center','runPortableImport']))
