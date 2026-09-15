@@ -290,6 +290,13 @@ if _fcroot.exists():
 else:
     ok('V11.5 console Google Drive backup: lives in its own repo outside the generator',True)
     ok('V11.5 console enterprise: lives in its own repo outside the generator',True)
+# V11.6 (pass 64): lifetime ID cards — no class/valid-thru, front+back printing
+sup116=(ROOT/'assets/js/super.js').read_text();ic116=(ROOT/'idcards.html').read_text();ictpl116=(ROOT/'assets/templates/pages/idcards.html').read_text()
+ok('V11.6 lifetime ID card: no Valid-Thru anywhere, no class row on student cards',('Valid Thru' not in sup116 or 'V11.6 lifetime card' in sup116) and 'validThru' not in sup116 and "add('Class', person.class)" not in sup116 and 'validityNote' in sup116)
+ok('V11.6 permanent identity facts on student cards (DOB + admitted year + emergency)',all(x in sup116 for x in ["add('D.O.B'","add('Admitted'","admittedYear","'Emergency'"]))
+ok('V11.6 card BACK side: rules, if-found, blood ribbon, QR verify, signature, stripe',all(x in sup116 for x in ['backHtml','sc-idcard-back','CARD RULES','If found, please return to','SCAN TO VERIFY','repeating-linear-gradient']))
+ok('V11.6 front+back pair printing on single and bulk (live + template)',all(x in sup116 for x in ['pairHtml','this.pairHtml(person)']) and all(('pairHtml' in x and 'front + back' in x and 'bulk-print filter only' in x) for x in [ic116,ictpl116]))
+ok('V11.6 idcards select uses real student columns (no 42703)','guardian_phone' in ic116 and 'guardian_phone' in ictpl116 and 'blood_group' not in ic116.split('from(\'students\')')[1][:200])
 ok('Demo generic amount is explicitly numeric','x.amount::numeric' in seed)
 port=(ROOT/'assets/js/data-portability.js').read_text();admin=(ROOT/'admin-data.html').read_text()
 ok('Portable JSON/CSV archives are paginated and re-importable',all(x in port+admin for x in ['school-connect-portable-v1','fetchAll','exportFull','inspectFile','importArchive','Portable Data Archive Center','runPortableImport']))
