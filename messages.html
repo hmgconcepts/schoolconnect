@@ -524,8 +524,8 @@ const MSG={
         rows=(r.data||[]).map(x=>Object.assign({},x,{recipient_id:x.id}));
       }
       if(aud==='students'){
-        const r=await sb.from('students').select('id,user_id,full_name,email,guardian_phone,guardian_email,class,admission_no').limit(4000);
-        rows=(r.data||[]).map(x=>({id:x.id,recipient_id:x.user_id||'',full_name:(x.class?x.class+' · ':'')+x.full_name,email:x.email||x.guardian_email,phone:x.guardian_phone,admission_no:x.admission_no}));
+        const r=await sb.from('students').select('id,user_id,full_name,guardian_phone,guardian_email,class,admission_no').limit(4000); /* V12.0: students.email never existed (42703 emptied the recipient list) */
+        rows=(r.data||[]).map(x=>({id:x.id,recipient_id:x.user_id||'',full_name:(x.class?x.class+' · ':'')+x.full_name,email:x.guardian_email,phone:x.guardian_phone,admission_no:x.admission_no}));
       }
     }catch(e){ console.warn('Recipients load failed', e); }
     this.rows=this.dedupe(rows);
