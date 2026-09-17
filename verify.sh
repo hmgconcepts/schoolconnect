@@ -13,6 +13,7 @@ for f in assets/js/*.js tools/*.js verify-generated-output.js verify-role-naviga
 python3 tools/test-inline-scripts.py
 
 echo "[2/6] SQL, links, cross-repository parity and critical contracts"
+python3 tools/audit-42703.py
 python3 tools/audit-v5.py
 node tools/test-complete-schema-idempotence.mjs
 
@@ -39,6 +40,7 @@ node tools/test-report-output.js
 node tools/test-report-bulk.js
 node tools/test-timetable-sql-engine.mjs
 node tools/test-demo-seed-sql.mjs
+node tools/test-voting-integrity.mjs
 python3 tools/audit-demo-coverage.py
 node tools/test-teacher-scope-sql.mjs
 node tools/test-data-portability.js
