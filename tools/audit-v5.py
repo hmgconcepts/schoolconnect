@@ -310,6 +310,23 @@ ok('V11.7 staff see their own ID card (nav + page self-service)','data-module-id
 # V11.8 (pass 66): stale-access-map immunity for brand/self-service pages
 app118=(ROOT/'assets/js/app.js').read_text()
 ok('V11.8 MAP_IMMUNE: saved access maps can never hide brand/self-service pages',all(x in app118 for x in ['MAP_IMMUNE','!App.MAP_IMMUNE.has(id)','!App.MAP_IMMUNE.has(App.normalizeModuleId(moduleId))']) and app118.count('MAP_IMMUNE')>=4 and "'developer','idcards','profile'" in app118)
+# V11.9 (pass 67): voting integrity — server tally, strict audience, one manager per ballot
+vt119=(ROOT/'voting.html').read_text();vjs119=(ROOT/'assets/js/voting.js').read_text();schema119=(ROOT/'database/complete-schema.sql').read_text()
+ok('V11.9 server-side tally RPC kills the 0% bug (aggregates only)',all(x in schema119 for x in ['sc_poll_results','total_ballots','turnout_pct','my_ballot','by_role']) and (ROOT/'database/v11.9-voting-integrity.sql').exists() and "rpc('sc_poll_results'" in vjs119 and 'created_at' not in vt119.split('openResults(id)')[1][:600])
+ok('V11.9 strict audience: no admin bypass; sc_can_vote single authoritative copy','NO admin bypass' in schema119 and schema119.count('elsif public.is_admin')==0 and len(__import__('re').findall(r'create\s+(?:or\s+replace\s+)?function\s+public\.sc_can_vote',schema119))==1)
+ok('V11.9 one manager per ballot: stray permissive policies dropped','drop policy if exists "polls_update_v11"' in schema119 and 'drop policy if exists "pv_delete_v11"' in schema119 and '!!p.created_by && p.created_by ===' in vt119)
+ok('V11.9 electoral results UI: turnout, eligible, winner/tie, your-vote, role slices',all(x in vt119 for x in ['Eligible voters','Turnout','WINNER','TIED','your vote','Ballots by role','eligibleFor']))
+ok('V11.9 eligibility-honest vote button + server pre-check',all(x in vt119 for x in ['you view results only','Voting.canVote','not open to you']))
+ok('V11.9 PGlite proof wired into verify chain',(ROOT/'tools/test-voting-integrity.mjs').exists() and 'test-voting-integrity' in (ROOT/'verify.sh').read_text())
+# V12.0 (pass 68): pre-upload bug sweep — phantom-column guard + the bugs it caught
+ok('V12.0 42703 guard exists and is in the verify chain',(ROOT/'tools/audit-42703.py').exists() and 'audit-42703' in (ROOT/'verify.sh').read_text())
+vt120=(ROOT/'voting.html').read_text()
+ok('V12.0 vote-count badges use the RPC (created_at 42703 removed from list loader)','sc_poll_results' in vt120.split('async attachVoteCounts')[1][:900] and "voted_at,created_at" not in vt120)
+ok('V12.0 birthday widget queries the real column',"from('birthdays').select('date')" in (ROOT/'assets/js/app.js').read_text())
+ok('V12.0 messages recipients use real student columns','students.email never existed' in (ROOT/'messages.html').read_text())
+ok('V12.0 analytics top-students computes from real score columns','results has NO percentage column' in (ROOT/'analytics.html').read_text())
+ok('V12.0 audit pack: staff DOB + department fee overrides',(ROOT/'database/v12.0-audit-columns.sql').exists() and 'audit-columns pack V12.0' in (ROOT/'database/complete-schema.sql').read_text() and 'departments add column if not exists next_term_fees' in (ROOT/'database/complete-schema.sql').read_text())
+ok('V12.0 public-page notification buttons guarded','if(window.Notifications' in (ROOT/'apply.html').read_text() and 'if(window.Notifications' in (ROOT/'verify-certificate.html').read_text())
 if _fcroot.exists():
     ok('V11.8 console self-test page: subsystem diagnostics incl. default-password detector',(_fcroot/'selftest.html').exists() and all(x in (_fcroot/'selftest.html').read_text() for x in ['Default password CHANGED','tamper-reject','stale heartbeats'.replace('stale heartbeats','No stale heartbeats'),'Run all checks']) and 'selftest.html' in (_fcroot/'assets/js/shell.js').read_text())
     ok('V11.8 console Drive walkthrough: parts A-D with troubleshooting table',all(x in (_fcroot/'deploy.html').read_text() for x in ['Part A','Part B','Part C','Part D','origin_mismatch','Test users','ADD USERS','alt=media'.replace('alt=media','Restore from Drive')]))

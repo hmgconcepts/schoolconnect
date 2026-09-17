@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+"""V12.0 permanent guard (pass 68): every .from('t').select('cols') in client
+code must reference only columns that exist in complete-schema.sql.
+This bug class (42703 → silently-swallowed error → empty UI) caused the
+voting 0% bug, the birthday-widget zero and the messages recipient hole.
+Run by verify.sh; fails the build on any NEW mismatch."""
+import re, sys, pathlib
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+schema = (ROOT / 'database/complete-schema.sql').read_text()
+
+cols = {}
+for m in re.finditer(r'create table if not exists public\.(\w+)\s*\((.*?)\);', schema, re.S):
+    tbl, body = m.group(1), m.group(2)
+    body = re.sub(r'--[^\n]*', '', body)   # strip SQL comments (commas inside them corrupted the split)
+    cset = cols.setdefault(tbl, set())
+    # NOTE: a comma-split is right (each part starts a new column) but the old
+    # code missed columns after inline constraints with parentheses. Track
+    # paren depth so we only split on top-level commas, then take part word 1.
+    depth = 0; part = ''
+    parts = []
+    for ch in body:
+        if ch == '(': depth += 1
+        elif ch == ')': depth -= 1
+        if ch == ',' and depth == 0: parts.append(part); part = ''
+        else: part += ch
+    parts.append(part)
+    for line in parts:
+        w = line.strip().split()
+        if w and re.match(r'^[a-z_]+$', w[0]) and w[0] not in ('primary','unique','check','constraint','foreign'):
+            cset.add(w[0])
+for m in re.finditer(r'alter table (?:if exists )?public\.(\w+) add column if not exists (\w+)', schema):
+    cols.setdefault(m.group(1), set()).add(m.group(2))
+
+# Views / RPC-backed pseudo-tables and embedded-resource selects are exempt.
+EXEMPT_TABLES = {t for t in re.findall(r'create (?:or replace )?view (?:public\.)?(\w+)', schema)}
+# Known-safe: columns proven present under other DDL shapes or optional probes
+# wrapped in explicit fallbacks. KEEP THIS LIST SHORT — every entry needs a reason.
+ALLOW = {
+    # crud.js probes optional columns with .then(r=>r, ()=>({data:[]})) fallbacks by design
+}
+
+issues = []
+files = list(ROOT.glob('*.html')) + list((ROOT / 'assets/js').glob('*.js'))
+for f in files:
+    t = f.read_text(errors='ignore')
+    for m in re.finditer(r"\.from\('(\w+)'\)\s*\.select\('([^']+)'", t):
+        tbl, sel = m.group(1), m.group(2)
+        if tbl not in cols or tbl in EXEMPT_TABLES or '*' in sel: continue
+        if '(' in sel: continue          # embedded resources — PostgREST join syntax
+        for c in re.split(r'[,\s]+', sel):
+            c = c.strip().split(':')[0].split('!')[0]
+            if not c or not re.match(r'^[a-z_]+$', c): continue
+            if c not in cols[tbl] and c != 'count' and (f.name, tbl, c) not in ALLOW:
+                issues.append((f.name, tbl, c))
+
+uniq = sorted(set(issues))
+if uniq:
+    print('42703 GUARD FAILED — client selects columns missing from the schema:')
+    for x in uniq: print('  ', x)
+    sys.exit(1)
+print(f'42703 guard passed: {len(files)} files, {len(cols)} tables — no phantom columns selected.')
