@@ -346,6 +346,12 @@ crud123=(ROOT/'assets/js/crud.js').read_text()
 ok('V12.3 students form has the photo field (both entry points live)',"key:'photo_url',label:'Student photo (Google Drive link)'" in crud123)
 ok('V12.3 write-columns pack: checkin status, admissions photo/data, push subscription',(ROOT/'database/v12.3-write-columns.sql').exists() and all(x in (ROOT/'database/complete-schema.sql').read_text() for x in ['write-columns pack V12.3','attendance_checkins add column if not exists status','admissions add column if not exists photo_url','push_subscriptions add column if not exists subscription']))
 ok('V12.3 42703 guard covers WRITE direction + digit columns','WRITE_ALLOW' in (ROOT/'tools/audit-42703.py').read_text() and '[a-z0-9_]*' in (ROOT/'tools/audit-42703.py').read_text())
+# V12.4 (pass 72): Access Manager write map finally ENFORCED + search pane
+app124=(ROOT/'assets/js/app.js').read_text();crud124=(ROOT/'assets/js/crud.js').read_text()
+ok('V12.4 canWriteByAccess exists (referenced since V9, never defined)','canWriteByAccess(moduleId, role)' in app124 and 'WRITE_MAP_NEVER' in app124)
+ok('V12.4 canWrite order: admin-saved map beats empty default rule','V12.4 ORDER FIX' in crud124 and crud124.index('canWriteByAccess')<crud124.index('shipped defaults apply'))
+ok('V12.4 Access Manager search pane + live filter','am-search' in app124 and 'filterAccessManager' in app124 and 'pages match' in app124)
+ok('V12.4 access-manager PGlite/JS proof in verify chain',(ROOT/'tools/test-access-manager.mjs').exists() and 'test-access-manager' in (ROOT/'verify.sh').read_text())
 if _fcroot.exists():
     ok('V11.8 console self-test page: subsystem diagnostics incl. default-password detector',(_fcroot/'selftest.html').exists() and all(x in (_fcroot/'selftest.html').read_text() for x in ['Default password CHANGED','tamper-reject','stale heartbeats'.replace('stale heartbeats','No stale heartbeats'),'Run all checks']) and 'selftest.html' in (_fcroot/'assets/js/shell.js').read_text())
     ok('V11.8 console Drive walkthrough: parts A-D with troubleshooting table',all(x in (_fcroot/'deploy.html').read_text() for x in ['Part A','Part B','Part C','Part D','origin_mismatch','Test users','ADD USERS','alt=media'.replace('alt=media','Restore from Drive')]))
