@@ -316,7 +316,7 @@ ok('V11.9 server-side tally RPC kills the 0% bug (aggregates only)',all(x in sch
 ok('V11.9 strict audience: no admin bypass; sc_can_vote single authoritative copy','NO admin bypass' in schema119 and schema119.count('elsif public.is_admin')==0 and len(__import__('re').findall(r'create\s+(?:or\s+replace\s+)?function\s+public\.sc_can_vote',schema119))==1)
 ok('V11.9 one manager per ballot: stray permissive policies dropped','drop policy if exists "polls_update_v11"' in schema119 and 'drop policy if exists "pv_delete_v11"' in schema119 and '!!p.created_by && p.created_by ===' in vt119)
 ok('V11.9 electoral results UI: turnout, eligible, winner/tie, your-vote, role slices',all(x in vt119 for x in ['Eligible voters','Turnout','WINNER','TIED','your vote','Ballots by role','eligibleFor']))
-ok('V11.9 eligibility-honest vote button + server pre-check',all(x in vt119 for x in ['you view results only','Voting.canVote','not open to you']))
+ok('V11.9 eligibility-honest vote button + server pre-check (V12.1 wording)',all(x in vt119 for x in ['results only','Voting.canVote','not open to you']))
 ok('V11.9 PGlite proof wired into verify chain',(ROOT/'tools/test-voting-integrity.mjs').exists() and 'test-voting-integrity' in (ROOT/'verify.sh').read_text())
 # V12.0 (pass 68): pre-upload bug sweep — phantom-column guard + the bugs it caught
 ok('V12.0 42703 guard exists and is in the verify chain',(ROOT/'tools/audit-42703.py').exists() and 'audit-42703' in (ROOT/'verify.sh').read_text())
@@ -327,6 +327,20 @@ ok('V12.0 messages recipients use real student columns','students.email never ex
 ok('V12.0 analytics top-students computes from real score columns','results has NO percentage column' in (ROOT/'analytics.html').read_text())
 ok('V12.0 audit pack: staff DOB + department fee overrides',(ROOT/'database/v12.0-audit-columns.sql').exists() and 'audit-columns pack V12.0' in (ROOT/'database/complete-schema.sql').read_text() and 'departments add column if not exists next_term_fees' in (ROOT/'database/complete-schema.sql').read_text())
 ok('V12.0 public-page notification buttons guarded','if(window.Notifications' in (ROOT/'apply.html').read_text() and 'if(window.Notifications' in (ROOT/'verify-certificate.html').read_text())
+# V12.1 (pass 69): voting visibility — profile race fixed, visibility!=eligibility, deep-link fetch, officer report
+vt121=(ROOT/'voting.html').read_text()
+ok('V12.1 voting waits for the async profile (race that hid class ballots)','waitForRole' in vt121 and 'FAILED CLOSED' in vt121)
+ok('V12.1 visibility != eligibility: role ballots always listed, server badge decides',all(x in vt121 for x in ['VISIBILITY ≠ ELIGIBILITY','_canVote','you can vote','not your ballot — results only']))
+ok('V12.1 grouped ballot board + honest empty state',all(x in vt121 for x in ['Your open ballots','Other audiences — results visible','Concluded','No ballots yet']))
+ok('V12.1 dashboard deep-link fetches the poll directly',"eq('id',String(q)).maybeSingle()" in vt121 and 'could not be found' in vt121)
+ok('V12.1 server-aggregate CSV + returning-officer print report',all(x in vt121 for x in ['OFFICIAL ELECTION RESULT','Returning Officer','DECLARED WINNER','Turnout %','tamper-evident']))
+ok('V12.1 election-night live refresh on open results','startLive' in vt121 and '_liveTimer' in vt121)
+# V12.2 (pass 70): two-way photo sync — DB triggers + backfill + client write-through + unlinked fallback
+sch122=(ROOT/'database/complete-schema.sql').read_text()
+ok('V12.2 photo-sync triggers: students↔profiles↔staff, recursion-guarded, backfilled',all(x in sch122 for x in ['sc_sync_photo_to_profile','sc_sync_photo_to_student','sc_sync_staff_photo_to_profile','trg_students_photo_sync','trg_profiles_photo_sync','trg_staff_photo_sync','pg_trigger_depth()']) and (ROOT/'database/v12.2-photo-sync.sql').exists())
+ok('V12.2 profile page write-through (pre-pack DBs covered)','V12.2: write-through' in (ROOT/'profile.html').read_text())
+ok('V12.2 idcards unlinked-student name fallback','never LINKED' in (ROOT/'idcards.html').read_text() and 'never LINKED' in (ROOT/'assets/templates/pages/idcards.html').read_text())
+ok('V12.2 photo-sync PGlite proof in verify chain',(ROOT/'tools/test-photo-sync.mjs').exists() and 'test-photo-sync' in (ROOT/'verify.sh').read_text())
 if _fcroot.exists():
     ok('V11.8 console self-test page: subsystem diagnostics incl. default-password detector',(_fcroot/'selftest.html').exists() and all(x in (_fcroot/'selftest.html').read_text() for x in ['Default password CHANGED','tamper-reject','stale heartbeats'.replace('stale heartbeats','No stale heartbeats'),'Run all checks']) and 'selftest.html' in (_fcroot/'assets/js/shell.js').read_text())
     ok('V11.8 console Drive walkthrough: parts A-D with troubleshooting table',all(x in (_fcroot/'deploy.html').read_text() for x in ['Part A','Part B','Part C','Part D','origin_mismatch','Test users','ADD USERS','alt=media'.replace('alt=media','Restore from Drive')]))
