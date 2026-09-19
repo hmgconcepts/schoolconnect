@@ -27,7 +27,7 @@ for m in re.finditer(r'create table if not exists public\.(\w+)\s*\((.*?)\);', s
     parts.append(part)
     for line in parts:
         w = line.strip().split()
-        if w and re.match(r'^[a-z_]+$', w[0]) and w[0] not in ('primary','unique','check','constraint','foreign'):
+        if w and re.match(r'^[a-z_][a-z0-9_]*$', w[0]) and w[0] not in ('primary','unique','check','constraint','foreign'):
             cset.add(w[0])
 for m in re.finditer(r'alter table (?:if exists )?public\.(\w+) add column if not exists (\w+)', schema):
     cols.setdefault(m.group(1), set()).add(m.group(2))
@@ -50,9 +50,26 @@ for f in files:
         if '(' in sel: continue          # embedded resources — PostgREST join syntax
         for c in re.split(r'[,\s]+', sel):
             c = c.strip().split(':')[0].split('!')[0]
-            if not c or not re.match(r'^[a-z_]+$', c): continue
+            if not c or not re.match(r'^[a-z_][a-z0-9_]*$', c): continue
             if c not in cols[tbl] and c != 'count' and (f.name, tbl, c) not in ALLOW:
                 issues.append((f.name, tbl, c))
+
+# V12.3: WRITE direction — literal keys in .insert({...})/.update({...})/.upsert({...})
+WRITE_ALLOW = {
+    # enterprise.js logIncident: flagged keys live INSIDE the data jsonb object (legal)
+    ('enterprise.js','module_records','class'), ('enterprise.js','module_records','date'),
+    ('enterprise.js','module_records','reported_by'), ('enterprise.js','module_records','severity'),
+    ('enterprise.js','module_records','student_name'),
+}
+for f in files:
+    t = f.read_text(errors='ignore')
+    for m in re.finditer(r"\.from\('(\w+)'\)\s*\.(?:insert|update|upsert)\(\s*\{([^}]*)\}", t):
+        tbl, body = m.groups()
+        if tbl not in cols or tbl in EXEMPT_TABLES: continue
+        for k in re.findall(r"(?:^|[,{\s])(\w+)\s*:", body):
+            if k == 'id' or not re.match(r'^[a-z_][a-z0-9_]*$', k): continue
+            if k not in cols[tbl] and (f.name, tbl, k) not in WRITE_ALLOW:
+                issues.append((f.name, tbl, k + ' [WRITE]'))
 
 uniq = sorted(set(issues))
 if uniq:
