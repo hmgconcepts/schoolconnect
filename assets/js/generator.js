@@ -602,6 +602,7 @@ const Generator = {
       ['database/v11.7-admission-year.sql',         'database/v11.7-admission-year.sql'],
       ['database/v11.9-voting-integrity.sql',       'database/v11.9-voting-integrity.sql'],
       ['database/v12.0-audit-columns.sql',          'database/v12.0-audit-columns.sql'],
+      ['database/v12.2-photo-sync.sql',             'database/v12.2-photo-sync.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
