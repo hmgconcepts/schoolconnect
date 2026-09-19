@@ -41,6 +41,7 @@ node tools/test-report-bulk.js
 node tools/test-timetable-sql-engine.mjs
 node tools/test-demo-seed-sql.mjs
 node tools/test-voting-integrity.mjs
+node tools/test-photo-sync.mjs
 python3 tools/audit-demo-coverage.py
 node tools/test-teacher-scope-sql.mjs
 node tools/test-data-portability.js
