@@ -604,6 +604,7 @@ const Generator = {
       ['database/v12.0-audit-columns.sql',          'database/v12.0-audit-columns.sql'],
       ['database/v12.2-photo-sync.sql',             'database/v12.2-photo-sync.sql'],
       ['database/v12.3-write-columns.sql',          'database/v12.3-write-columns.sql'],
+      ['database/v12.5-schema-doctor.sql',          'database/v12.5-schema-doctor.sql'],
       ['docs/SOVEREIGN-EDITION-V6.md',              'docs/SOVEREIGN-EDITION-V6.md'],
       ['docs/DISASTER-RECOVERY-RUNBOOK.md',         'docs/DISASTER-RECOVERY-RUNBOOK.md'],
       ['docs/ONBOARDING-GUIDE.md',                  'docs/ONBOARDING-GUIDE.md'],
