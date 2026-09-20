@@ -270,7 +270,7 @@ ok('V11.4 gradient hero cards excluded from the universal white-card override (i
 an114=(ROOT/'analytics.html').read_text();antpl=(ROOT/'assets/templates/pages/analytics.html').read_text()
 ok('V11.4 analytics: honest 30d windows, empty-state hints, gender split, refreshed stamp (live+template)',all(x in an114 and x in antpl for x in ['cut30','EMPTY_HINTS','an-gender','an-refreshed','Reading this page']))
 dev114=(ROOT/'developer.html').read_text()
-ok('V11.4 founder page: photo, name, brand story, in template + generator body + sync lists',all(x in dev114 for x in ['founder-adewale.jpg','Adewale Samson Adeagbo','His Marvellous Grace','cssadewale.pages.dev','wa.me/2348100866322']) and (ROOT/'assets/img/founder-adewale.jpg').exists() and (ROOT/'assets/templates/pages/developer.html').exists() and 'founder-adewale.jpg' in (ROOT/'assets/js/templates.js').read_text() and 'founder-adewale.jpg' in (ROOT/'assets/js/generator.js').read_text() and "RICH=['developer.html'" in (ROOT/'tools/sync-v5-repos.py').read_text())
+ok('V11.4 founder page: photo, name, brand story, in template + generator body + sync lists',all(x in dev114 for x in ['founder-adewale.jpg','Adewale Samson Adeagbo','His Marvellous Grace','cssadewale.pages.dev','wa.me/2348100866322']) and (ROOT/'assets/img/founder-adewale.jpg').exists() and (ROOT/'assets/templates/pages/developer.html').exists() and 'founder-adewale.jpg' in (ROOT/'assets/js/templates.js').read_text() and 'founder-adewale.jpg' in (ROOT/'assets/js/generator.js').read_text() and "'developer.html'" in (ROOT/'tools/sync-v5-repos.py').read_text().split('RICH=')[1][:600])
 if _fcroot.exists():
     _sync114=(_fcroot/'assets/js/sync.js').read_text() if (_fcroot/'assets/js/sync.js').exists() else ''
     ok('V11.4 console cloud sync: E2E-encrypted vault (AES-GCM+PBKDF2), union merge, all pages wired',all(x in _sync114 for x in ['AES-GCM','PBKDF2','210000','merge(','fleet_vault','makeVaultId']) and all('sync.js' in (_fcroot/f).read_text() for f in ['index.html','settings.html','board.html']) and 'saveSync' in (_fcroot/'settings.html').read_text())
@@ -352,6 +352,11 @@ ok('V12.4 canWriteByAccess exists (referenced since V9, never defined)','canWrit
 ok('V12.4 canWrite order: admin-saved map beats empty default rule','V12.4 ORDER FIX' in crud124 and crud124.index('canWriteByAccess')<crud124.index('shipped defaults apply'))
 ok('V12.4 Access Manager search pane + live filter','am-search' in app124 and 'filterAccessManager' in app124 and 'pages match' in app124)
 ok('V12.4 access-manager PGlite/JS proof in verify chain',(ROOT/'tools/test-access-manager.mjs').exists() and 'test-access-manager' in (ROOT/'verify.sh').read_text())
+# V12.5 (pass 73): schema doctor — packs self-report; the deploy-vs-SQL gap is now visible
+ph125=(ROOT/'platform-health.html').read_text();sch125=(ROOT/'database/complete-schema.sql').read_text()
+ok('V12.5 schema doctor card probes packs and lists missing SQL files',all(x in ph125 for x in ['Schema Doctor','schemaDoctor','PACKS:','RUN THIS','sc_installed_packs']))
+ok('V12.5 pack: staff-gated reader RPC + truthful retro-markers + self-marker',(ROOT/'database/v12.5-schema-doctor.sql').exists() and all(x in sch125 for x in ['sc_installed_packs','schema-doctor pack V12.5','trg_students_photo_sync','on conflict (key) do nothing']))
+ok('V12.5 doctor PGlite proof in verify chain',(ROOT/'tools/test-schema-doctor.mjs').exists() and 'test-schema-doctor' in (ROOT/'verify.sh').read_text())
 if _fcroot.exists():
     ok('V11.8 console self-test page: subsystem diagnostics incl. default-password detector',(_fcroot/'selftest.html').exists() and all(x in (_fcroot/'selftest.html').read_text() for x in ['Default password CHANGED','tamper-reject','stale heartbeats'.replace('stale heartbeats','No stale heartbeats'),'Run all checks']) and 'selftest.html' in (_fcroot/'assets/js/shell.js').read_text())
     ok('V11.8 console Drive walkthrough: parts A-D with troubleshooting table',all(x in (_fcroot/'deploy.html').read_text() for x in ['Part A','Part B','Part C','Part D','origin_mismatch','Test users','ADD USERS','alt=media'.replace('alt=media','Restore from Drive')]))
