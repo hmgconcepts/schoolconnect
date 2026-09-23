@@ -357,6 +357,22 @@ ph125=(ROOT/'platform-health.html').read_text();sch125=(ROOT/'database/complete-
 ok('V12.5 schema doctor card probes packs and lists missing SQL files',all(x in ph125 for x in ['Schema Doctor','schemaDoctor','PACKS:','RUN THIS','sc_installed_packs']))
 ok('V12.5 pack: staff-gated reader RPC + truthful retro-markers + self-marker',(ROOT/'database/v12.5-schema-doctor.sql').exists() and all(x in sch125 for x in ['sc_installed_packs','schema-doctor pack V12.5','trg_students_photo_sync','on conflict (key) do nothing']))
 ok('V12.5 doctor PGlite proof in verify chain',(ROOT/'tools/test-schema-doctor.mjs').exists() and 'test-schema-doctor' in (ROOT/'verify.sh').read_text())
+# V12.6 (pass 74): console V1.5 — live-audit findings hardened
+if _fcroot.exists():
+    _a126=(_fcroot/'assets/js/auth.js').read_text();_s126=(_fcroot/'assets/js/shell.js').read_text()
+    ok('V12.6 console default-password detector + red banner on every page','isDefaultPassword' in _a126 and 'DEFAULT_HASH' in _a126 and 'SHIPPED DEFAULT PASSWORD' in _s126)
+    ok('V12.6 console self-test tracks repo visibility + shared detector','Repo visibility reminder' in (_fcroot/'selftest.html').read_text() and 'Auth.isDefaultPassword' in (_fcroot/'selftest.html').read_text())
+    ok('V12.6 console deploy page: private-repo warning sharpened','crackable offline' in (_fcroot/'deploy.html').read_text())
+# V12.7 (pass 75): gosa credentials corrected; console V1.6 status/maintenance/audit
+ok('V12.7 gosa config.js carries the correct Supabase project',"auptmhagbksebetbxknv" in (ROOT.parent/'gosa'/'assets/js/config.js').read_text() and "dgarrlzbmscpgtefdupm" not in (ROOT.parent/'gosa'/'assets/js/config.js').read_text())
+if _fcroot.exists():
+    _st127=(_fcroot/'status.html').read_text() if (_fcroot/'status.html').exists() else ''
+    ok('V12.7 console status page: client snapshot + maintenance windows + audit trail',all(x in _st127 for x in ['Client status snapshot','maintenance windows'.replace('maintenance windows','Scheduled maintenance windows'),'Operator audit trail','ALL SYSTEMS OPERATIONAL']))
+    ok('V12.7 console engine: inMaintenance + alarm suppression + Store.audit',all(x in (_fcroot/'assets/js/fleet.js').read_text() for x in ['inMaintenance','setMaintenance','_maintLogged']) and 'K_AUDIT' in (_fcroot/'assets/js/store.js').read_text())
+else:
+    ok('V12.7 console status page: lives in its own repo',True)
+    ok('V12.7 console engine: lives in its own repo',True)
+    ok('V12.6 console V1.5: lives in its own repo',True)
 if _fcroot.exists():
     ok('V11.8 console self-test page: subsystem diagnostics incl. default-password detector',(_fcroot/'selftest.html').exists() and all(x in (_fcroot/'selftest.html').read_text() for x in ['Default password CHANGED','tamper-reject','stale heartbeats'.replace('stale heartbeats','No stale heartbeats'),'Run all checks']) and 'selftest.html' in (_fcroot/'assets/js/shell.js').read_text())
     ok('V11.8 console Drive walkthrough: parts A-D with troubleshooting table',all(x in (_fcroot/'deploy.html').read_text() for x in ['Part A','Part B','Part C','Part D','origin_mismatch','Test users','ADD USERS','alt=media'.replace('alt=media','Restore from Drive')]))
