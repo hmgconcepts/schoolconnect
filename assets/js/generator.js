@@ -266,7 +266,9 @@ const Generator = {
       'assets/js/security-guard.js',
       'assets/js/proctor.js',
       'assets/js/demo-sample-data.js',
-      'assets/js/v57-enhancements.js'
+      'assets/js/v57-enhancements.js',
+      'assets/js/archive-hub.js',
+      'assets/js/cbt-archive.js'
     ];
 
     const jsContents = {};
