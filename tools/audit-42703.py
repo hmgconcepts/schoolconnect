@@ -60,6 +60,11 @@ WRITE_ALLOW = {
     ('enterprise.js','module_records','class'), ('enterprise.js','module_records','date'),
     ('enterprise.js','module_records','reported_by'), ('enterprise.js','module_records','severity'),
     ('enterprise.js','module_records','student_name'),
+    # V12.7 app.js parent returning hint: data jsonb keys (legal, inside data:{}), plus string-literal false positives from title/body colons
+    ('app.js','module_records','email'), ('app.js','module_records','children_admission_nos'),
+    ('app.js','module_records','scenario'), ('app.js','module_records','parent_name'),
+    ('app.js','module_records','nos'), ('app.js','module_records','returning'),
+    ('app.js','module_records','children'),
 }
 for f in files:
     t = f.read_text(errors='ignore')
