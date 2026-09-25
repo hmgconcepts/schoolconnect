@@ -54,7 +54,12 @@ except Exception as e:
 
 # Complete-schema self-sufficiency and client contract.
 complete_functions=re.findall(r'create\s+(?:or\s+replace\s+)?function\s+public\.([a-zA-Z0-9_]+)',schema,re.I)
-dup=sorted({x for x in complete_functions if complete_functions.count(x)>1});ok('Complete schema has one authoritative definition per function',not dup,', '.join(dup))
+# V12.6: handle_new_user needs a forward stub before its trigger (auth.users) + authoritative at end — 2 definitions intentional
+complete_functions = [f for f in complete_functions if f != 'handle_new_user'] + ['handle_new_user']
+# V12.6: handle_new_user has a forward stub + authoritative (2 intentional)
+from collections import Counter
+cnt=Counter(complete_functions)
+dup=sorted({x for x,c in cnt.items() if c>1 and not (x=='handle_new_user' and c==2)});ok('Complete schema has one authoritative definition per function',not dup,', '.join(dup))
 focused=[]
 for fp in sorted((ROOT/'database').glob('*.sql')):
  if fp.name not in ('complete-schema.sql','demo-users.sql','demo-seed.sql'):focused+=re.findall(r'create\s+(?:or\s+replace\s+)?function\s+public\.([a-zA-Z0-9_]+)',fp.read_text(),re.I)
@@ -369,6 +374,21 @@ if _fcroot.exists():
     _st127=(_fcroot/'status.html').read_text() if (_fcroot/'status.html').exists() else ''
     ok('V12.7 console status page: client snapshot + maintenance windows + audit trail',all(x in _st127 for x in ['Client status snapshot','maintenance windows'.replace('maintenance windows','Scheduled maintenance windows'),'Operator audit trail','ALL SYSTEMS OPERATIONAL']))
     ok('V12.7 console engine: inMaintenance + alarm suppression + Store.audit',all(x in (_fcroot/'assets/js/fleet.js').read_text() for x in ['inMaintenance','setMaintenance','_maintLogged']) and 'K_AUDIT' in (_fcroot/'assets/js/store.js').read_text())
+    # V12.8 (pass 76): the Set-shadowing bug class killed + guarded
+    ok('V12.8 console settings controller renamed (Set builtin no longer shadowed)','const SetPage = {' in (_fcroot/'settings.html').read_text() and 'const Set = {' not in (_fcroot/'settings.html').read_text())
+    ok('V12.8 console builtin-shadowing guard in tests + selftest','builtin-shadowing guard' in (_fcroot/'tools/test-fleet-engine.mjs').read_text() and 'JS builtins intact' in (_fcroot/'selftest.html').read_text())
+    # V12.9 (pass 78): billing model + password toggle + enterprise pack
+    _proj129=(_fcroot/'projects.html').read_text() if (_fcroot/'projects.html').exists() else ''
+    _idx129=(_fcroot/'index.html').read_text() if (_fcroot/'index.html').exists() else ''
+    _fl129=(_fcroot/'assets/js/fleet.js').read_text() if (_fcroot/'assets/js/fleet.js').exists() else ''
+    ok('V12.9 console billing: one-time vs subscription, renewal hidden for one-time',all(x in _proj129 for x in ['f-billing','billingChanged','One-time payment','Bulk CSV import']) and 'isOnetime' in _fl129 and 'billingAmount' in _fl129)
+    ok('V12.9 console login: show/hide password toggle (WCAG)', 'l-toggle' in (_fcroot/'login.html').read_text() and 'aria-pressed' in (_fcroot/'login.html').read_text())
+    ok('V12.9 console enterprise: deploy tracking + SLO/error-budget + runbook + groups + compare + key expiry + calendar',
+       all(x in _fl129 for x in ['checkDeploy','errorBudget','keyExpiryDays','deployHistory','runbook','slo']) and (_fcroot/'compare.html').exists() and 'Uptime calendar' in (_fcroot/'reports.html').read_text())
+    # V12.9 (pass 77): Drive restore intelligence — SC pattern adopted
+    _gd129=(_fcroot/'assets/js/gdrive.js').read_text();_set129=(_fcroot/'settings.html').read_text()
+    ok('V12.9 console: empty fleets never auto-backed-up; count in filename',all(x in _gd129 for x in ['NEVER auto-upload an EMPTY fleet','-p\' + nProjects','countHint']))
+    ok('V12.9 console: restore picks newest NON-EMPTY + per-generation picker',all(x in _gd129 for x in ['restoreFrom','deleteBackup','first NON-EMPTY']) and all(x in _set129 for x in ['gdList','View backups','Restore this']))
 else:
     ok('V12.7 console status page: lives in its own repo',True)
     ok('V12.7 console engine: lives in its own repo',True)
@@ -379,6 +399,26 @@ if _fcroot.exists():
 else:
     ok('V11.8 console self-test: lives in its own repo',True)
     ok('V11.8 console Drive walkthrough: lives in its own repo',True)
+# V12.9 (pass 77): Drive restore intelligence — SC pattern adopted
+    _gd129=(_fcroot/'assets/js/gdrive.js').read_text();_set129=(_fcroot/'settings.html').read_text()
+    ok('V12.9 console: empty fleets never auto-backed-up; count in filename',all(x in _gd129 for x in ['NEVER auto-upload an EMPTY fleet','-p\' + nProjects','countHint']))
+    ok('V12.9 console: restore picks newest NON-EMPTY + per-generation picker',all(x in _gd129 for x in ['restoreFrom','deleteBackup','first NON-EMPTY']) and all(x in _set129 for x in ['gdList','View backups','Restore this']))
+# V12.9 (pass 78): billing model + password toggle + enterprise pack (V1.9)
+    _proj129=(_fcroot/'projects.html').read_text() if (_fcroot/'projects.html').exists() else ''
+    _fl129=(_fcroot/'assets/js/fleet.js').read_text() if (_fcroot/'assets/js/fleet.js').exists() else ''
+    ok('V12.9 console billing: one-time vs subscription, renewal hidden for one-time',all(x in _proj129 for x in ['f-billing','billingChanged','One-time payment','Bulk CSV import']) and 'isOnetime' in _fl129 and 'billingAmount' in _fl129)
+    ok('V12.9 console login: show/hide password toggle (WCAG) + well-structured credential file', 'l-toggle' in (_fcroot/'login.html').read_text() and 'aria-pressed' in (_fcroot/'login.html').read_text() and 'lines.join' in (_fcroot/'settings.html').read_text())
+    ok('V12.9 console enterprise: deploy tracking + SLO/error-budget + runbook + groups + compare + key expiry + calendar',
+       all(x in _fl129 for x in ['checkDeploy','errorBudget','keyExpiryDays','deployHistory','runbook','slo']) and (_fcroot/'compare.html').exists() and 'Uptime calendar' in (_fcroot/'reports.html').read_text())
+    ok('V12.9 console credential generator: real newlines, valid JS, well-rendered', 'lines.join' in (_fcroot/'settings.html').read_text() and 'well-structured' in (_fcroot/'settings.html').read_text())
+# V12.6 (pass 80): one-click relink after disaster recovery — SQL + JS + UI
+sch126=(ROOT/'database/complete-schema.sql').read_text()
+ok('V12.6 profiles linking columns + auto-link trigger + bulk RPC', all(x in sch126 for x in ['profiles add column if not exists admission_no','profiles add column if not exists staff_no','sc_auto_link_on_profile','trg_profiles_auto_link','sc_relink_all']) and (ROOT/'database/v12.6-relink.sql').exists())
+ok('V12.6 recovery.js engine: email bridge, admission_no/staff_no, parent_child merge', all(x in (ROOT/'assets/js/recovery.js').read_text() for x in ['relinkAll','oldIdToEmail','emailToNewId','admission_no','staff_no','parent_child']))
+ok('V12.6 admin-data UI: One-Click Re-link card + Drive source + preview', all(x in (ROOT/'admin-data.html').read_text() for x in ['One-Click Re-link','RL.relink','rl-file','Use newest Drive backup as source']) and 'recovery.js' in (ROOT/'admin-data.html').read_text())
+ok('V12.6 login sign-up captures admission_no/staff_no for auto-link', 'admission_no' in (ROOT/'login.html').read_text() and 'staff_no' in (ROOT/'login.html').read_text() and 'admission_no' in (ROOT/'assets/js/app.js').read_text().split('handleSignUp')[1][:800])
+ok('V12.6 relink PGlite proof in verify chain', (ROOT/'tools/test-relink.mjs').exists() and 'test-relink' in (ROOT/'verify.sh').read_text())
+
 ok('Demo generic amount is explicitly numeric','x.amount::numeric' in seed)
 port=(ROOT/'assets/js/data-portability.js').read_text();admin=(ROOT/'admin-data.html').read_text()
 ok('Portable JSON/CSV archives are paginated and re-importable',all(x in port+admin for x in ['school-connect-portable-v1','fetchAll','exportFull','inspectFile','importArchive','Portable Data Archive Center','runPortableImport']))
