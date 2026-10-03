@@ -268,7 +268,8 @@ const Generator = {
       'assets/js/demo-sample-data.js',
       'assets/js/v57-enhancements.js',
       'assets/js/archive-hub.js',
-      'assets/js/cbt-archive.js'
+      'assets/js/cbt-archive.js',
+      'assets/js/assignment-cbt.js'
     ];
 
     const jsContents = {};
