@@ -508,16 +508,33 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
         <p style="color:var(--gray-600);margin:6px 0 10px">The Prompt Studio writes a professional prompt that makes any free AI chat produce a <b>ready-to-post assignment brief</b> — task steps, your <b>resource link</b> (Drive/web, links only), submission expectations and a <b>marks rubric a parent can read</b> — plus an optional self-check quiz you can import on the CBT page.</p>
         <a class="btn btn-sm btn-primary" href="cbt-prompts.html?pack=assignment">📝 Open the Assignment prompt pack</a>
       </div>
-      <!-- V12.8 Assignment + CBT Assignment Bridge — robust differentiation and cumulative collation -->
+      <!-- V12.11 CBT Assignments — robust, all-inclusive, self-contained, seamless, with detailed modus operandi for new users -->
       <div class="card" style="margin-bottom:16px;border:2px solid #10b981;background:#f0fdf4" data-staff-only>
-        <h3 style="margin-top:0">🖥️ CBT Assignments — Auto-fill from CBT Results (V12.8)</h3>
-        <p style="color:#475569;margin-top:4px;line-height:1.7"><b>Blueprint:</b> Unlike mid-term (CA1/CA2) and terminal exams which are done ONCE per term, assignments are given MORE THAN ONCE. This page already collates individual assignments cumulatively → push to Assignment column. Now <b>CBT assignments</b> work the SAME way: when you give a CBT assignment (Assessment type = Assignment), its scores auto-fill when you click <b>Score class</b> for THAT CBT assignment, accumulating with other assignments → push to Assignment column at end of term.</p>
+        <h3 style="margin-top:0">🖥️ CBT Assignments — Auto-fill from CBT Results (V12.11) — Detailed Guide</h3>
+        <div style="color:#475569;line-height:1.8;font-size:.92rem">
+          <p style="margin:0 0 8px"><b>Blueprint:</b> Unlike mid-term (CA1/CA2) and terminal exams which are done <b>ONCE per term</b>, assignments are given <b>MORE THAN ONCE</b> per term (e.g., Homework 1, Homework 2, Homework 3). The assignment page already collates individual assignments cumulatively → push to Assignment column of report card. Now <b>CBT assignments</b> work the SAME way but with auto-fill.</p>
+          <p style="margin:0 0 8px"><b>Modus operandi for CBT assignments (step-by-step for new users):</b></p>
+          <ol style="margin:0 0 10px 20px;line-height:1.8">
+            <li><b>Create CBT assignment:</b> Go to <b>CBT page</b> → + New Exam → Assessment type = <b>🟢 Assignment / Homework (multiple per term, cumulative → Assignment column)</b> → set Class (e.g., JSS1), Subject (e.g., Maths), Term, Session, Max score → add questions → Create. DB trigger auto-creates mirror row in Assignments table with <b>drive_link auto-filled</b> as <code>./cbt-exam.html?code=CODE</code> and <b>is_cbt=true</b>, so it appears in Assignments page for every student of that class with Take link.</li>
+            <li><b>Student view:</b> Every student of that class sees the assignment in Assignments table with <b>🖥️ Take Assignment</b> button (not in teacher portal). Student clicks Take → does online CBT assignment → result saved in <code>cbt_results</code> with score/total/percent.</li>
+            <li><b>Teacher scores class (auto-fill):</b> Assignments → pick Class + Subject → see list below of CBT assignments for that subject → click <b>✍️ Score class (auto-fill)</b> for THAT CBT assignment → modal auto-fills:
+              <ul style="margin:4px 0 4px 18px">
+                <li><b>Assignment kind (auto-filled):</b> CBT assignment (auto-marked) — disabled, no manual needed</li>
+                <li><b>Maximum mark (auto-filled):</b> from CBT exam max_score — readonly, scaled to align</li>
+                <li><b>Scores (auto-filled):</b> for every student of that class from CBT results, scaled to max (e.g., raw 15/20 → scaled 7.5/10 if max=10) — teacher can adjust before saving</li>
+              </ul>
+              For physical assignments, teacher manually enters kind/max/scores.
+            </li>
+            <li><b>Cumulative collation:</b> All assignment scores (physical 📄 + multiple CBT 🖥️ assignments) accumulate per student per class/subject/term: Total got / Total max → %. Each CBT assignment is separate column in Term score sheet (e.g., Assignment1 CBT, Assignment2 CBT, Assignment3 physical).</li>
+            <li><b>Push to report card:</b> At end of term, Assignments → 📋 Term score sheet → 🚀 Push totals → Report card → choose <b>Assignment column</b> → push. Assignment column now contains cumulative % of ALL assignments (physical + multiple CBT) scaled to column max.</li>
+          </ol>
+        </div>
         <div style="background:#fff;border:1px solid #86efac;border-radius:10px;padding:10px;margin:8px 0">
-          <b>Clear differentiation (unambiguous):</b><br>
-          <span style="display:inline-block;margin:2px 6px"><span class="badge" style="background:#dcfce7;color:#166534;border:1px solid #86efac">🟢 CBT Assignment</span> = Homework — multiple per term, cumulative → Assignment column</span>
-          <span style="display:inline-block;margin:2px 6px"><span class="badge" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd">🔵 Mid-term CA</span> = CA1/CA2 — once per term → CA columns</span>
-          <span style="display:inline-block;margin:2px 6px"><span class="badge" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5">🔴 Terminal Exam</span> = Exam — once per term → Exam column</span>
-          <span style="display:inline-block;margin:2px 6px"><span class="badge" style="background:#f3e8ff;color:#6b21a8;border:1px solid #c4b5fd">🟣 Project</span> / <span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d">🟡 Quiz</span> / 🟠 Practical = other purposes</span>
+          <b>Clear differentiation (unambiguous) — CBT purposes:</b><br>
+          <span style="display:inline-block;margin:2px 6px"><span class="badge" style="background:#dcfce7;color:#166534;border:1px solid #86efac">🟢 CBT Assignment</span> = Homework — multiple per term, cumulative → Assignment column (this page)</span>
+          <span style="display:inline-block;margin:2px 6px"><span class="badge" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd">🔵 Mid-term CA</span> = CA1/CA2 — once per term → CA1/CA2 columns (Report Cards → Bulk Push CBT)</span>
+          <span style="display:inline-block;margin:2px 6px"><span class="badge" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5">🔴 Terminal Exam</span> = Exam — once per term → Exam column (Bulk Push CBT)</span>
+          <span style="display:inline-block;margin:2px 6px"><span class="badge" style="background:#f3e8ff;color:#6b21a8;border:1px solid #c4b5fd">🟣 Project</span> / <span class="badge" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d">🟡 Quiz</span> / 🟠 Practical = other purposes → any report column</span>
         </div>
         <div id="ap-cbt-list"><span class="pulse">Loading CBT assignments…</span></div>
       </div>
@@ -537,22 +554,53 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       
       <div class="table-wrap"><table id="assignments-table"><thead><tr><th>Loading…</th></tr></thead><tbody><tr><td><span class="pulse">Loading…</span></td></tr></tbody></table></div>
       <!-- V8.5 #2: students SEE why assignments matter — the accumulation is the incentive. -->
-      <div class="card" style="margin-top:16px;background:linear-gradient(135deg,#eef2ff,#faf5ff);border-color:#c7d2fe" data-role-allow="student parent">
-        <h3>🏆 Why your assignments earn points</h3>
-        <p style="line-height:1.7;margin:4px 0">Every assignment you complete — written homework, projects, practicals, presentations and CBT assignments — earns points that <b>accumulate for each subject</b> through the term. Your teacher can push your total straight into your <b>report card</b>. Every assignment counts: the more you do, the higher your report-card score climbs. 💪</p>
-        <div id="ap-my-points" style="margin-top:8px"><span class="pulse">Loading your points…</span></div>
+      <!-- V12.11: Student explainer — legible, clear, detailed modus operandi -->
+      <div class="card" style="margin-top:16px;background:linear-gradient(135deg,#eef2ff,#faf5ff);border:2px solid #c7d2fe;color:#0f172a" data-role-allow="student parent">
+        <h3 style="margin-top:0;color:#0f172a">🏆 Why your assignments earn points — How it works for students</h3>
+        <div style="color:#1e293b;line-height:1.8;font-size:.95rem">
+          <p style="margin:0 0 10px;color:#1e293b"><b>Every assignment you complete earns points that accumulate for each subject through the term.</b> This includes:</p>
+          <ul style="margin:0 0 10px 20px;color:#334155;line-height:1.8">
+            <li>📄 <b>Physical assignments</b> — written homework, class exercises, projects, practicals, presentations (teacher scores manually)</li>
+            <li>🖥️ <b>CBT assignments</b> — online homework done via <b>Take Assignment</b> button (auto-marked, multiple per term). Each CBT assignment is separate and accumulates.</li>
+          </ul>
+          <p style="margin:0 0 10px;color:#1e293b"><b>Modus operandi:</b></p>
+          <ol style="margin:0 0 10px 20px;color:#334155;line-height:1.8">
+            <li>Teacher gives assignment (physical or CBT) for your class + subject</li>
+            <li>You complete it — for CBT, click <b>🖥️ Take Assignment</b> button in table → do online test → score saved automatically</li>
+            <li>Teacher clicks <b>Score class</b> for THAT assignment → for CBT, scores auto-fill from CBT results (kind and max auto-filled); for physical, teacher enters manually</li>
+            <li>All your assignment scores (physical + multiple CBT assignments) accumulate: <b>Total points / Max points → %</b></li>
+            <li>At end of term, teacher pushes your cumulative % into <b>Report Card → Assignment column</b> (scaled to column max). More assignments = higher report card score! 💪</li>
+          </ol>
+          <p style="margin:0;color:#475569;font-size:.88rem"><b>Tip:</b> Check your points below. Every assignment counts — the more you do, the higher your Assignment column climbs.</p>
+        </div>
+        <div id="ap-my-points" style="margin-top:12px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px"><span class="pulse">Loading your points…</span></div>
       </div>
       <div class="card" style="margin-top:16px" data-staff-only>
-        <h3>🏅 Assignment Points Workbench — from scores to report card</h3>
-        <!-- V9.2 (issue 4): a numbered workflow so ANY teacher/admin can follow it
-             without training. Physical + CBT scores meet in ONE score sheet. -->
-        <div style="background:var(--gray-100);border-radius:12px;padding:10px 14px;margin:4px 0 12px;font-size:.85rem;line-height:1.8">
-          <b>How it works (4 steps):</b><br>
-          <b>1️⃣ Pick class + subject</b> below — everything on this workbench applies to that pair for the CURRENT term.<br>
-          <b>2️⃣ Get scores in</b> — three ways, mix freely:
-          <span style="display:inline-block;margin-left:8px">📄 <b>Physical/paper work</b> → <i>➕ Quick physical assignment</i> (records it and opens the class scoring sheet immediately) · ✍️ <i>Score class</i> on any existing assignment row above · 🖥️ <b>CBT assignments</b> → <i>Pull CBT scores</i> (imports auto-marked results; put the word “Assignment” in the CBT title).</span><br>
-          <b>3️⃣ Review</b> — <i>📋 Term score sheet</i> shows EVERY assignment (physical AND CBT side by side) per student with totals & %; print it or export CSV. <i>Σ Totals</i> is the condensed per-student view.<br>
-          <b>4️⃣ Push</b> — <i>🚀 Push totals → Report card</i> writes each student's percentage into any report-card column, scaled to that column's max mark. Done.
+        <h3>🏅 Assignment Points Workbench — from scores to report card (V12.11 Detailed Guide)</h3>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin:4px 0 12px;font-size:.88rem;line-height:1.8;color:#1e293b">
+          <b>Modus operandi — How assignment scoring works (for new users, step-by-step):</b><br><br>
+          <b>1️⃣ Pick class + subject</b> below — everything on this workbench applies to that pair for the CURRENT term (e.g., JSS1 + Mathematics, First Term).<br><br>
+          <b>2️⃣ Get scores in — three ways, mix freely, cumulative:</b><br>
+          <div style="margin-left:16px">
+            📄 <b>Physical/paper work:</b><br>
+            <span style="margin-left:16px">• <b>➕ Quick physical assignment</b> → records a physical assignment (e.g., Essay, Worksheet) and opens the class scoring sheet immediately for manual entry of kind/max/scores</span><br>
+            <span style="margin-left:16px">• <b>✍️ Score class</b> on any existing assignment row in table above → for <b>physical assignments</b>, teacher manually enters assignment kind (Written homework, Project, etc.), maximum mark, and each student's score</span><br><br>
+            🖥️ <b>CBT assignments (auto-fill, multiple per term):</b><br>
+            <span style="margin-left:16px">• Create on <b>CBT page</b> → type 🟢 Assignment → auto-appears here with Take link for every student</span><br>
+            <span style="margin-left:16px">• <b>✍️ Score class</b> for THAT CBT assignment in table above → <b>auto-fills</b> assignment kind (CBT assignment auto-marked disabled), maximum mark (auto-filled from CBT exam max_score readonly, scaled to align), and scores for every student of that class from CBT results (scaled to max, e.g., raw 15/20 → 7.5/10 if max=10). Teacher can adjust before saving. Only physical requires manual entry.</span><br>
+            <span style="margin-left:16px">• <b>🖥️ Pull CBT scores</b> → bulk syncs ALL CBT assignments for selected class/subject (handles multiple per term) — each assignment separate column, accumulating cumulatively</span><br>
+          </div><br>
+          <b>3️⃣ Review — cumulative collation:</b><br>
+          <div style="margin-left:16px">
+            • <b>📋 Term score sheet</b> shows EVERY assignment (physical 📄 + each CBT assignment 🖥️ as separate column) per student with Total got / Total max and % — e.g., Assignment1 (CBT), Assignment2 (CBT), Assignment3 (physical) → Total accumulates ALL<br>
+            • <b>Σ Totals only</b> is condensed per-student view: assignments count, points, %<br>
+            • Print score sheet or export CSV — each column is one assignment
+          </div><br>
+          <b>4️⃣ Push — to report card Assignment column:</b><br>
+          <div style="margin-left:16px">
+            • <b>🚀 Push totals → Report card</b> writes each student's cumulative % into chosen report-card column (e.g., Assignment), scaled to that column's max mark (e.g., if Assignment column max=20 and student has 80%, pushed score=16)<br>
+            • At end of term, Assignment column contains cumulative % of ALL assignments (physical + multiple CBT) — robust, all-inclusive, seamless
+          </div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;padding:8px;border:2px solid var(--gray-200);border-radius:12px;background:#fff">
           <span style="font-weight:800;color:var(--primary);align-self:center">1️⃣</span>
@@ -673,42 +721,80 @@ const AP={
     }catch(_){box.innerHTML='';}
   },
   async pullCBT(){
+    // V12.10: robust pull — uses new bridge RPC sc_assignment_cbt_sync_all, handles multiple CBT assignments per term cumulatively
+    // Clearly differentiated: only 🟢 CBT Assignments (assessment_type=assignment) are pulled, not 🔵 Mid-term CAs or 🔴 Terminal Exams
     const cls=(document.getElementById('ap-class')||{}).value,sub=(document.getElementById('ap-subject')||{}).value;
     if(!cls||!sub){toast('Pick a class AND subject first.','warning');return;}
     let cp={};try{cp=await (window.CRUD&&CRUD.currentPeriod?CRUD.currentPeriod():{});}catch(_){ }
-    let eq=sb.from('cbt_exams').select('id,title,class,subject,term,session,assessment_type,max_score').eq('class',cls).eq('subject',sub);
-    if(cp.term)eq=eq.eq('term',cp.term);
+    // Try server RPC first (atomic, handles multiple per term)
+    try{
+      if(window.AssignmentCBT){
+        const res=await AssignmentCBT.syncAll({class:cls, subject:sub, term:cp.term||null, session:cp.session||null});
+        toast(`🖥️ Pulled ${res.total_scores_synced||0} score(s) from ${res.exams_synced||0} CBT assignment(s) — each assignment separate, accumulating cumulatively.`, 'success', 9000);
+        this.matrix(); this.totals();
+        if(window.AssignmentCBT) AssignmentCBT.renderCBTSection();
+        return;
+      }
+      const {data, error}=await sb.rpc('sc_assignment_cbt_sync_all',{p_class:cls, p_subject:sub, p_term:cp.term||null, p_session:cp.session||null});
+      if(!error && data && data.ok){
+        toast(`🖥️ Synced ${data.total_scores_synced||0} score(s) from ${data.exams_synced||0} CBT assignment(s) — cumulative collation.`, 'success', 9000);
+        this.matrix(); this.totals();
+        return;
+      }
+    }catch(e){ console.warn('RPC syncAll failed, fallback to client', e.message); }
+    // Client fallback: exact assignment type only (clear differentiation)
+    let eq=sb.from('cbt_exams').select('id,title,class,subject,term,session,assessment_type,max_score,code').eq('class',cls).eq('subject',sub).eq('is_archived', false);
+    if(cp.term) eq=eq.eq('term',cp.term);
     const er=await eq.limit(200);
     if(er.error){toast(er.error.message,'danger');return;}
-    const exams=(er.data||[]).filter(e=>/assign|homework|home work/i.test(String(e.assessment_type||'')+String(e.title||'')));
-    if(!exams.length){toast('No CBT ASSIGNMENTS found for '+cls+' · '+sub+' this term. Tip: put the word "Assignment" in the CBT title or assessment type, then pull again.','info',9000);return;}
+    const exams=(er.data||[]).filter(e=>String(e.assessment_type||'').toLowerCase()==='assignment');
+    if(!exams.length){toast('No 🟢 CBT ASSIGNMENTS found for '+cls+' · '+sub+' this term. Differentiation: only assessment_type=Assignment are pulled here (multiple per term, cumulative). Mid-term CAs (🔵) and Terminal Exams (🔴) are pushed via Report Cards → Bulk Push CBT. Create assignment on CBT page → type Assignment.','info',9000);return;}
     const rr=await sb.from('cbt_results').select('*').in('exam_id',exams.map(e=>e.id)).limit(5000);
     if(rr.error){toast(rr.error.message,'danger');return;}
     const studs=(await sb.from('students').select('id,full_name,admission_no').eq('class',cls)).data||[];
-    const byName=new Map(studs.map(s0=>[String(s0.full_name||'').toLowerCase(),s0]));
+    const norm=s=> String(s||'').trim().toLowerCase();
+    const byAdm=new Map(studs.map(s=>[norm(s.admission_no), s]).filter(k=>k[0]));
+    const byName=new Map(studs.map(s=>[norm(s.full_name), s]).filter(k=>k[0]));
     let rows=[];
     (rr.data||[]).forEach(x=>{
-      const st=byName.get(String(x.student_name||'').toLowerCase());
+      let st = byAdm.get(norm(x.student_id_ref)) || byName.get(norm(x.student_name));
       const ex=exams.find(e=>e.id===x.exam_id)||{};
-      if(!st)return;
-      rows.push({assignment_id:null,student_id:st.id,student_id_ref:st.admission_no||'',student_name:st.full_name,
-        class:cls,subject:sub,term:cp.term||null,session:cp.session||null,
-        score:Number(x.score)||0,max_score:Number(x.total||ex.max_score)||10,recorded_by:(window.SC_PROFILE&&SC_PROFILE.id)||null});
+      if(!st) return;
+      rows.push({assignment_id:null, cbt_exam_id:ex.id, student_id:st.id, student_id_ref:st.admission_no||x.student_id_ref||'', student_name:st.full_name, class:cls, subject:sub, term:cp.term||null, session:cp.session||null, score:Number(x.score)||0, max_score:Number(x.total||ex.max_score)||10, recorded_by:(window.SC_PROFILE&&SC_PROFILE.id)||null});
     });
-    if(!rows.length){toast('CBT assignments exist but no student results yet.','info');return;}
+    if(!rows.length){toast('CBT assignments exist but no student results yet. Students must take them via Take link.','info');return;}
     let saved=0;
     for(const row of rows){
-      const {error}=await sb.from('assignment_scores').insert(row);
-      if(!error)saved++;
+      const {error}=await sb.from('assignment_scores').upsert(row,{onConflict:'cbt_exam_id,student_id'});
+      if(!error) saved++;
     }
-    toast('🖥️ Pulled '+saved+' CBT assignment result(s) — they now sit beside the physical assignments in the score sheet.',saved?'success':'warning',9000);
-    if(saved)this.matrix(); /* V9.2 (issue 4): physical + CBT together, no extra click */
+    toast('🖥️ Pulled '+saved+' CBT assignment result(s) — each assignment separate column, accumulating cumulatively for Assignment column.',saved?'success':'warning',9000);
+    if(saved){ this.matrix(); this.totals(); if(window.AssignmentCBT) AssignmentCBT.renderCBTSection(); }
   },
   async scoreModal(assignmentId){
+    // V12.10: robust handling — for CBT assignments, auto-fill scores/kind/max from CBT results; for physical, manual entry
+    // This fixes: "when score class is clicked, scores should be automatically filled and also assignment kind and max mark should be auto-filled"
     if(!window.sb){toast('Database not configured','warning');return;}
-    const a=(await sb.from('assignments').select('*').eq('id',assignmentId).maybeSingle()).data;
+    // Handle virtual CBT assignments (not yet in assignments table)
+    if(String(assignmentId).startsWith('virtual-')){
+      const realCbtId=String(assignmentId).replace('virtual-','');
+      if(window.AssignmentCBT) return await AssignmentCBT.uiScoreCBT(realCbtId);
+    }
+    const {data:a} = await sb.from('assignments').select('*').eq('id',assignmentId).maybeSingle();
     if(!a){toast('Assignment not found','warning');return;}
-    /* V8.6 #2: a teacher scores only THEIR OWN assignment; admin scores any. */
+    // If CBT assignment (is_cbt or cbt_exam_id), delegate to auto-fill modal
+    if(a.is_cbt || a.cbt_exam_id){
+      const cbtId = a.cbt_exam_id;
+      if(cbtId && window.AssignmentCBT) return await AssignmentCBT.uiScoreCBT(cbtId);
+      // If cbt_exam_id missing but is_cbt true, try to find linked exam by title/class/subject
+      if(a.is_cbt){
+        try{
+          const {data:ex} = await sb.from('cbt_exams').select('id').eq('class',a.class||'').eq('subject',a.subject||'').eq('title',a.title||'').eq('is_archived', false).limit(1).maybeSingle();
+          if(ex && ex.id && window.AssignmentCBT) return await AssignmentCBT.uiScoreCBT(ex.id);
+        }catch(_){}
+      }
+    }
+    // Physical/manual assignment — manual entry for kind/max/scores (teacher enters)
     const rSc=String((window.App&&App.currentRole)||(window.SC_PROFILE&&SC_PROFILE.role)||'').toLowerCase();
     const isAdminSc=!!(window.App&&App.isAdminRole&&App.isAdminRole(rSc));
     if(!isAdminSc&&a.posted_by&&String(a.posted_by)!==String((window.SC_PROFILE&&SC_PROFILE.id)||'')){toast('This assignment belongs to another teacher — only that teacher or an admin can score it.','warning',7000);return;}
@@ -719,11 +805,12 @@ const AP={
     const prior=new Map(existing.map(x=>[String(x.student_id),x]));
     const maxDefault=10;
     const rows=studs.map(s0=>{const pv=prior.get(String(s0.id));return '<tr data-sid="'+s0.id+'" data-ref="'+AP.esc(s0.admission_no||'')+'" data-name="'+AP.esc(s0.full_name)+'"><td>'+AP.esc(s0.full_name)+'<br><small>'+AP.esc(s0.admission_no||'')+'</small></td><td><input class="form-input ap-sc" type="number" min="0" style="width:90px" value="'+(pv?pv.score:'')+'" placeholder="—"></td></tr>';}).join('');
-    openModal('✍️ Score: '+AP.esc(a.title)+' ('+AP.esc(a.class||'')+' · '+AP.esc(a.subject||'')+')',
-      '<div style="display:flex;gap:12px;flex-wrap:wrap"><div class="form-group"><label>Assignment kind</label><select class="form-select" id="ap-kind" style="width:220px"><option>Written homework</option><option>Class exercise</option><option>Project</option><option>Practical</option><option>Presentation</option><option>Group work</option><option>Reading task</option><option>CBT assignment (auto-marked)</option></select></div>'+
-      '<div class="form-group"><label>Maximum mark for THIS assignment</label><input class="form-input" id="ap-max" type="number" value="'+((existing[0]&&existing[0].max_score)||maxDefault)+'" min="1" style="width:120px"></div></div>'+
-      '<div class="table-wrap" style="max-height:50vh;overflow:auto"><table><thead><tr><th>Student</th><th>Score</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-      '<p style="font-size:.8rem;color:var(--gray-500)">Blank = not submitted (excluded from totals). Saved scores accumulate on the Σ totals below.</p>',
+    openModal('✍️ Score Physical Assignment: '+AP.esc(a.title)+' ('+AP.esc(a.class||'')+' · '+AP.esc(a.subject||'')+') — Manual entry',
+      '<div class="notice" style="background:#fffbeb;border-color:#fcd34d;color:#92400e"><b>📄 Physical/manual assignment</b> — teacher manually enters kind, max and each student\'s score. For 🟢 CBT assignments, scores auto-fill from CBT results (see CBT Assignments section above).</div>'+
+      '<div style="display:flex;gap:12px;flex-wrap:wrap"><div class="form-group"><label>Assignment kind (manual)</label><select class="form-select" id="ap-kind" style="width:220px"><option>Written homework</option><option>Class exercise</option><option>Project</option><option>Practical</option><option>Presentation</option><option>Group work</option><option>Reading task</option></select><small>Physical assignments: choose kind manually</small></div>'+
+      '<div class="form-group"><label>Maximum mark for THIS assignment (manual)</label><input class="form-input" id="ap-max" type="number" value="'+((existing[0]&&existing[0].max_score)||maxDefault)+'" min="1" style="width:120px"><small>Physical: enter max manually</small></div></div>'+
+      '<div class="table-wrap" style="max-height:50vh;overflow:auto"><table><thead><tr><th>Student</th><th>Score (manual)</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<p style="font-size:.8rem;color:var(--gray-500)">Blank = not submitted (excluded from totals). Saved scores accumulate cumulatively → push to Assignment column.</p>',
       '<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="AP.saveScores(\''+assignmentId+'\')">💾 Save scores</button>');
     this._ctx={a:a,cp:cp};
   },
@@ -757,7 +844,7 @@ const AP={
     this._totals={list:list,cls:cls,sub:sub,cp:cp};
     box.innerHTML=list.length?'<div class="table-wrap"><table><thead><tr><th>Student</th><th>Assignments scored</th><th>Points</th><th>%</th></tr></thead><tbody>'+list.map(t=>'<tr><td><b>'+AP.esc(t.name)+'</b><br><small>'+AP.esc(t.ref||'')+'</small></td><td>'+t.n+'</td><td>'+t.got+' / '+t.max+'</td><td><b>'+(t.max?Math.round(t.got/t.max*1000)/10:0)+'%</b></td></tr>').join('')+'</tbody></table></div>':'<p style="color:var(--gray-500)">No assignment scores recorded yet for '+AP.esc(cls)+' · '+AP.esc(sub)+(cp.term?' · '+AP.esc(cp.term):'')+'. Use ✍️ Score class on an assignment above.</p>';
   },
-  /* ==== V9.1 (4f): TERM SCORE SHEET — every assignment as a column ==== */
+  /* ==== V12.10: TERM SCORE SHEET — every assignment (physical + each CBT) as separate column, cumulative ==== */
   async matrix(){
     const cls=(document.getElementById('ap-class')||{}).value,sub=(document.getElementById('ap-subject')||{}).value;
     const box=document.getElementById('ap-totals');
@@ -768,21 +855,53 @@ const AP={
     const r=await q.limit(8000);
     if(r.error){box.innerHTML='<p style="color:#b91c1c">'+AP.esc(r.error.message)+'</p>';return;}
     const scores=r.data||[];
-    if(!scores.length){box.innerHTML='<p style="color:var(--gray-500)">No assignment scores yet for '+AP.esc(cls)+' · '+AP.esc(sub)+' this term.</p>';return;}
-    /* resolve assignment titles */
+    if(!scores.length){box.innerHTML='<p style="color:var(--gray-500)">No assignment scores yet for '+AP.esc(cls)+' · '+AP.esc(sub)+' this term. Use ✍️ Score class on assignments above — CBT assignments auto-fill kind/max/scores.</p>';return;}
+    // Resolve titles for physical assignments and CBT exams
     const aids=[...new Set(scores.map(x=>x.assignment_id).filter(Boolean))];
+    const cbtIds=[...new Set(scores.map(x=>x.cbt_exam_id).filter(Boolean))];
     let titles={};
-    if(aids.length){const ar=await sb.from('assignments').select('id,title,due_date').in('id',aids);(ar.data||[]).forEach(a=>titles[a.id]=a.title||'Assignment');}
-    const colKeys=[...new Set(scores.map(x=>x.assignment_id||'cbt-pull'))];
-    const colLabel=k=>k==='cbt-pull'?'🖥️ CBT assignments':(titles[k]?'📄 '+titles[k]:'📄 Assignment');
-    /* rows: full class register so unscored students are visible too */
+    if(aids.length){
+      const ar=await sb.from('assignments').select('id,title,cbt_exam_id,is_cbt').in('id',aids);
+      (ar.data||[]).forEach(a=>{titles[a.id]= (a.is_cbt? '🖥️ ':'📄 ') + (a.title||'Assignment');});
+    }
+    if(cbtIds.length){
+      const cr=await sb.from('cbt_exams').select('id,code,title').in('id',cbtIds);
+      (cr.data||[]).forEach(c=>{ 
+        titles[c.id]= '🖥️ '+ (c.title||c.code||'CBT Assignment');
+        scores.filter(s=>s.cbt_exam_id===c.id && s.assignment_id).forEach(s=>{ if(!titles[s.assignment_id]) titles[s.assignment_id]=titles[c.id]; });
+      });
+    }
+    // Column keys: each physical assignment_id AND each cbt_exam_id as separate columns (multiple CBT assignments per term)
+    const colKeysSet=new Set();
+    scores.forEach(x=>{ if(x.cbt_exam_id) colKeysSet.add(x.cbt_exam_id); else if(x.assignment_id) colKeysSet.add(x.assignment_id); else colKeysSet.add('orphan'); });
+    const colKeys=[...colKeysSet];
+    const colLabel=k=>{ if(k==='orphan') return '📄 Assignment (legacy)'; return titles[k] || '📄 Assignment'; };
     const studs=(await sb.from('students').select('id,full_name,admission_no').eq('class',cls).order('full_name')).data||[];
-    const byStud={};scores.forEach(x=>{const k=String(x.student_id);(byStud[k]=byStud[k]||{}); const ck=x.assignment_id||'cbt-pull'; (byStud[k][ck]=byStud[k][ck]||{got:0,max:0}); byStud[k][ck].got+=Number(x.score)||0; byStud[k][ck].max+=Number(x.max_score)||0;});
-    let h='<div class="table-wrap" id="ap-matrix-print"><h4 style="margin:6px 0">📋 Term score sheet · '+AP.esc(cls)+' · '+AP.esc(sub)+(cp.term?' · '+AP.esc(cp.term):'')+(cp.session?' · '+AP.esc(cp.session):'')+'</h4><table><thead><tr><th>Student</th>'+colKeys.map(k=>'<th style="font-size:.75rem">'+AP.esc(colLabel(k)).slice(0,24)+'</th>').join('')+'<th>Total</th><th>%</th></tr></thead><tbody>';
-    studs.forEach(s0=>{const row=byStud[String(s0.id)]||{};let got=0,max=0;
-      h+='<tr><td><b>'+AP.esc(s0.full_name)+'</b><br><small>'+AP.esc(s0.admission_no||'')+'</small></td>'+colKeys.map(k=>{const c=row[k];if(c){got+=c.got;max+=c.max;return '<td>'+c.got+'/'+c.max+'</td>';}return '<td style="color:var(--gray-400)">—</td>';}).join('')+'<td><b>'+got+' / '+max+'</b></td><td><b>'+(max?Math.round(got/max*1000)/10:0)+'%</b></td></tr>';});
-    h+='</tbody></table></div><p style="font-size:.78rem;color:var(--gray-500);margin:6px 0 0">📄 = physical/manual assignment · 🖥️ = auto-marked CBT assignment (via Pull CBT). Both accumulate into the same Total and %.</p><div style="margin-top:8px;display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="AP.printMatrix()">🖨️ Print score sheet</button><button class="btn btn-outline btn-sm" onclick="AP.exportMatrixCSV()">⬇ CSV</button><button class="btn btn-primary btn-sm" onclick="AP.pushModal()">🚀 Push totals → Report card</button></div>';
-    this._matrix={studs:studs,byStud:byStud,colKeys:colKeys,colLabel:colLabel,cls:cls,sub:sub,cp:cp};
+    const byStud={};
+    scores.forEach(x=>{
+      const sid=String(x.student_id);
+      (byStud[sid]=byStud[sid]||{});
+      const ck=x.cbt_exam_id || x.assignment_id || 'orphan';
+      (byStud[sid][ck]=byStud[sid][ck]||{got:0,max:0,count:0});
+      byStud[sid][ck].got+=Number(x.score)||0;
+      byStud[sid][ck].max+=Number(x.max_score)||0;
+      byStud[sid][ck].count++;
+    });
+    let h='<div class="table-wrap" id="ap-matrix-print"><h4 style="margin:6px 0">📋 Term score sheet · '+AP.esc(cls)+' · '+AP.esc(sub)+(cp.term?' · '+AP.esc(cp.term):'')+(cp.session?' · '+AP.esc(cp.session):'')+'</h4>';
+    h+='<p style="font-size:.82rem;color:#475569">📄 = Physical/manual (teacher manually enters kind/max/scores) · 🖥️ = CBT Assignment (auto-marked, multiple per term, auto-fills kind/max/scores when Score class clicked). Each column is ONE assignment; Total accumulates ALL → push to Assignment column.</p>';
+    h+='<table><thead><tr><th>Student</th>'+colKeys.map(k=>'<th style="font-size:.72rem;min-width:90px">'+AP.esc(colLabel(k)).slice(0,30)+'</th>').join('')+'<th>Total</th><th>%</th></tr></thead><tbody>';
+    studs.forEach(s0=>{
+      const row=byStud[String(s0.id)]||{};
+      let got=0,max=0;
+      Object.values(row).forEach(c=>{ got+=c.got; max+=c.max; });
+      h+='<tr><td><b>'+AP.esc(s0.full_name)+'</b><br><small>'+AP.esc(s0.admission_no||'')+'</small></td>'+colKeys.map(k=>{
+        const c=row[k];
+        if(c){ return '<td>'+c.got+'/'+c.max+'</td>'; }
+        return '<td style="color:#cbd5e1">—</td>';
+      }).join('')+'<td><b>'+got+' / '+max+'</b></td><td><b>'+(max?Math.round(got/max*1000)/10:0)+'%</b></td></tr>';
+    });
+    h+='</tbody></table></div><p style="font-size:.78rem;color:#64748b;margin:6px 0 0">Each CBT assignment is separate column — e.g., Assignment 1 (CBT), Assignment 2 (CBT), Assignment 3 (physical) — all accumulate cumulatively → Assignment column.</p><div style="margin-top:8px;display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="AP.printMatrix()">🖨️ Print score sheet</button><button class="btn btn-outline btn-sm" onclick="AP.exportMatrixCSV()">⬇ CSV</button><button class="btn btn-primary btn-sm" onclick="AP.pushModal()">🚀 Push totals → Report card Assignment column</button></div>';
+    this._matrix={studs:studs,byStud:byStud,colKeys:colKeys,colLabel:colLabel,cls:cls,sub:sub,cp:cp, scores:scores};
     box.innerHTML=h;
   },
   printMatrix(){const el=document.getElementById('ap-matrix-print');if(!el){toast('Open the score sheet first.','warning');return;}const w=window.open('','_blank');if(!w){toast('Allow popups to print.','warning');return;}w.document.write('<html><head><title>Assignment Score Sheet</title><style>@page{size:A4 landscape;margin:8mm}body{font-family:Arial;padding:10px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #111;padding:5px;text-align:center;font-size:11px}th{background:#e2e8f0}</style></head><body>'+el.innerHTML+'<script>window.onload=()=>window.print()<\/script></body></html>');w.document.close();},
@@ -827,10 +946,16 @@ const AP={
     try{if(window.ReportEngine&&ReportEngine.reportPickerOptions){const p=await ReportEngine.reportPickerOptions();cols=p.columns||[];}}catch(_){ }
     if(!cols.length&&window.sb){try{const cr=await sb.from('assessment_columns').select('id,name,max_mark').order('position').limit(500);const seen=new Set();(cr.data||[]).forEach(c=>{const k=String(c.name||'').toLowerCase();if(!k||seen.has(k))return;seen.add(k);cols.push(c);});}catch(_){ }}
     if(!cols.length){openModal('🚀 Push assignment points','<div class="notice">No report-card columns exist yet. Admin: Report Cards → “School-wide assessment columns” → add e.g. an “Assignment” column → return here.</div>','<button class="btn btn-outline" onclick="closeModal()">Close</button>');return;}
-    openModal('🚀 Push accumulated assignment points → Report card',
+    // V12.11: prioritize Assignment column for cumulative push
+    const assignCols = cols.filter(c=>/assignment/i.test(c.name||''));
+    const otherCols = cols.filter(c=>!/assignment/i.test(c.name||''));
+    const sortedCols = [...assignCols, ...otherCols];
+    const defaultCol = assignCols.length ? assignCols[0] : cols[0];
+    openModal('🚀 Push accumulated assignment points → Report card (V12.11)',
+      '<div class="notice" style="background:#f0fdf4;border-color:#86efac;color:#166534"><b>✅ Cumulative collation:</b> All assignment scores (physical 📄 + multiple CBT 🖥️ assignments) for <b>'+AP.esc(this._totals.cls)+' · '+AP.esc(this._totals.sub)+'</b> will be pushed to <b>Assignment column</b> (scaled to max). Each student\'s total % (e.g., 80%) × column max (e.g., 20) = pushed score (16). At end of term, Assignment column contains cumulative % of ALL assignments.</div>'+
       '<p>'+this._totals.list.length+' student total(s) for <b>'+AP.esc(this._totals.cls)+' · '+AP.esc(this._totals.sub)+'</b> will be written into the chosen column, scaled to its max mark.</p>'+
-      '<div class="form-group"><label>Destination column</label><select class="form-select" id="ap-col">'+cols.map(c=>'<option value="'+c.id+'" data-max="'+(c.max_mark||10)+'">'+AP.esc(c.name)+' (max '+(c.max_mark||10)+')</option>').join('')+'</select></div>',
-      '<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="AP.push()">🚀 Push now</button>');
+      '<div class="form-group"><label>Destination column — Assignment column (cumulative)</label><select class="form-select" id="ap-col">'+sortedCols.map(c=>'<option value="'+c.id+'" data-max="'+(c.max_mark||10)+'" '+(c.id===defaultCol.id?'selected':'')+'>'+AP.esc(c.name)+' (max '+(c.max_mark||10)+')'+(/assignment/i.test(c.name)?' — ✅ Recommended for cumulative assignments':'')+'</option>').join('')+'</select><small>Assignment column recommended for cumulative assignments (physical + multiple CBT). Other columns (CA1, CA2, Exam) are for once-per-term exams.</small></div>',
+      '<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="AP.push()">🚀 Push now to Assignment column</button>');
   },
   async push(){
     const sel=document.getElementById('ap-col'),colId=sel.value,colMax=Number(sel.selectedOptions[0].dataset.max)||10;
