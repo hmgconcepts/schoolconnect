@@ -45,6 +45,7 @@ node tools/test-photo-sync.mjs
 node tools/test-access-manager.mjs
 node tools/test-schema-doctor.mjs
 node tools/test-relink.mjs
+node tools/test-assignment-cbt.mjs
 python3 tools/audit-demo-coverage.py
 node tools/test-teacher-scope-sql.mjs
 node tools/test-data-portability.js
