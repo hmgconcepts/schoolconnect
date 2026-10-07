@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Admin Data • School Connect Demo School</title>
-<meta name="description" content="School Connect Demo School — Admin Data. Comprehensive school management platform.">
-<meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
+<title>Dashboard • God of Seed Academy</title>
+<meta name="description" content="God of Seed Academy — Dashboard. Comprehensive school management platform.">
+<meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
 <link rel="icon" type="image/png" href="assets/img/logo.png">
 <link rel="manifest" href="manifest.json">
@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<meta property="og:title" content="Admin Data • School Connect Demo School">
-<meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
+<meta property="og:title" content="Dashboard • God of Seed Academy">
+<meta property="og:description" content="God of Seed Academy — Free school management by HMG Concepts">
 <meta property="og:image" content="assets/img/logo.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -61,22 +61,22 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 @media(min-width:901px){.app-topbar .mobile-toggle{display:none}}
 </style>
 
-    <meta name="description" content="School Connect Demo School — Admin Data. Comprehensive school management platform.">
-    <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
+    <meta name="description" content="God of Seed Academy — Dashboard. Comprehensive school management platform.">
+    <meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
     <meta name="author" content="HMG Concepts">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="./admin-data.html">
-    <meta property="og:title" content="Admin Data • School Connect Demo School">
-    <meta property="og:description" content="School Connect Demo School — Admin Data. Comprehensive school management platform.">
-    <meta property="og:url" content="./admin-data.html">
+    <link rel="canonical" href="./dashboard.html">
+    <meta property="og:title" content="Dashboard • God of Seed Academy">
+    <meta property="og:description" content="God of Seed Academy — Dashboard. Comprehensive school management platform.">
+    <meta property="og:url" content="./dashboard.html">
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="School Connect v5 — School Connect Demo School">
+    <meta property="og:site_name" content="School Connect v5 — God of Seed Academy">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Admin Data • School Connect Demo School">
-    <meta name="twitter:description" content="School Connect Demo School — Admin Data. Comprehensive school management platform.">
+    <meta name="twitter:title" content="Dashboard • God of Seed Academy">
+    <meta name="twitter:description" content="God of Seed Academy — Dashboard. Comprehensive school management platform.">
     <link rel="alternate" href="https://hmgconcepts.pages.dev/" title="HMG Concepts Ecosystem">
   </head>
-<body data-theme="theme15" data-school="School Connect Demo School" data-font="plusjakarta">
+<body data-theme="theme15" data-school="God of Seed Academy" data-font="plusjakarta">
 
 <div id="notif-bell" class="notif-bell" title="Notifications" data-chatbot>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -116,13 +116,13 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
     <div id="modal-footer" class="modal-footer"></div>
   </div>
 </div>
-<div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar">
+<div class="app-layout sidebar" >
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
+        <img src="assets/img/logo.png" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
         <div>
-          <strong>School Connect Demo School</strong>
-          <div style="font-size:0.7rem;color:var(--gray-500)">SCD</div>
+          <strong>God of Seed Academy</strong>
+          <div style="font-size:0.7rem;color:var(--gray-500)">GOSA</div>
         </div>
       </div>
       <nav class="app-nav">
@@ -472,9 +472,32 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       </div>
     </aside>
   <main class="app-main">
+    <!-- FIX S-04: Setup Required banner when Supabase is not configured -->
+    <div id="sc-setup-required" style="background:#fef3c7;border-bottom:2px solid #f59e0b;padding:12px 24px;display:none;font-size:.88rem;align-items:center;gap:8px">
+      <span style="font-size:1.2rem">⚠️</span>
+      <div style="flex:1">
+        <strong>Database not configured</strong> — This portal needs a Supabase connection to work.
+        <span id="sc-setup-detail" style="color:#92400e"></span>
+      </div>
+      <a href="https://supabase.com/docs" target="_blank" rel="noopener" class="btn btn-sm btn-outline" style="flex-shrink:0">📖 Setup Guide</a>
+      <a href="https://hmgconcepts.pages.dev/schoolconnect-setup.html" target="_blank" rel="noopener" class="btn btn-sm btn-primary" style="flex-shrink:0">Get Help</a>
+      <button onclick="document.getElementById('sc-setup-required').style.display='none'" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#92400e;flex-shrink:0">×</button>
+    </div>
+    <!-- FIX S-05: Guest/not-signed-in section on dashboard -->
+    <section id="dash-sec-guest" style="display:none;padding:16px 24px;background:#fff7f7;border-bottom:1px solid #fecaca">
+      <div class="card" style="max-width:600px;margin:20px auto;text-align:center;border-color:#fecaca;background:#fff">
+        <div style="font-size:3rem;margin-bottom:12px">🔐</div>
+        <h2 style="margin-bottom:8px">Sign in to access your dashboard</h2>
+        <p style="color:var(--gray-600);margin-bottom:16px">This portal is for registered students, staff, and parents of God of Seed Academy.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <a href="login.html" class="btn btn-primary">🔐 Sign In</a>
+          <a href="apply.html" class="btn btn-outline">📝 Request Access</a>
+        </div>
+      </div>
+    </section>
     <header class="app-topbar">
       <button class="mobile-toggle" onclick="App.toggleSidebar()" title="Menu">☰</button>
-      <h1 class="app-page-title">Admin Data</h1>
+      <h1 class="app-page-title">Dashboard</h1>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
         
         <button class="btn btn-sm btn-outline" onclick="if(window.Super)Super.chatbot.explainPage()" title="About this page">ℹ️ Help</button>
@@ -485,112 +508,83 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
     </header>
     <div class="app-content">
       
-      <div class="card" style="margin-bottom:16px">
-        <p style="color:var(--gray-600);margin:0">Admin-only data console: <strong>view</strong> any table,
-        <strong>delete</strong> records, take a full <strong>backup</strong> (JSON download) and
-        <strong>restore</strong> from a backup. Every action is written to the Activity Log.</p>
+      <div class="card" style="margin-bottom:18px;background:var(--gradient);color:#fff">
+        <h2 style="margin:0;color:#fff">Welcome, <span id="dash-user-name">User</span></h2>
+        <p style="margin:4px 0 0;opacity:.9">Role: <strong id="dash-user-role">—</strong>. This dashboard is role-specific; your quick actions are separated from other users' tools.</p>
+        <div id="dash-quick-links" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"></div>
       </div>
-            <div class="card" style="margin-bottom:16px;border:2px solid #f9a8d4" data-admin-only>
-        <h3>🎬 One-Click Demo Sample Data</h3>
-        <p style="color:var(--gray-600);margin-top:4px">Instantly fill every showcase page with believable rows — payroll run, asset register, application links, messages, assignments, behaviour points, support plans, library shelf, help-desk tickets, house points, cafeteria menu, lost &amp; found, PTA meetings and more. <b>Idempotent:</b> tables that already have data are skipped, so clicking twice never duplicates. Perfect before showing the platform to a prospective school.</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="DS.fill()">🎬 Load sample data now</button>
-          <button class="btn btn-outline" style="border-color:#ef4444;color:#ef4444" onclick="DS.clear()">🧹 Delete loaded sample data</button>
-        </div>
-        <p style="color:var(--gray-500);font-size:.82rem;margin:8px 0 0">🧹 <b>Delete loaded sample data</b> removes exactly the rows the loader creates — payroll run, asset register, library shelf, tickets, messages, PTA, promotions and the rest — matched by their unique sample fingerprints, so <b>real school records are never touched</b>. Safe to click any time; rows already deleted are simply skipped.</p>
-        <div id="ds-log" style="margin-top:10px;font-size:.85rem;color:var(--gray-600)"></div>
-      </div>
-<div class="card" style="margin-bottom:16px" data-admin-only>
-        <h3>🗄️ Full backup & restore</h3>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px">
-          <button class="btn btn-primary" onclick="DataTools.backupAll()">⬇ Download full backup (JSON)</button> <a class="btn btn-outline" href="platform-health.html">🛡️ Platform Health Console</a>
-          <label class="btn btn-outline">⬆ Restore from backup<input type="file" accept=".json" hidden onchange="DataTools.restore(event)"></label>
-        </div>
-      </div>
-            <div class="card" style="margin-bottom:16px;border:2px solid #a5b4fc" data-admin-only>
-        <h3>☁️ Google Drive Backup & Sync (school-owned, free)</h3>
-        <p style="color:var(--gray-600);margin-top:4px">Back up the <b>entire school database</b> straight into the school’s own Google Drive with one click, restore from Drive with one click, and let the platform <b>re-back-up automatically on a schedule</b>. Backups are the same portable JSON archives used everywhere else, so they restore perfectly. The connection uses Google’s <code>drive.file</code> permission: this site can only see the backup files it created — never the rest of the school’s Drive.</p>
-        <div id="gd-status" style="margin:8px 0"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-          <button class="btn btn-primary" onclick="GD.backup()">☁️⬇ Back up now to Google Drive</button>
-          <button class="btn btn-outline" onclick="GD.list()">📂 List Drive backups (restore)</button>
-        </div>
-        <div id="gd-progress" style="color:var(--gray-600);font-size:.9rem;margin-bottom:8px"></div>
-        <div id="gd-list"></div>
-        <details style="margin-top:10px">
-          <summary style="cursor:pointer;font-weight:600">⚙️ Setup & automatic sync schedule (owner only)</summary>
-          <div class="grid grid-3" style="margin-top:10px">
-            <div class="form-group" style="grid-column:1/-1"><label>Google OAuth Client ID (one-time setup — see the guide)</label><input class="form-input" id="gd-client" placeholder="1234567890-abc123.apps.googleusercontent.com"></div>
-            <div class="form-group"><label>Automatic backup</label><select class="form-select" id="gd-enabled"><option value="false">Off (manual only)</option><option value="true">On (scheduled)</option></select></div>
-            <div class="form-group"><label>Every (days)</label><input class="form-input" id="gd-days" type="number" min="1" value="7"></div>
-            <div style="display:flex;align-items:end"><button class="btn btn-primary" onclick="GD.save()">💾 Save Drive settings</button></div>
+
+      <section id="dash-sec-admin" data-dash-role="super_admin admin" style="display:none">
+        <div class="card" style="margin-bottom:18px;background:#f8fafc;border:1px solid #e2e8f0">
+          <h3 style="margin-top:0">👁️ Admin Portal Oversight & Switching</h3>
+          <p style="color:var(--gray-600);margin-bottom:12px">Instantly view and inspect the live portal experience for any user role (Staff, Parent, Student) right from your admin console.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="['dash-sec-admin','dash-sec-staff','dash-sec-parent','dash-sec-student'].forEach(id=>{var e=document.getElementById(id);if(e)e.style.display='none';});document.getElementById('dash-sec-admin').style.display='block';">🏛️ Main Admin Command Centre</button>
+            <button class="btn btn-outline btn-sm" onclick="['dash-sec-admin','dash-sec-staff','dash-sec-parent','dash-sec-student'].forEach(id=>{var e=document.getElementById(id);if(e)e.style.display='none';});document.getElementById('dash-sec-staff').style.display='block';">👨‍🏫 Inspect Staff/Teacher Portal</button>
+            <button class="btn btn-outline btn-sm" onclick="['dash-sec-admin','dash-sec-staff','dash-sec-parent','dash-sec-student'].forEach(id=>{var e=document.getElementById(id);if(e)e.style.display='none';});document.getElementById('dash-sec-parent').style.display='block';">👨‍👩‍👧 Inspect Parent Portal</button>
+            <button class="btn btn-outline btn-sm" onclick="['dash-sec-admin','dash-sec-staff','dash-sec-parent','dash-sec-student'].forEach(id=>{var e=document.getElementById(id);if(e)e.style.display='none';});document.getElementById('dash-sec-student').style.display='block';">🎓 Inspect Student Portal</button>
           </div>
-          <p style="font-size:.82rem;color:var(--gray-500);margin:6px 0 0">How auto-sync works on a free stack: whenever an admin opens any page and a backup is due, it uploads silently in the background (after the first authorisation in that browser). Full setup steps: <code>docs/GOOGLE-DRIVE-SYNC-GUIDE.md</code> in this package. One-time DB update for older installs: run <code>database/drive-sync.sql</code>.</p>
-        </details>
-      </div>
-      <div class="card" style="margin-bottom:16px;border:2px solid #38bdf8" data-admin-only>
-        <details>
-        <summary style="cursor:pointer;font-weight:800;font-size:1.05rem">🚑 Disaster Recovery Wizard — restore a school onto a FRESH database from Google Drive (click to open)</summary>
-        <p style="color:var(--gray-600);margin-top:10px"><b>When to use this:</b> the school’s old Supabase project was paused too long / deleted / permanently lost, but backups exist in the school’s Google Drive. This wizard rebuilds everything on a brand-new database in ~30–45 minutes with free tools. (If the old project is merely <i>paused</i>, do NOT use this — just restore it at supabase.com and press the 💓 heartbeat on the Platform Health Console.)</p>
-        <ol style="line-height:2;color:var(--gray-700);padding-left:20px">
-          <li><b>Create the fresh database:</b> <a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a> → New project → copy the new <b>Project URL</b> and <b>anon public key</b> (Project Settings → API).</li>
-          <li><b>Install the schema:</b> new project → SQL Editor → paste the ENTIRE <code>database/complete-schema.sql</code> from the site files → Run → wait for “installed successfully ✅”. (This auto-installs keep-alive, the vault, Drive-sync and security settings.)</li>
-          <li><b>Reconnect this website:</b> edit <code>assets/js/config.js</code> — replace the old SUPABASE_URL and SUPABASE_ANON_KEY with the new values — push to GitHub; Vercel redeploys the SAME site onto the fresh database.</li>
-          <li><b>Recreate the first admin:</b> Login page → Request access → sign up; then in Supabase → Table Editor → <code>profiles</code> → set that row to <code>role = super_admin</code>, <code>status = approved</code>.</li>
-          <li><b>Reconnect Google Drive:</b> sign in here as that admin → expand <b>⚙️ Setup</b> in the ☁️ Google Drive card above → paste the school’s existing OAuth <b>Client ID</b> (it is tied to the site URL, not the database, so the SAME one still works) → Save.</li>
-          <li><b>One-click restore:</b> click <b>📂 List Drive backups</b> above → authorise with the school’s Google account → every past backup appears → on the NEWEST one click <b>🚑 Recover to new project</b> (not plain Restore). Recovery mode imports every school record, skips dead login accounts, clears stale references, retries row-by-row, and verifies the SHA-256 seal first.</li>
-          <li><b>Re-onboard people:</b> staff/parents/students sign up again (send one broadcast); approve them on <a href="approvals.html">Approvals</a> — restored records re-link by admission/staff number and email.</li>
-          <li><b>Re-arm ALL safeguards:</b> open the <a href="platform-health.html">🛡️ Platform Health Console</a> → press <b>💓 heartbeat</b>, re-add the two GitHub Action secrets with the NEW url/key, repoint UptimeRobot at the new project, switch Drive <b>auto-sync back ON</b> and run one fresh backup. Every tile must be green.</li>
-        </ol>
-        <p style="font-size:.85rem;color:var(--gray-500)">Full printable runbook with a “what survives / what doesn’t” table: <code>docs/DISASTER-RECOVERY-RUNBOOK.md</code> (included in this package). Prevention: keep auto-sync ON and glance at the Health Console weekly — then this wizard is never needed.</p>
-        </details>
-      </div>
-
-      <div class="card" style="margin-bottom:16px;border:2px solid #10b981" data-admin-only>
-        <h3>🔗 One-Click Re-link after Disaster Recovery (V12.6 — NEW)</h3>
-        <p style="color:var(--gray-600);margin-top:4px">After you recover a school from Google Drive into a FRESH Supabase project, everybody signs up again with NEW accounts. Their old data (students, staff, parent links, results, fees…) is back, but <b>user_id / parent_id</b> are empty — the old auth accounts are gone. <b>Instead of linking one-by-one</b>, this tool re-links EVERYBODY in one click using the SAME backup you recovered.</p>
-        <div class="callout" style="background:#f0fdf4;border-color:#86efac;color:#166534;font-size:.85rem"><b>How it matches (robust, expert-designed):</b>
-          <ul style="margin:6px 0 0 18px;line-height:1.7">
-            <li><b>Staff:</b> matched by <code>staff_no</code> OR <code>email</code> (both preserved). Old user_id → old email → new profile id via email bridge. Last write wins.</li>
-            <li><b>Students:</b> matched by <code>admission_no</code> (unique, preserved) OR <code>id</code>. Old user_id → old email → new profile id. Fallback: full_name + class when never linked before.</li>
-            <li><b>Parent-child:</b> old <code>parent_id</code> → old email → new parent id, student_id preserved (same after recovery) → parent_child upsert.</li>
-            <li>Only <code>user_id / parent_id</code> columns touched — school data never touched. Photos then auto-sync via V12.2 triggers.</li>
-          </ul>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
-          <label class="btn btn-outline">📂 Choose backup JSON<input type="file" id="rl-file" accept=".json" hidden onchange="RL.previewFile(this.files[0])"></label>
-          <button class="btn btn-primary" id="rl-go" onclick="RL.relink()" disabled>🔗 One-Click Re-link Everybody</button>
-          <button class="btn btn-outline" onclick="RL.useDriveArchive()">☁️ Use newest Drive backup as source</button>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-value" id="stat-students">—</div><div class="stat-label">Students</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-staff">—</div><div class="stat-label">Staff</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-fees">—</div><div class="stat-label">Fees Paid</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-outstanding" style="color:#b45309">—</div><div class="stat-label">Fees Outstanding</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-announcements">—</div><div class="stat-label">Notices</div></div>
         </div>
-        <div id="rl-preview" style="font-size:.85rem;color:var(--gray-600)"></div>
-        <div id="rl-log" style="margin-top:10px;font-size:.85rem;color:var(--gray-600)"></div>
-        <p style="font-size:.82rem;color:var(--gray-500);margin:8px 0 0">Prerequisite: run recovery (🚑 Recover to new project) first, then ask everybody to sign up again and approve them on Approvals. Then run this re-link. Safe to run twice — already-linked rows skipped.</p>
-      </div>
+        <div id="dash-actions" class="card" style="display:none;margin-bottom:16px;background:#fff7ed;border-color:#fdba74"><h3 style="margin:0 0 8px">⚡ Action needed today</h3><div id="dash-actions-body" style="display:flex;gap:10px;flex-wrap:wrap"></div></div>
+        <div class="grid grid-2">
+          <div class="card"><h3>🏛️ Admin / Super Admin Command Centre</h3><p>Full school-control dashboard: setup, users, approvals, academics, finance, HR, compliance, records, backups and communications.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-outline btn-sm" href="academic_setup.html">Academic Setup</a><a class="btn btn-outline btn-sm" href="approvals.html">Approvals</a><a class="btn btn-outline btn-sm" href="students.html">Students</a><a class="btn btn-outline btn-sm" href="staff.html">Staff</a><a class="btn btn-outline btn-sm" href="parents.html">Parents</a><a class="btn btn-outline btn-sm" href="classes.html">Classes</a><a class="btn btn-outline btn-sm" href="subjects.html">Subjects</a><a class="btn btn-outline btn-sm" href="departments.html">Departments</a><a class="btn btn-outline btn-sm" href="admissions.html">Admissions</a><a class="btn btn-outline btn-sm" href="finance.html">Finance</a><a class="btn btn-outline btn-sm" href="fees.html">Fees</a><a class="btn btn-outline btn-sm" href="payroll.html">Payroll</a><a class="btn btn-outline btn-sm" href="staff_loans.html">Staff Loans</a><a class="btn btn-outline btn-sm" href="staff_bonus.html">Staff Bonus</a><a class="btn btn-outline btn-sm" href="appraisals.html">Appraisals</a><a class="btn btn-outline btn-sm" href="analytics.html">Analytics</a><a class="btn btn-outline btn-sm" href="admin-data.html">Admin Data</a><a class="btn btn-outline btn-sm" href="storage.html">Storage</a><a class="btn btn-outline btn-sm" href="compliance.html">Compliance</a><a class="btn btn-outline btn-sm" href="activity_log.html">Activity Log</a><a class="btn btn-outline btn-sm" href="settings.html">Settings</a><a class="btn btn-outline btn-sm" href="timetable-generator.html">Timetable Generator</a><a class="btn btn-outline btn-sm" href="checkin.html">QR Check-in</a><a class="btn btn-outline btn-sm" href="surveys.html">Surveys</a><a class="btn btn-outline btn-sm" href="menu.html">Menu Planner</a><a class="btn btn-outline btn-sm" href="fleet_tracking.html">Fleet</a><a class="btn btn-outline btn-sm" href="facility_booking.html">Facilities</a><a class="btn btn-outline btn-sm" href="inventory.html">Inventory</a><a class="btn btn-outline btn-sm" href="document_builder.html">Documents</a><a class="btn btn-outline btn-sm" href="idcards.html">ID Cards</a><a class="btn btn-outline btn-sm" href="certificates.html">Certificates</a><a class="btn btn-outline btn-sm" href="flyer.html">Flyer</a><a class="btn btn-outline btn-sm" href="broadcast.html">Broadcast</a><a class="btn btn-outline btn-sm" href="announcements.html">Announcements</a><a class="btn btn-outline btn-sm" href="voting.html">Voting</a></div></div>
+          <div class="card"><h3>📊 Executive Analytics</h3><p style="color:var(--gray-600);margin-bottom:10px">Whole-school KPIs for proprietor/principal oversight.</p><canvas id="dash-chart" style="margin-top:12px;max-height:240px"></canvas></div>
+          <div class="card"><h3>⚙️ Setup & Governance</h3><p>Start here for sessions, terms, classes, subjects, departments, user approvals, roles, settings and audit logs.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-outline btn-sm" href="academic_setup.html">Academic Setup</a><a class="btn btn-outline btn-sm" href="approvals.html">Approvals</a><a class="btn btn-outline btn-sm" href="students.html">Students</a><a class="btn btn-outline btn-sm" href="staff.html">Staff</a><a class="btn btn-outline btn-sm" href="parents.html">Parents</a><a class="btn btn-outline btn-sm" href="classes.html">Classes</a><a class="btn btn-outline btn-sm" href="subjects.html">Subjects</a><a class="btn btn-outline btn-sm" href="departments.html">Departments</a><a class="btn btn-outline btn-sm" href="compliance.html">Compliance</a><a class="btn btn-outline btn-sm" href="activity_log.html">Activity Log</a><a class="btn btn-outline btn-sm" href="settings.html">Settings</a><a class="btn btn-outline btn-sm" href="timetable-generator.html">Timetable Generator</a></div></div>
+          <div class="card"><h3>💰 Finance, HR & Operations</h3><p>Track payments, fee balances, payroll, loans, bonuses, inventory, transport, facilities, compliance and storage.</p><div class="stats-grid" style="margin:12px 0"><div class="stat-card"><div class="stat-value" id="ov-parent-fees">—</div><div class="stat-label">Fee Payments</div></div><div class="stat-card"><div class="stat-value" id="ov-payroll">—</div><div class="stat-label">Payroll Rows</div></div><div class="stat-card"><div class="stat-value" id="ov-inventory">—</div><div class="stat-label">Inventory Items</div></div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-outline btn-sm" href="finance.html">Finance</a><a class="btn btn-outline btn-sm" href="fees.html">Fees</a><a class="btn btn-outline btn-sm" href="payroll.html">Payroll</a><a class="btn btn-outline btn-sm" href="staff_loans.html">Staff Loans</a><a class="btn btn-outline btn-sm" href="staff_bonus.html">Staff Bonus</a><a class="btn btn-outline btn-sm" href="appraisals.html">Appraisals</a><a class="btn btn-outline btn-sm" href="analytics.html">Analytics</a><a class="btn btn-outline btn-sm" href="admin-data.html">Admin Data</a><a class="btn btn-outline btn-sm" href="storage.html">Storage</a><a class="btn btn-outline btn-sm" href="checkin.html">QR Check-in</a><a class="btn btn-outline btn-sm" href="surveys.html">Surveys</a><a class="btn btn-outline btn-sm" href="menu.html">Menu Planner</a><a class="btn btn-outline btn-sm" href="fleet_tracking.html">Fleet</a><a class="btn btn-outline btn-sm" href="facility_booking.html">Facilities</a><a class="btn btn-outline btn-sm" href="inventory.html">Inventory</a></div></div>
+          <div class="card"><h3>👨‍🏫 Staff / Teacher Dashboard Overview</h3><p><strong>Admin oversight view:</strong> supervise teacher work without turning the admin into a staff user. Track attendance coverage, result entry, CBT activity, lesson plans, scheme-of-work progress, messages and class records.</p><div class="stats-grid" style="margin:12px 0"><div class="stat-card"><div class="stat-value" id="ov-staff-count">—</div><div class="stat-label">Staff</div></div><div class="stat-card"><div class="stat-value" id="ov-attendance">—</div><div class="stat-label">Attendance Rows</div></div><div class="stat-card"><div class="stat-value" id="ov-cbt-open">—</div><div class="stat-label">CBT Exams</div></div><div class="stat-card"><div class="stat-value" id="ov-results">—</div><div class="stat-label">Results Rows</div></div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-outline btn-sm" href="attendance.html">Attendance</a><a class="btn btn-outline btn-sm" href="results.html">Results</a><a class="btn btn-outline btn-sm" href="cbt.html">CBT Manager</a><a class="btn btn-outline btn-sm" href="cbt-prompts.html">CBT Prompts</a><a class="btn btn-outline btn-sm" href="report-cards.html">Report Cards</a><a class="btn btn-outline btn-sm" href="academic-records.html">Academic Records</a><a class="btn btn-outline btn-sm" href="assignments.html">Assignments</a><a class="btn btn-outline btn-sm" href="sow.html">Scheme of Work</a><a class="btn btn-outline btn-sm" href="lesson_plans.html">Lesson Plans</a><a class="btn btn-outline btn-sm" href="timetable.html">Timetable</a><a class="btn btn-outline btn-sm" href="digital_library.html">Digital Library</a><a class="btn btn-outline btn-sm" href="library.html">Library</a><a class="btn btn-outline btn-sm" href="behaviour.html">Behaviour</a><a class="btn btn-outline btn-sm" href="support_plans.html">Support Plans</a><a class="btn btn-outline btn-sm" href="diary.html">Diary</a><a class="btn btn-outline btn-sm" href="messages.html">Messages</a><a class="btn btn-outline btn-sm" href="inbox.html">Inbox</a><a class="btn btn-outline btn-sm" href="students.html">Students</a></div></div>
+          <div class="card"><h3>👨‍👩‍👧 Parent & Payment Dashboard Overview</h3><p><strong>Admin oversight view:</strong> monitor linked children, fee tracking, parent complaints, admissions, payment follow-up, messages and parent communication without exposing this management view to parents.</p><div class="stats-grid" style="margin:12px 0"><div class="stat-card"><div class="stat-value" id="ov-parents">—</div><div class="stat-label">Parent Links</div></div><div class="stat-card"><div class="stat-value" id="ov-complaints">—</div><div class="stat-label">Complaints</div></div><div class="stat-card"><div class="stat-value" id="ov-applications">—</div><div class="stat-label">Applications</div></div><div class="stat-card"><div class="stat-value" id="ov-messages">—</div><div class="stat-label">Messages</div></div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-outline btn-sm" href="student-profile.html">Child Dashboard</a><a class="btn btn-outline btn-sm" href="fees.html">Fees / Balance</a><a class="btn btn-outline btn-sm" href="results.html">Results</a><a class="btn btn-outline btn-sm" href="report-cards.html">Report Cards</a><a class="btn btn-outline btn-sm" href="attendance.html">Attendance</a><a class="btn btn-outline btn-sm" href="assignments.html">Assignments</a><a class="btn btn-outline btn-sm" href="diary.html">Diary</a><a class="btn btn-outline btn-sm" href="timetable.html">Timetable</a><a class="btn btn-outline btn-sm" href="inbox.html">Messages</a><a class="btn btn-outline btn-sm" href="announcements.html">Announcements</a><a class="btn btn-outline btn-sm" href="complaints.html">Complaint</a><a class="btn btn-outline btn-sm" href="apply.html">Apply / Admissions</a><a class="btn btn-outline btn-sm" href="parents.html">All Parents</a><a class="btn btn-outline btn-sm" href="finance.html">Finance Summary</a><a class="btn btn-outline btn-sm" href="approvals.html">Approvals</a><a class="btn btn-outline btn-sm" href="messages.html">Free WhatsApp Follow-up</a></div></div>
+          <div class="card"><h3>🎓 Student Dashboard Overview</h3><p><strong>Admin oversight view:</strong> inspect the student experience for learning supervision, safeguarding and intervention: resources, assignments, timetable, results, report cards, profiles, certificates, diaries and support needs.</p><div class="stats-grid" style="margin:12px 0"><div class="stat-card"><div class="stat-value" id="ov-assignments">—</div><div class="stat-label">Assignments</div></div><div class="stat-card"><div class="stat-value" id="ov-behaviour">—</div><div class="stat-label">Behaviour Rows</div></div><div class="stat-card"><div class="stat-value" id="ov-support">—</div><div class="stat-label">Support Plans</div></div><div class="stat-card"><div class="stat-value" id="ov-library">—</div><div class="stat-label">Library Items</div></div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-outline btn-sm" href="cbt-exam.html">Take CBT</a><a class="btn btn-outline btn-sm" href="assignments.html">Assignments</a><a class="btn btn-outline btn-sm" href="digital_library.html">Digital Library</a><a class="btn btn-outline btn-sm" href="eresources.html">E-Resources</a><a class="btn btn-outline btn-sm" href="timetable.html">Timetable</a><a class="btn btn-outline btn-sm" href="results.html">Results</a><a class="btn btn-outline btn-sm" href="report-cards.html">Report Cards</a><a class="btn btn-outline btn-sm" href="student-profile.html">My Profile</a><a class="btn btn-outline btn-sm" href="diary.html">Diary</a><a class="btn btn-outline btn-sm" href="announcements.html">Announcements</a><a class="btn btn-outline btn-sm" href="inbox.html">Inbox</a><a class="btn btn-outline btn-sm" href="complaints.html">Complaints</a><a class="btn btn-outline btn-sm" href="certificates.html">Certificates</a><a class="btn btn-outline btn-sm" href="students.html">All Students</a><a class="btn btn-outline btn-sm" href="promotion.html">Promotion</a><a class="btn btn-outline btn-sm" href="behaviour.html">Behaviour</a><a class="btn btn-outline btn-sm" href="support_plans.html">Support Plans</a><a class="btn btn-outline btn-sm" href="health.html">Health</a></div></div>
+          <div class="card"><h3>🧭 Role Separation Rule</h3><p><strong>Implemented:</strong> Staff/teacher see staff dashboard only. Parent sees parent dashboard only. Student sees student dashboard only. Admin/Super Admin see the admin dashboard plus overview cards of staff, parent/payment and student dashboards for management, supervision, fee tracking, safeguarding and accountability.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-outline btn-sm" href="analytics.html">Analytics</a><a class="btn btn-outline btn-sm" href="activity_log.html">Audit Trail</a><a class="btn btn-outline btn-sm" href="student-profile.html">Open Student Profile</a><a class="btn btn-outline btn-sm" href="fees.html">Track Payments</a></div></div>
+        </div>
+      </section>
 
-      <!-- V12.7 Universal Archive & Restore Hub — robust, all-inclusive, self-contained, seamless -->
-      <div id="universal-archive-hub"></div>
+      <section id="dash-sec-staff" data-dash-role="staff" style="display:none">
+        <div class="card" data-admin-only style="margin-bottom:16px;background:#fef3c7;border-color:#f59e0b"><h3 style="margin:0">👁️ Admin Oversight Mode (Staff Portal)</h3><p style="margin:4px 0 10px;color:#92400e">You are inspecting the Staff/Teacher portal as an Admin.</p><button class="btn btn-primary btn-sm" onclick="['dash-sec-admin','dash-sec-staff','dash-sec-parent','dash-sec-student'].forEach(id=>{var e=document.getElementById(id);if(e)e.style.display='none';});document.getElementById('dash-sec-admin').style.display='block';">← Return to Admin Command Centre</button></div>
+        <div class="stats-grid"><div class="stat-card"><div class="stat-value" id="stat-my-classes">—</div><div class="stat-label">My Classes</div></div><div class="stat-card"><div class="stat-value" id="stat-open-cbt">—</div><div class="stat-label">Open CBT</div></div><div class="stat-card"><div class="stat-value" id="stat-attendance-today">—</div><div class="stat-label">Attendance Today</div></div></div>
+        <div class="grid grid-2"><div class="card"><h3>👨‍🏫 Staff / Teacher Workspace</h3><p>Academic and classroom operations only — no proprietor finance, HR payroll, storage, compliance or system-backup tools.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-outline btn-sm" href="attendance.html">Attendance</a><a class="btn btn-outline btn-sm" href="results.html">Results</a><a class="btn btn-outline btn-sm" href="cbt.html">CBT Manager</a><a class="btn btn-outline btn-sm" href="cbt-prompts.html">CBT Prompts</a><a class="btn btn-outline btn-sm" href="report-cards.html">Report Cards</a><a class="btn btn-outline btn-sm" href="academic-records.html">Academic Records</a><a class="btn btn-outline btn-sm" href="assignments.html">Assignments</a><a class="btn btn-outline btn-sm" href="sow.html">Scheme of Work</a><a class="btn btn-outline btn-sm" href="lesson_plans.html">Lesson Plans</a><a class="btn btn-outline btn-sm" href="timetable.html">Timetable</a><a class="btn btn-outline btn-sm" href="digital_library.html">Digital Library</a><a class="btn btn-outline btn-sm" href="library.html">Library</a><a class="btn btn-outline btn-sm" href="behaviour.html">Behaviour</a><a class="btn btn-outline btn-sm" href="support_plans.html">Support Plans</a><a class="btn btn-outline btn-sm" href="diary.html">Diary</a><a class="btn btn-outline btn-sm" href="messages.html">Messages</a><a class="btn btn-outline btn-sm" href="inbox.html">Inbox</a><a class="btn btn-outline btn-sm" href="students.html">Students</a></div></div><div class="card"><h3>📢 Staff Notices</h3><div id="dash-announcements-staff" class="dash-announcements"><span class="pulse">Loading…</span></div></div></div>
+        <div class="card" style="margin-top:16px"><h3>🗓️ My Week — personal teaching timetable</h3><div id="dash-my-timetable"><span class="pulse">Loading your timetable…</span></div></div>
+        <div class="card" style="margin-top:16px"><h3>💼 My Pay &amp; Benefits</h3><div id="dash-my-pay"><span class="pulse">Loading your pay records…</span></div></div>
+        <div class="dash-live" style="grid-column:1/-1"></div>
+      </section>
 
-<div class="card" style="margin-bottom:16px" data-admin-only>
-        <h3>♻️ Portable Data Archive Center</h3>
-        <p style="color:var(--gray-600)"><b>Every machine-readable export can come back.</b> Portable JSON preserves UUIDs, dates, arrays and JSON fields for later restoration/analysis; CSV remains available for spreadsheets and can be re-imported into the selected table. Files are processed locally and are never stored in Supabase.</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="DataTools.portableFull()">⬇ Export all portable JSON</button><button class="btn btn-outline" onclick="DataTools.portableSelected()">⬇ Export selected table JSON</button><button class="btn btn-outline" onclick="DataTools.choosePortableImport()">⬆ Import JSON / CSV with preview</button></div>
-        <div class="notice" style="margin-top:10px;background:#fffbeb;border-color:#fcd34d;color:#92400e"><b>Auth note:</b> profile UUIDs belong to Supabase Auth users. A full archive restores most reliably into the same project. On a new project, create/adopt users first, then import operational tables.</div>
-        <div id="dt-portable-report"></div>
-      </div>
-      <div class="card">
-        <h3>🔎 Browse & delete a table</h3>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:10px">
-          <div class="form-group" style="margin:0"><label>Table</label>
-            <select class="form-select" id="dt-table" onchange="DataTools.view()"><option>students</option><option>staff</option><option>classes</option><option>subjects</option><option>attendance</option><option>results</option><option>fee_payments</option><option>finance_entries</option><option>cbt_exams</option><option>cbt_results</option><option>assessment_columns</option><option>report_scores</option><option>report_cards</option><option>polls</option><option>poll_votes</option><option>announcements</option><option>events</option><option>messages</option><option>complaints</option><option>admissions</option><option>donations</option><option>activity_log</option><option>profiles</option><option>parent_child</option><option>academic_periods</option><option>certificates</option></select>
+      <section id="dash-sec-parent" data-dash-role="parent" style="display:none">
+        <div class="card" data-admin-only style="margin-bottom:16px;background:#fef3c7;border-color:#f59e0b"><h3 style="margin:0">👁️ Admin Oversight Mode (Parent Portal)</h3><p style="margin:4px 0 10px;color:#92400e">You are inspecting the Parent portal as an Admin.</p><button class="btn btn-primary btn-sm" onclick="['dash-sec-admin','dash-sec-staff','dash-sec-parent','dash-sec-student'].forEach(id=>{var e=document.getElementById(id);if(e)e.style.display='none';});document.getElementById('dash-sec-admin').style.display='block';">← Return to Admin Command Centre</button></div>
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>👶 My Linked Children</h3>
+            <div id="dash-parent-kids" style="display:flex;flex-direction:column;gap:12px">
+              <span class="pulse">Loading linked children…</span>
+            </div>
           </div>
-          <button class="btn btn-outline" onclick="DataTools.view()">View</button>
-          <button class="btn btn-outline" onclick="DataTools.exportTable()">⬇ Export this table (CSV)</button><button class="btn btn-outline" onclick="DataTools.importCSV()">⬆ Re-import CSV</button>
+          <div class="card"><h3>👨‍👩‍👧 Parent Portal</h3><p>Parents focus on linked children only: fees, attendance, results, assignments, messages and complaints. Admin and teacher controls are excluded.</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><a class="btn btn-outline btn-sm" href="student-profile.html">Child Dashboard</a><a class="btn btn-outline btn-sm" href="fees.html">Fees / Balance</a><a class="btn btn-outline btn-sm" href="results.html">Results</a><a class="btn btn-outline btn-sm" href="report-cards.html">Report Cards</a><a class="btn btn-outline btn-sm" href="attendance.html">Attendance</a><a class="btn btn-outline btn-sm" href="assignments.html">Assignments</a><a class="btn btn-outline btn-sm" href="diary.html">Diary</a><a class="btn btn-outline btn-sm" href="timetable.html">Timetable</a><a class="btn btn-outline btn-sm" href="inbox.html">Messages</a><a class="btn btn-outline btn-sm" href="announcements.html">Announcements</a><a class="btn btn-outline btn-sm" href="complaints.html">Complaint</a><a class="btn btn-outline btn-sm" href="apply.html">Apply / Admissions</a></div></div>
+          <div class="card"><h3>📢 Parent Notices</h3><div id="dash-announcements-parent" class="dash-announcements"><span class="pulse">Loading…</span></div></div>
         </div>
-        <div id="dt-grid" style="margin-top:12px"></div>
-      </div>
+      
+        <div class="card" style="margin-top:16px;border:2px solid var(--primary)"><h3>💰 School Fees — Current Term</h3><div id="dash-fees"><span class="pulse">Loading fee summary…</span></div></div>
+        <div class="card" style="margin-top:16px"><h3>🗓️ Upcoming Exams</h3><div id="dash-exam-tt"><span class="pulse">Loading exam timetable…</span></div></div>
+      
+        <div class="card" style="margin-top:16px"><h3>🛍️ School Shop — Products &amp; Purchases</h3><div id="dash-products"><span class="pulse">Loading products…</span></div></div>
+      </section>
+
+      <section id="dash-sec-student" data-dash-role="student" style="display:none">
+        <div class="card" data-admin-only style="margin-bottom:16px;background:#fef3c7;border-color:#f59e0b"><h3 style="margin:0">👁️ Admin Oversight Mode (Student Portal)</h3><p style="margin:4px 0 10px;color:#92400e">You are inspecting the Student portal as an Admin.</p><button class="btn btn-primary btn-sm" onclick="['dash-sec-admin','dash-sec-staff','dash-sec-parent','dash-sec-student'].forEach(id=>{var e=document.getElementById(id);if(e)e.style.display='none';});document.getElementById('dash-sec-admin').style.display='block';">← Return to Admin Command Centre</button></div>
+        <div class="grid grid-2"><div class="card"><h3>🎓 Student Portal</h3><p>Students see learning and personal academic tools only. Finance administration, staff management, payroll, backups and approvals are excluded.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-outline btn-sm" href="cbt-exam.html">Take CBT</a><a class="btn btn-outline btn-sm" href="assignments.html">Assignments</a><a class="btn btn-outline btn-sm" href="digital_library.html">Digital Library</a><a class="btn btn-outline btn-sm" href="eresources.html">E-Resources</a><a class="btn btn-outline btn-sm" href="timetable.html">Timetable</a><a class="btn btn-outline btn-sm" href="results.html">Results</a><a class="btn btn-outline btn-sm" href="report-cards.html">Report Cards</a><a class="btn btn-outline btn-sm" href="student-profile.html">My Profile</a><a class="btn btn-outline btn-sm" href="diary.html">Diary</a><a class="btn btn-outline btn-sm" href="announcements.html">Announcements</a><a class="btn btn-outline btn-sm" href="inbox.html">Inbox</a><a class="btn btn-outline btn-sm" href="complaints.html">Complaints</a><a class="btn btn-outline btn-sm" href="certificates.html">Certificates</a></div></div><div class="card"><h3>📢 Student Notices</h3><div id="dash-announcements-student" class="dash-announcements"><span class="pulse">Loading…</span></div></div></div><div class="dash-live" style="grid-column:1/-1"></div>
+      
+        <div class="card" style="margin-top:16px;border:2px solid var(--primary)"><h3>💰 School Fees — Current Term</h3><div id="dash-fees"><span class="pulse">Loading fee summary…</span></div></div>
+        <div class="card" style="margin-top:16px"><h3>🗓️ Upcoming Exams</h3><div id="dash-exam-tt"><span class="pulse">Loading exam timetable…</span></div></div>
+      
+        <div class="card" style="margin-top:16px"><h3>🛍️ School Shop — Products &amp; Purchases</h3><div id="dash-products"><span class="pulse">Loading products…</span></div></div>
+      </section>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
-      © 2026 School Connect Demo School · Licensed by <a href="https://hmgtechnologies.pages.dev" target="_blank" rel="noopener">HMG Technologies</a> · <a href="https://whatsapp.com/channel/0029Vb7kGoN2ER6feTzs8q2f" target="_blank" rel="noopener" title="Product news, tips and updates">📢 HMG Channel</a>
+      © 2026 God of Seed Academy · Licensed by <a href="https://hmgtechnologies.pages.dev" target="_blank" rel="noopener">HMG Technologies</a> · <a href="https://whatsapp.com/channel/0029Vb7kGoN2ER6feTzs8q2f" target="_blank" rel="noopener" title="Product news, tips and updates">📢 HMG Channel</a>
     </footer>
   </main>
 </div>
@@ -599,9 +593,6 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <script src="assets/js/config.js"></script>
 <script src="assets/js/license.js"></script>
 <script src="assets/js/demo.js"></script>
-<script src="assets/js/data-portability.js"></script>
-<script src="assets/js/drive-sync.js"></script>
-<script src="assets/js/archive-hub.js"></script>
 <script src="assets/js/notifications.js"></script>
 <script src="assets/js/voting.js"></script>
 <script src="assets/js/pwa-install.js"></script>
@@ -625,154 +616,5 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
   if (window.Super) Super.init(sb, window.SCHOOL);
   if (window.Enterprise) Enterprise.init(sb);
   if (window.CRUD) CRUD.init(sb);
-  // V12.7 Universal Hub mount
-  document.addEventListener('DOMContentLoaded', ()=>{ setTimeout(()=>{ if(window.ArchiveHub){ ArchiveHub.init(sb); ArchiveHub.renderUniversal('universal-archive-hub'); } }, 900); });
-</script>
-<script>
-const DataTools = {
-  TABLES: (window.DataPortability&&DataPortability.TABLES)||["students","staff","classes","subjects","attendance","results","fee_payments","cbt_exams","cbt_results","assessment_columns","report_scores","report_cards"],
-  init(){if(window.DataPortability)DataPortability.init(sb);const sel=document.getElementById('dt-table');if(sel){const keep=sel.value;sel.innerHTML=this.TABLES.map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join('');if(this.TABLES.includes(keep))sel.value=keep;}},
-  async portableFull(){try{toast('Preparing paginated portable archive…','info');const env=await DataPortability.exportFull(this.TABLES);toast('✅ Exported '+env.meta.row_count+' rows from '+env.meta.table_count+' tables.','success',7000);}catch(e){toast(e.message||e,'danger',9000);}},
-  async portableSelected(){const t=document.getElementById('dt-table').value;try{const n=await DataPortability.exportTable(t);toast('✅ '+n+' '+t+' row(s) exported as re-importable JSON.','success');}catch(e){toast(e.message||e,'danger');}},
-  choosePortableImport(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,.csv,application/json,text/csv';inp.onchange=async()=>{const f=inp.files[0];if(!f)return;try{const archive=await DataPortability.inspectFile(f,document.getElementById('dt-table').value),summary=Object.entries(archive.tables).map(([t,r])=>'<tr><td>'+esc(t)+'</td><td>'+r.length+'</td></tr>').join('');DataTools._pendingArchive=archive;openModal('Preview portable import','<p><b>File:</b> '+esc(f.name)+'</p><div class="table-wrap"><table><thead><tr><th>Table</th><th>Rows</th></tr></thead><tbody>'+summary+'</tbody></table></div><p>No file is uploaded. Import uses chunked upserts and reports every failed table.</p>','<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-outline" onclick="DataTools.analysePendingArchive()">Analyse locally (no import)</button><button class="btn btn-primary" onclick="DataTools.runPortableImport()">Import / update these rows</button>');}catch(e){toast('Cannot read archive: '+(e.message||e),'danger',10000);}};inp.click();},
-  analysePendingArchive(){const a=this._pendingArchive;if(!a)return;const summaries=Object.entries(a.tables).map(([t,rows])=>{const nums={};(rows||[]).forEach(r=>Object.entries(r).forEach(([k,v])=>{if(typeof v==='number'&&Number.isFinite(v)){const x=nums[k]||(nums[k]={sum:0,min:v,max:v,n:0});x.sum+=v;x.min=Math.min(x.min,v);x.max=Math.max(x.max,v);x.n++;}}));const metrics=Object.entries(nums).slice(0,5).map(([k,x])=>esc(k)+': avg '+(x.sum/x.n).toFixed(2)+' · '+x.min+'–'+x.max).join('<br>');return'<tr><td>'+esc(t)+'</td><td>'+rows.length+'</td><td>'+metrics+'</td></tr>';}).join('');openModal('Local archive analysis','<div class="notice" style="background:#f0fdf4;border-color:#86efac;color:#166534">The archive is analysed in this browser only. No rows have been uploaded to Supabase.</div><div class="table-wrap"><table><thead><tr><th>Dataset</th><th>Rows</th><th>Numeric overview</th></tr></thead><tbody>'+summaries+'</tbody></table></div>','<button class="btn btn-outline" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="DataTools.runPortableImport()">Import archive</button>');},
-  async runPortableImport(){if(!this._pendingArchive)return;closeModal();toast('Importing archive in dependency order…','info');const report=await DataPortability.importArchive(this._pendingArchive,'upsert');document.getElementById('dt-portable-report').innerHTML=DataPortability.reportHTML(report);if(App&&App.logActivity)App.logActivity('portable-import','platform',report.reduce((a,x)=>a+x.saved,0)+' rows');toast('Portable import completed. Review the table report.','success',7000);this._pendingArchive=null;this.view();},
-  async view(){
-    if(!sb){ toast('Database not configured.','warning'); return; }
-    const t=document.getElementById('dt-table').value;
-    const { data, error } = await sb.from(t).select('*').order('created_at',{ascending:false}).limit(200);
-    const box=document.getElementById('dt-grid');
-    if(error){ box.innerHTML='<p style="color:#dc2626">'+esc(error.message)+'</p>'; return; }
-    if(!data||!data.length){ box.innerHTML='<p>No rows.</p>'; return; }
-    const cols=Object.keys(data[0]).slice(0,7);
-    box.innerHTML='<div class="table-wrap"><table><thead><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'<th>Delete</th></tr></thead><tbody>'+
-      data.map(r=>'<tr>'+cols.map(c=>'<td>'+esc(String(r[c]).slice(0,40))+'</td>').join('')+'<td><button class="btn btn-sm btn-outline" onclick="DataTools.del(\''+t+'\',\''+r.id+'\')">✕</button></td></tr>').join('')+
-      '</tbody></table></div><p style="color:var(--gray-500);font-size:.8rem">Showing up to 200 rows.</p>';
-  },
-  async del(table,id){
-    if(!confirm('Permanently delete this record from '+table+'?'))return;
-    const r=await SCDelete.byId(sb,table,id);if(!r.ok){toast(r.error,'danger');return;}if(App&&App.logActivity)App.logActivity('delete',table,id);toast('Deleted permanently and verified.','success');DataTools.view();
-  },
-  async exportTable(){const t=document.getElementById('dt-table').value;try{const n=await DataPortability.exportCSV(t);toast('✅ '+n+' row(s) exported. Select the same table and use Import to restore this CSV.','success',7000);}catch(e){toast(e.message||e,'danger');}},
-  importCSV(){this.choosePortableImport();},
-  parseCSV(text){
-    const rows=[]; let r=[],c='',q=false;
-    for(let i=0;i<text.length;i++){
-      const ch=text[i], nx=text[i+1];
-      if(ch==='\"'&&q&&nx==='\"'){ c+='\"'; i++; }
-      else if(ch==='\"') q=!q;
-      else if(ch===','&&!q){ r.push(c); c=''; }
-      else if((ch==='\n'||ch==='\r')&&!q){ if(ch==='\r'&&nx==='\n') i++; r.push(c); rows.push(r); r=[]; c=''; }
-      else c+=ch;
-    }
-    if(c||r.length){ r.push(c); rows.push(r); }
-    return rows;
-  },
-  async backupAll(){return this.portableFull();},
-  restore(ev){
-    const f=ev.target.files[0]; if(!f)return;
-    const r=new FileReader();
-    r.onload=async()=>{
-      let dump; try{ dump=JSON.parse(r.result); }catch(e){ toast('Invalid backup file.','danger'); return; }
-      if(!confirm('Restore will UPSERT records from this backup into the live database. Continue?'))return;
-      let ok=0,fail=0;
-      for(const t of this.TABLES){ const rows=dump[t]; if(!Array.isArray(rows)||!rows.length)continue;
-        try{ const { error } = await sb.from(t).upsert(rows,{ onConflict:'id' }); if(error)fail++; else ok++; }catch(e){ fail++; } }
-      if(App&&App.logActivity)App.logActivity('restore','platform','tables:'+ok);
-      toast('Restore complete. Tables restored: '+ok+(fail?' · failed: '+fail:''), fail?'warning':'success',6000);
-    };
-    r.readAsText(f);
-  }
-};
-document.addEventListener('DOMContentLoaded',()=>DataTools.init());if(document.readyState!=='loading')DataTools.init();
-</script><script src="assets/js/drive-sync.js"></script>
-<script src="assets/js/recovery.js"></script>
-<script>
-const GD={
-  fmt(b){b=Number(b)||0;return b>1048576?(b/1048576).toFixed(2)+' MB':b>1024?(b/1024).toFixed(1)+' KB':b+' B';},
-  prog(m){const e=document.getElementById('gd-progress');if(e)e.textContent=m||'';},
-  async refreshStatus(){await DriveSync.loadCfg();const e=document.getElementById('gd-status');if(!e)return;const c=DriveSync.cfg;const last=c.lastBackup?new Date(c.lastBackup).toLocaleString():'never';e.innerHTML='<div class="stats-grid"><div class="stat-card"><div class="stat-value" style="font-size:1rem">'+(c.clientId?'Configured ✓':'Not configured')+'</div><div class="stat-label">Google connection</div></div><div class="stat-card"><div class="stat-value" style="font-size:1rem">'+(c.enabled?'Every '+c.days+' day(s)':'Off')+'</div><div class="stat-label">Automatic sync</div></div><div class="stat-card"><div class="stat-value" style="font-size:1rem">'+esc(last)+'</div><div class="stat-label">Last Drive backup</div></div></div>';const ce=document.getElementById('gd-client'),en=document.getElementById('gd-enabled'),dy=document.getElementById('gd-days');if(ce&&!ce.value)ce.value=c.clientId||'';if(en)en.value=String(!!c.enabled);if(dy)dy.value=c.days||7;},
-  async save(){try{await DriveSync.loadCfg();await DriveSync.saveCfg({clientId:document.getElementById('gd-client').value.trim(),enabled:document.getElementById('gd-enabled').value==='true',days:Math.max(1,Number(document.getElementById('gd-days').value)||7)});toast('Google Drive settings saved for the whole school ✓','success');this.refreshStatus();}catch(e){toast(e.message||e,'danger',8000);}},
-  async backup(){try{await DriveSync.loadCfg();this.prog('Starting backup…');const r=await DriveSync.backupNow({interactive:true,onProgress:m=>this.prog(m)});this.prog('');toast('✅ Backup uploaded to Google Drive: '+r.file.name+' ('+r.rows+' rows, '+this.fmt(r.bytes)+'). Find it in the “'+DriveSync.folderName()+'” folder of the authorised Google account.','success',10000);this.refreshStatus();this.list();}catch(e){this.prog('');toast(e.message||e,'danger',10000);}},
-  async list(){const b=document.getElementById('gd-list');b.textContent='Loading Drive backups…';try{await DriveSync.loadCfg();const files=await DriveSync.listBackups();if(!files.length){b.innerHTML='<p style="color:var(--gray-500)">No backups in Drive yet. Click “Back up now” to create the first one.</p>';return;}b.innerHTML='<div class="table-wrap"><table><thead><tr><th>Backup file</th><th>Size</th><th>Created</th><th>Actions</th></tr></thead><tbody>'+files.map(f=>'<tr><td style="word-break:break-all">'+esc(f.name)+'</td><td>'+this.fmt(f.size)+'</td><td>'+esc(String(f.createdTime).slice(0,16).replace('T',' '))+'</td><td style="white-space:nowrap"><button class="btn btn-sm btn-outline" onclick="GD.restore(\''+f.id+'\',\''+esc(f.name)+'\')">↩ Restore</button> <button class="btn btn-sm btn-outline" style="color:#0369a1;border-color:#0369a1" onclick="GD.recover(\''+f.id+'\',\''+esc(f.name)+'\')" title="Restore into a brand-new Supabase project (old project lost)">🚑 Recover to new project</button> <button class="btn btn-sm btn-outline" style="color:#dc2626;border-color:#dc2626" onclick="GD.del(\''+f.id+'\',\''+esc(f.name)+'\')">🗑</button></td></tr>').join('')+'</tbody></table></div>';}catch(e){b.innerHTML='<p style="color:#b91c1c">'+esc(e.message||e)+'</p>';}},
-  async recover(id,name){if(!confirm('🚑 DISASTER RECOVERY MODE\n\nUse this ONLY when restoring “'+name+'” into a BRAND-NEW Supabase project because the old project was paused too long or deleted.\n\nWhat it does:\n• Imports every school record (students, results, fees, CBT, settings…)\n• Skips old user accounts (they belong to the dead project — users simply sign up again and you re-approve them)\n• Clears stale ownership references so nothing is rejected\n• Retries row-by-row so one bad row never blocks the rest\n\nBEFORE clicking OK, make sure you have already run database/complete-schema.sql in the new project.\n\nProceed?'))return;try{this.prog('Disaster recovery: downloading from Drive and importing…');const rep=await DriveSync.restoreFrom(id,'recovery');this.prog('');const saved=rep.reduce((a,x)=>a+x.saved,0),failed=rep.reduce((a,x)=>a+x.failed,0);document.getElementById('gd-list').insertAdjacentHTML('afterbegin',DataPortability.reportHTML(rep));toast('🚑 Recovery finished: '+saved+' row(s) salvaged'+(failed?', '+failed+' skipped (see report — usually old account references)':'')+'. Next: ask staff/parents/students to sign up again, then re-approve them on Approvals.',failed?'warning':'success',12000);}catch(e){this.prog('');toast(e.message||e,'danger',10000);}},
-  async restore(id,name){if(!confirm('Restore “'+name+'” from Google Drive into the database?\n\nExisting rows with the same id are updated; missing rows are re-created. Nothing is deleted.'))return;try{this.prog('Downloading from Drive and importing…');const rep=await DriveSync.restoreFrom(id,'upsert');this.prog('');const saved=rep.reduce((a,x)=>a+x.saved,0),failed=rep.reduce((a,x)=>a+x.failed,0);document.getElementById('gd-list').insertAdjacentHTML('afterbegin',DataPortability.reportHTML(rep));toast('Restore finished: '+saved+' row(s) imported'+(failed?', '+failed+' failed (see report)':'')+' ✓',failed?'warning':'success',9000);}catch(e){this.prog('');toast(e.message||e,'danger',10000);}},
-  async del(id,name){if(!confirm('Delete the Drive backup “'+name+'” permanently?'))return;try{await DriveSync.deleteBackup(id);toast('Drive backup deleted.','info');this.list();}catch(e){toast(e.message||e,'danger');}}
-};
-document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>GD.refreshStatus(),800);});
-</script>
-<script src="assets/js/demo-sample-data.js"></script>
-<script>
-/* V12.6 One-Click Re-link UI controller */
-const RL={
-  _archive:null,
-  async previewFile(file){
-    const pre=document.getElementById('rl-preview'), log=document.getElementById('rl-log'), btn=document.getElementById('rl-go');
-    if(!file){ this._archive=null; pre.textContent=''; btn.disabled=true; return; }
-    pre.textContent='Reading '+file.name+'…';
-    try{
-      const archive = await Recovery.previewArchive(file);
-      this._archive = archive;
-      const s = archive.tables||{};
-      pre.innerHTML='<div class="table-wrap"><table><thead><tr><th>Table</th><th>Rows in backup</th></tr></thead><tbody>'+
-        Object.entries(s).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td>'+(Array.isArray(v)?v.length:'—')+'</td></tr>').join('')+
-        '</tbody></table></div><p style="color:#166534">✅ Archive looks valid — click "One-Click Re-link Everybody".</p>';
-      btn.disabled=false;
-    }catch(e){ pre.innerHTML='<p style="color:#b91c1c">⚠ '+esc(e.message||e)+'</p>'; this._archive=null; btn.disabled=true; }
-  },
-  async useDriveArchive(){
-    const pre=document.getElementById('rl-preview'), btn=document.getElementById('rl-go');
-    pre.textContent='Fetching newest Drive backup…';
-    try{
-      await DriveSync.loadCfg();
-      const files = await DriveSync.listBackups();
-      if(!files.length){ pre.textContent='No Drive backups yet.'; return; }
-      const r = await DriveSync.api('/drive/v3/files/'+files[0].id+'?alt=media');
-      const env = JSON.parse(await r.text());
-      this._archive = env;
-      const s = env.tables||{};
-      pre.innerHTML='<div class="table-wrap"><table><thead><tr><th>Table</th><th>Rows</th></tr></thead><tbody>'+
-        Object.entries(s).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td>'+(Array.isArray(v)?v.length:'—')+'</td></tr>').join('')+
-        '</tbody></table></div><p style="color:#166534">✅ Using Drive backup: '+esc(files[0].name)+' — click re-link.</p>';
-      btn.disabled=false;
-    }catch(e){ pre.innerHTML='<p style="color:#b91c1c">⚠ '+esc(e.message||e)+'</p>'; }
-  },
-  async relink(){
-    if(!this._archive){ toast('Choose a backup first.','warning'); return; }
-    if(!confirm('🔗 One-Click Re-link Everybody?\n\nThis will update user_id on students/staff and parent_id on parent_child using the backup you selected, matched by admission_no/staff_no/email. Only linking columns touched. Continue?')) return;
-    const log=document.getElementById('rl-log'); log.innerHTML='<span class="pulse">Re-linking everybody — this can take a minute…</span>';
-    try{
-      const res = await Recovery.relinkAll(this._archive, (lines)=>{ log.innerHTML=lines.map(x=>'<div>'+esc(x)+'</div>').join(''); });
-      log.innerHTML=res.log.map(x=>'<div>'+esc(x)+'</div>').join('')+
-        '<div class="stats-grid" style="margin-top:10px"><div class="stat-card"><div class="stat-value">'+res.linkedStudents+'</div><div class="stat-label">Students linked</div></div>'+
-        '<div class="stat-card"><div class="stat-value">'+res.linkedStaff+'</div><div class="stat-label">Staff linked</div></div>'+
-        '<div class="stat-card"><div class="stat-value">'+res.linkedParents+'</div><div class="stat-label">Parent links</div></div></div>'+
-        (res.details.students.length?'<details><summary>Students detail</summary><pre style="white-space:pre-wrap;font-size:.75rem">'+res.details.students.map(esc).join('\n')+'</pre></details>':'')+
-        (res.details.staff.length?'<details><summary>Staff detail</summary><pre style="white-space:pre-wrap;font-size:.75rem">'+res.details.staff.map(esc).join('\n')+'</pre></details>':'');
-      toast('🔗 Re-link complete: '+res.linkedStudents+' students, '+res.linkedStaff+' staff, '+res.linkedParents+' parent links restored ✓','success',10000);
-      if(window.App&&App.logActivity) App.logActivity('relink','platform',res.linkedStudents+res.linkedStaff+res.linkedParents+' links');
-    }catch(e){ log.textContent=''; toast(e.message||e,'danger',10000); }
-  }
-};
-const DS={
-  async fill(){
-    if(!window.DemoSampleData){toast('Sample-data engine still loading — try again in a second.','warning');return;}
-    if(!confirm('Load demo sample data now?\n\nEvery sparse table is topped up with believable rows (tables that already have data are skipped). Recommended for DEMO deployments — you can delete any row later from its page or Admin Data.'))return;
-    const box=document.getElementById('ds-log');box.innerHTML='<span class="pulse">Loading sample data…</span>';
-    try{const log=await DemoSampleData.run(l=>{box.innerHTML=l.map(x=>'<div>'+x.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</div>').join('');});
-      box.innerHTML=log.map(x=>'<div>'+x.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</div>').join('')+'<div style="margin-top:6px"><b>Done ✓</b> Open any page in the sidebar to see the data live.</div>';
-      toast('🎬 Sample data loaded — every showcase page now has rows.','success',8000);
-    }catch(e){box.textContent='';toast(e.message||e,'danger',9000);}
-  },
-  async clear(){
-    if(!window.DemoSampleData||!DemoSampleData.clear){toast('Sample-data engine still loading — try again in a second.','warning');return;}
-    if(!confirm('Delete ALL loaded sample data?\n\nOnly the rows created by the sample loader are removed (matched by their exact sample fingerprints — titles, asset tags, ISBNs…). Real school records are never touched.\n\nContinue?'))return;
-    const box=document.getElementById('ds-log');box.innerHTML='<span class="pulse">Removing sample data…</span>';
-    try{const log=await DemoSampleData.clear(l=>{box.innerHTML=l.map(x=>'<div>'+x.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</div>').join('');});
-      box.innerHTML=log.map(x=>'<div>'+x.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</div>').join('');
-      toast('🧹 Sample data removed — every page now shows only real school records.','success',8000);
-    }catch(e){box.textContent='';toast(e.message||e,'danger',9000);}
-  }
-};
 </script>
 </body></html>
