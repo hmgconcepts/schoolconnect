@@ -269,7 +269,12 @@ const Generator = {
       'assets/js/v57-enhancements.js',
       'assets/js/archive-hub.js',
       'assets/js/cbt-archive.js',
-      'assets/js/assignment-cbt.js'
+      'assets/js/assignment-cbt.js',
+      'assets/js/keepalive-layers.js',
+      'assets/js/cbt-practice.js',
+      'assets/js/study-log.js',
+      'assets/js/ics-export.js',
+      'assets/js/learner-portfolio.js'
     ];
 
     const jsContents = {};
