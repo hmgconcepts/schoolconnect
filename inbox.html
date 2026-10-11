@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>/* School Connect V12.23 pre-paint theme — robust like Fleet Console + Adewale — runs synchronously before CSS to avoid FOUC */(function(){try{var m=null;try{m=localStorage.getItem('sc-theme');}catch(e){}if(!m){try{m=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}catch(e){m='light';}}m=(m==='dark'?'dark':'light');document.documentElement.setAttribute('data-theme',m);document.documentElement.dataset.theme=m;try{var c=JSON.parse(localStorage.getItem('sc-theme-colors')||'null');if(c&&c.primary){var r=document.documentElement.style;r.setProperty('--primary',c.primary);r.setProperty('--sc-primary',c.primary);if(c.accent){r.setProperty('--accent',c.accent);r.setProperty('--sc-accent',c.accent);r.setProperty('--gradient','linear-gradient(135deg,'+c.primary+' 0%,'+c.accent+' 100%)');}}}catch(e){}}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>In-App Inbox • School Connect Demo School</title>
@@ -466,49 +467,27 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
         
         <button class="btn btn-sm btn-outline" onclick="if(window.Super)Super.chatbot.explainPage()" title="About this page">ℹ️ Help</button>
         <div class="user-chip" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--gray-200);border-radius:999px;background:var(--white)"><span>👤</span><span><strong id="user-display-name">Connecting…</strong><small id="user-display-role" style="display:block;color:var(--gray-500);line-height:1">restoring session</small></span></div>
-        <button class="btn btn-sm btn-outline" onclick="App.toggleDarkMode()" title="Toggle theme">🌙</button>
+        <button class="btn btn-sm btn-outline" onclick="App.toggleDarkMode()" title="Toggle dark/light — robust like Fleet Console">🌙</button>
+        <button class="btn btn-sm btn-outline" onclick="if(window.ThemeManager)ThemeManager.openPalette()" title="Theme palette — colour themes + dark/light + reset (Ctrl+K)">🎨</button>
         <button class="btn btn-sm btn-outline" onclick="App.signOut()" data-signout >Sign out</button>
       </div>
     </header>
     <div class="app-content">
-      
-      <div class="card" style="margin-bottom:16px;background:#eef2ff;border-color:#c7d2fe">
-        <h3 style="margin-top:0">ℹ️ What is this page?</h3>
-        <p style="color:var(--gray-700);line-height:1.75;margin:0 0 8px"><strong>Inbox</strong> is part of the School Connect portal. Private staff↔admin↔parent threaded messaging.</p>
-        <p style="color:var(--gray-700);line-height:1.75;margin:0 0 8px"><strong>Who should use it:</strong> Super admin Admin principal proprietor head Teacher bursar Staff Teacher Parent Student. Admin/Super Admin may see management overviews, while non-admin roles only see pages relevant to their duties.</p>
-        <ol style="margin:8px 0 0 20px;color:var(--gray-700);line-height:1.75">
-          <li>Read this guide first so you understand the purpose of the page.</li>
-          <li>Use <strong>+ Add new</strong> only if your role is allowed to create records.</li>
-          <li>Use <strong>Refresh</strong>, <strong>Export CSV</strong> or <strong>Export PDF</strong> for records and reporting.</li>
-          <li>Ask the 💬 assistant, or open <a href="feature-guide.html">Feature Guide</a>, for a fuller explanation.</li>
-        </ol>
-        <div style="margin-top:12px;padding:12px;border-radius:12px;background:#f8fafc;border:1px solid var(--gray-200)"><strong>Recommended daily workflow:</strong><br>1. Use <b>Messages</b> to compose to a person or audience. 2. The item appears in <b>Inbox</b> as an internal record. 3. Recipients open it from the dashboard live feed, notification bell, or Inbox page. 4. Staff mark it read/archived after action. 5. Complaints requiring formal action should be transferred/recorded on the Complaints page with a status trail.</div>
-      </div>
-      <div class="card" style="margin-bottom:16px;border-left:5px solid var(--primary)">
-        <h3 style="margin-top:0">💬 In-App Inbox — How the workflow works</h3>
-        <ol style="line-height:1.8;color:var(--gray-700);margin-left:18px">
-          <li><strong>Compose:</strong> use the <a href="messages.html">Messaging Centre</a> or click <b>+ Add new</b> here to write an internal message.</li>
-          <li><strong>Choose audience/recipient:</strong> staff can message parents, students and management; parents/students can send complaints or messages to school staff.</li>
-          <li><strong>Delivery:</strong> the message is saved in <code>module_records</code> with module <code>inbox</code>, then a notification appears in the bell for permitted users.</li>
-          <li><strong>Tracking:</strong> use status <b>unread → read → archived</b> to manage follow-up. Admin can audit all messages; other users see messages allowed by role/RLS.</li>
-        </ol>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-primary btn-sm" href="messages.html">Open Messaging Centre</a><button class="btn btn-outline btn-sm" onclick="CRUD.openForm('inbox')">Compose In-App Message</button></div>
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+      <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:2px solid #86efac"><h3 style="margin-top:0">💬 Inbox — WhatsApp-Style Threads (V12.22)</h3><p style="color:#166534;line-height:1.7;margin:0">Your personal message threads — same WhatsApp replica as Messages, but focused on conversations where you are a participant. Search, unread pills, bubbles with ✓✓ ticks, date separators TODAY/YESTERDAY, emoji, live refresh. Students/parents ↔ tutors/admins, tutors ↔ families, admins ↔ everyone. Bell notification opens here directly.</p></div>
+
+      <div id="inbox-messages-root"></div>
+
+      <div class="card" style="margin-top:18px"><h3>📋 Legacy Inbox — Module Records Archive</h3><p class="muted" style="margin:0 0 12px">Persistent history of every in-app message between users (old system). Compose via Messaging Centre; status tracking unread → read → archived. New WhatsApp replica above is the primary inbox now.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
         <button class="btn btn-primary" onclick="CRUD.openForm('inbox')" data-family-only>+ Add new</button>
         <button class="btn btn-outline" onclick="CRUD.renderList('inbox')">↻ Refresh</button>
         <button class="btn btn-outline" onclick="CRUD.exportCSV('inbox')" data-staff-only>⬇ Export CSV</button>
         <button class="btn btn-outline" onclick="CRUD.exportPDF('inbox')" data-staff-only>📄 Export PDF</button>
         <button class="btn btn-outline" onclick="CRUD.importCSV('inbox')" data-admin-only>⬆ Import CSV</button>
-        
-        
-        
-        
-        
-      </div>
-      
+        </div>
       <div class="table-wrap"><table id="inbox-table"><thead><tr><th>Loading…</th></tr></thead><tbody><tr><td><span class="pulse">Loading…</span></td></tr></tbody></table></div>
-      <script>document.addEventListener('DOMContentLoaded',function(){ if(window.CRUD) CRUD.renderList('inbox'); });</script>
+      </div>
+    
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
       © 2026 School Connect Demo School · Licensed by <a href="https://hmgtechnologies.pages.dev" target="_blank" rel="noopener">HMG Technologies</a> · <a href="https://whatsapp.com/channel/0029Vb7kGoN2ER6feTzs8q2f" target="_blank" rel="noopener" title="Product news, tips and updates">📢 HMG Channel</a>
@@ -527,6 +506,9 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
 <script src="assets/js/ai-assistant.js"></script>
 <script src="assets/js/super.js"></script>
 <script src="assets/js/enterprise.js"></script>
+<script src="assets/js/theme-manager.js"></script>
+<script src="assets/js/legibility.js"></script>
+<script src="assets/js/messages-center.js"></script>
 <script src="assets/js/crud.js"></script>
 <script src="assets/js/app.js"></script>
 <script>

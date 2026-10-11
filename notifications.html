@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>/* School Connect V12.23 pre-paint theme — robust like Fleet Console + Adewale — runs synchronously before CSS to avoid FOUC */(function(){try{var m=null;try{m=localStorage.getItem('sc-theme');}catch(e){}if(!m){try{m=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}catch(e){m='light';}}m=(m==='dark'?'dark':'light');document.documentElement.setAttribute('data-theme',m);document.documentElement.dataset.theme=m;try{var c=JSON.parse(localStorage.getItem('sc-theme-colors')||'null');if(c&&c.primary){var r=document.documentElement.style;r.setProperty('--primary',c.primary);r.setProperty('--sc-primary',c.primary);if(c.accent){r.setProperty('--accent',c.accent);r.setProperty('--sc-accent',c.accent);r.setProperty('--gradient','linear-gradient(135deg,'+c.primary+' 0%,'+c.accent+' 100%)');}}}catch(e){}}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Notifications • School Connect Demo School</title>
@@ -466,7 +467,8 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
         
         <button class="btn btn-sm btn-outline" onclick="if(window.Super)Super.chatbot.explainPage()" title="About this page">ℹ️ Help</button>
         <div class="user-chip" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--gray-200);border-radius:999px;background:var(--white)"><span>👤</span><span><strong id="user-display-name">Connecting…</strong><small id="user-display-role" style="display:block;color:var(--gray-500);line-height:1">restoring session</small></span></div>
-        <button class="btn btn-sm btn-outline" onclick="App.toggleDarkMode()" title="Toggle theme">🌙</button>
+        <button class="btn btn-sm btn-outline" onclick="App.toggleDarkMode()" title="Toggle dark/light — robust like Fleet Console">🌙</button>
+        <button class="btn btn-sm btn-outline" onclick="if(window.ThemeManager)ThemeManager.openPalette()" title="Theme palette — colour themes + dark/light + reset (Ctrl+K)">🎨</button>
         <button class="btn btn-sm btn-outline" onclick="App.signOut()" data-signout >Sign out</button>
       </div>
     </header>
@@ -478,6 +480,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
         <button class="btn btn-outline" onclick="Notifications.refreshUnreadCount()">↻ Refresh</button>
         <button class="btn btn-outline" onclick="Notifications.markAllRead()">Mark all read</button>
       </div>
+      <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#dbeafe,#f0f9ff);border:2px solid #93c5fd"><h3 style="margin-top:0">🔔 Notifications — Clear + Auto-Popup + Push (V12.22)</h3><p style="color:#1e40af;line-height:1.7;margin:0">Every announcement, broadcast, poll opening, fee reminder, message reply, and result slip appears here. You can <b>clear individual notifications with ✕</b> or <b>Clear all</b> — own rows are deleted, shared broadcasts are hidden for you only (other users keep theirs) via <code>notif_clear()</code> RPC. When a new notification arrives, the bell dropdown <b>auto-opens by itself</b> so impossible to miss, even on fresh install. When the portal is <b>installed as PWA on devices</b>, new notifications <b>automatically pop up via service worker push</b> — even when tab closed — using <code>Notifications.broadcast()</code> + <code>push_subscriptions</code> table + VAPID. Replica of Adewale Classroom / Tutoring Connect notification pane.</p></div>
       <div id="notif-page-list"><span class="pulse">Loading…</span></div>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
@@ -497,6 +500,8 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
 <script src="assets/js/ai-assistant.js"></script>
 <script src="assets/js/super.js"></script>
 <script src="assets/js/enterprise.js"></script>
+<script src="assets/js/theme-manager.js"></script>
+<script src="assets/js/legibility.js"></script>
 <script src="assets/js/crud.js"></script>
 <script src="assets/js/app.js"></script>
 <script>
