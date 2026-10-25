@@ -1,6 +1,6 @@
 // School Connect — Service Worker (V5 cumulative release, generator v8)
 // Bump this literal on every runtime release so previously cached CBT/report code is purged.
-const CACHE = 'sc-builder-v12.34-20261007-41';
+const CACHE = 'sc-builder-v12.46-20261008-53';
 const CORE = [
   './', './index.html', './builder.html', './voting.html', './notifications.html',
   './install.html', './ecosystem.html', './about.html', './guide.html', './offline.html',
@@ -22,7 +22,15 @@ self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({type: 'window'}).then(clients => {
+        clients.forEach(client => client.postMessage({type: 'SW_UPDATED', version: CACHE}));
+      }))
   );
+});
+
+// Manual skipWaiting trigger (kept for pwa-install.js Update Now button)
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', e => {
