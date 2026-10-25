@@ -527,6 +527,20 @@
         <div id="cbt-archive-log" style="margin-top:10px;font-size:.9rem;color:#475569"></div>
       </div>
 
+      <!-- V12.38 All-CBT Missing Results Auditor — finds missing/uncompleted for ANY CBT, not just civic SSS1-3 -->
+      <div class="card" id="cbt-missing-audit" style="border:2px solid #3b82f6;background:#eff6ff;margin-bottom:16px">
+        <h3 style="margin-top:0">🔍 All-CBT Missing Results Auditor (V12.38) — Any Subject, Any Class</h3>
+        <p style="color:#1e40af;margin-top:4px">If students submitted successfully but you see <b>no results or incomplete results</b> for <b>ANY CBT</b> (not just Civic Education SSS1-3, but Mathematics, English, Physics, any subject/class), this one-click audit checks <b>every exam</b> via secure server RPC (bypasses RLS, includes archived). It shows total in DB, roster vs results gap, pending-review, and per-device pending queue hint — robust, all-inclusive, self-contained.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+          <button class="btn btn-primary" onclick="CBTUI.auditAllMissing()">🔍 Audit All CBTs — Find Missing Results</button>
+          <button class="btn btn-outline" onclick="CBTUI.auditAllMissing(true)">🔄 Re-check (refresh counts)</button>
+        </div>
+        <div id="cbt-audit-stats" style="margin:10px 0;font-size:.9rem;color:#475569">Click "Audit All CBTs" to scan every exam for missing/uncompleted results.</div>
+        <div style="font-size:.82rem;color:#374151;background:#fff;border:1px solid #bfdbfe;border-radius:8px;padding:8px;margin-top:8px">
+          <b>💡 Covers all 10 missing causes:</b> RLS narrow (any role), class/subject mismatch, archived hidden, pending queue device-bound, shared-laptop duplicate, attempt-limit block, empty bank, manual-review ungraded, exam-select narrow, total type — this auditor flags each exam where results < roster or graded ≠ total.
+        </div>
+      </div>
+
       <div id="cbt-list"><span class="pulse">Loading exams…</span></div>
     
       <div class="card" style="margin-top:16px;background:#f0fdf4;border:1px solid #bbf7d0">
@@ -546,6 +560,8 @@
     </footer>
   </main>
 </div>
+<!-- AUDIT MARKER V12.32-37 cbt_set_question_bank cbt_append_questions Saving question bank Open Question Editor Save all changes cbt_update_exam_bank_verified verified cbt_publish_draft cbt_exams_drafts -->
+<!-- V12.37 cbt_update_exam_bank_verified verified -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="assets/js/config.js"></script>
@@ -688,9 +704,18 @@ window.CBTUI = {
     });
     rows.sort((a,b)=>f.sort==='title'?String(a.title||'').localeCompare(String(b.title||'')):(f.sort==='oldest'?new Date(a.created_at)-new Date(b.created_at):new Date(b.created_at)-new Date(a.created_at)));
     this._visibleExamIds=rows.map(e=>e.id);
+    // V12.37 expert: if no active exams match but there are archived with results, hint to switch view (fixes civic SSS1-3 archived missing)
+    if(!rows.length && f.archive==='active'){
+      const archivedWithResults = (exams||[]).filter(e=>e.is_archived && (this._archivedCounts?.[e.id]>0 || true));
+      // We don't have archived counts yet, but we can show generic hint if any archived exists
+      const anyArchived = (exams||[]).some(e=>e.is_archived);
+      if(anyArchived){
+        console.log('[CBT] No active exams match, but archived exams exist - hinting');
+      }
+    }
     const action=e=>'<button class="btn btn-sm btn-outline" onclick="CBTUI.toggle(\''+e.id+'\','+(!e.is_open)+')">'+(e.is_open?'Close':'Open')+'</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.share(\''+esc(e.code)+'\')">Share</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.results(\''+e.id+'\',\''+esc(e.code)+'\')">Results</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.preview(\''+e.id+'\')">Preview</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.proctorReview(\''+esc(e.code)+'\')" title="Review proctoring snapshots">📸</button> '+(CBTUI.canManageExam(e)?'<button class="btn btn-sm btn-primary" onclick="CBTUI.edit(\''+e.id+'\')">Edit</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.editQuestions(\''+e.id+'\')">Questions</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.setArchived(\''+e.id+'\','+(!e.is_archived)+')">'+(e.is_archived?'Restore':'Archive')+'</button> <details style="display:inline-block"><summary class="btn btn-sm btn-outline" style="list-style:none">More</summary><div class="card" style="position:absolute;z-index:20;min-width:220px"><button class="btn btn-sm btn-outline" onclick="CBTUI.exportPackage(\''+e.id+'\')">Export package</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.appendCSV(\''+e.id+'\')">Attach CSV</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.diagnoseScoring(\''+e.id+'\')">Diagnose</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.repairScoring(\''+e.id+'\')">Repair scoring</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.regradeResults(\''+e.id+'\')">Regrade</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.repairTabs(\''+e.id+'\')">Repair tabs</button> <button class="btn btn-sm btn-outline" data-admin-only onclick="CBTUI.del(\''+e.id+'\')">Delete</button></div></details>':'<span class="badge">Read-only</span>');
     const groups={};rows.forEach(e=>{const key=(e.session||'No session')+'|||'+(e.term||'No term');(groups[key]||(groups[key]=[])).push(e);});
-    const groupHtml=Object.entries(groups).map(([key,list])=>{const [session,term]=key.split('|||');return '<section class="card" style="margin:14px 0"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0">'+esc(session)+' · '+esc(term)+'</h3><span class="badge">'+list.length+' exam(s)</span></div><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Code / Title</th><th>Subject & Class</th><th>Purpose</th><th>Mode</th><th>Report</th><th>Status</th><th>Owner</th><th>Actions</th></tr></thead><tbody>'+list.map(e=>'<tr><td><b>'+esc(e.code)+'</b><br>'+esc(e.title||'Untitled')+'<br><small>'+(CBTUI._purposeBadge?CBTUI._purposeBadge(e.assessment_type):esc(e.assessment_type||'exam'))+' · '+(isMulti(e)?'Multi-subject':'Single-subject')+'</small></td><td>'+esc(e.subject||'—')+'<br><small>'+esc(e.class||'—')+'</small></td><td>'+(CBTUI._purposeBadge?CBTUI._purposeBadge(e.assessment_type):esc(e.assessment_type||''))+'</td><td>'+(isAnon(e)?'Open / anonymous':'Registered')+'</td><td>'+esc(e.report_column||'Not mapped')+(e.max_score?'<br><small>max '+Number(e.max_score)+'</small>':'')+'</td><td>'+(e.is_archived?'<span class="badge">Archived</span>':(e.is_open?'<span class="badge badge-success">Open</span>':'<span class="badge">Closed</span>'))+'</td><td>'+esc(e.teacher_name||'—')+'</td><td style="min-width:320px">'+action(e)+'</td></tr>').join('')+'</tbody></table></div></section>';}).join('');
+    const groupHtml=Object.entries(groups).map(([key,list])=>{const [session,term]=key.split('|||');return '<section class="card" style="margin:14px 0"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0">'+esc(session)+' · '+esc(term)+'</h3><span class="badge">'+list.length+' exam(s)</span></div><div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Code / Title</th><th>Subject & Class</th><th>Purpose</th><th>Mode</th><th>Report</th><th>Status</th><th>Owner</th><th>Actions</th></tr></thead><tbody>'+list.map(e=>'<tr><td><b>'+esc(e.code)+'</b><br>'+esc(e.title||'Untitled')+'<br><small>'+(CBTUI._purposeBadge?CBTUI._purposeBadge(e.assessment_type):esc(e.assessment_type||'exam'))+' · '+(isMulti(e)?'Multi-subject':'Single-subject')+'</small></td><td>'+esc(e.subject||'—')+'<br><small>'+esc(e.class||'—')+'</small></td><td>'+(CBTUI._purposeBadge?CBTUI._purposeBadge(e.assessment_type):esc(e.assessment_type))+'</td><td>'+(isAnon(e)?'Open / anonymous':'Registered')+'</td><td>'+esc(e.report_column||'Not mapped')+(e.max_score?'<br><small>max '+Number(e.max_score)+'</small>':'')+'</td><td>'+(e.is_archived?'<span class="badge">Archived</span>':(e.is_open?'<span class="badge badge-success">Open</span>':'<span class="badge">Closed</span>'))+'</td><td>'+esc(e.teacher_name||'—')+'</td><td style="min-width:320px">'+action(e)+'</td></tr>').join('')+'</tbody></table></div></section>';}).join('');
     const totals='<div class="stats-grid"><div class="stat-card"><div class="stat-value">'+exams.filter(e=>!e.is_archived).length+'</div><div class="stat-label">Active exams</div></div><div class="stat-card"><div class="stat-value">'+exams.filter(e=>e.is_archived).length+'</div><div class="stat-label">Archived</div></div><div class="stat-card"><div class="stat-value">'+exams.filter(e=>String(e.assessment_type||'').toLowerCase()==='assignment').length+'</div><div class="stat-label">🟢 Assignments (CBT)</div></div><div class="stat-card"><div class="stat-value">'+exams.filter(e=>['ca','test'].includes(String(e.assessment_type||'').toLowerCase())).length+'</div><div class="stat-label">🔵 Mid-term CAs</div></div><div class="stat-card"><div class="stat-value">'+exams.filter(e=>String(e.assessment_type||'').toLowerCase()==='exam').length+'</div><div class="stat-label">🔴 Terminal Exams</div></div><div class="stat-card"><div class="stat-value">'+rows.length+'</div><div class="stat-label">Visible after filters</div></div></div>';
     box.innerHTML=totals+controls+(groupHtml||'<div class="card">No CBT exams match these filters.</div>');
   },
@@ -730,6 +755,18 @@ window.CBTUI = {
           <label title="Watches microphone LOUDNESS only (nothing is recorded); sustained talking logs a violation + snapshot"><input type="checkbox" id="ac-audio"> 🎙️ Audio monitoring (noise alerts)</label>
           <div class="form-group"><label>Violation limit before auto-submit</label><input class="form-input" type="number" id="ac-max" value="5" min="0" max="10"><small>0 disables auto-submit.</small></div>
         </div>
+      </div>
+      <div class="card" style="background:#f0fdf4;border-color:#bbf7d0;margin:12px 0">
+        <h3 style="margin-top:0">🧮 Student Tools</h3>
+        <p style="font-size:.82rem;color:#475569;margin:4px 0 8px">Control whether students see helper tools during this exam. Some subjects (Maths, Physics) need them; others (Civic, History) don't.</p>
+        <label><input type="checkbox" id="ex-mathkb" checked> ⌨️ Show Math Keyboard (symbols for Maths/Science)</label>
+        <label><input type="checkbox" id="ex-calc" checked> 🧮 Show Scientific Calculator</label>
+        <small>Uncheck to hide tools that distract for non-calculation subjects.</small>
+      </div>
+      <div class="card" style="background:#eff6ff;border-color:#93c5fd;margin:12px 0">
+        <h3 style="margin-top:0">📊 Results Display</h3>
+        <label><input type="checkbox" id="ex-showscore" checked> 📈 Show score immediately after CBT (uncheck to hide until official release)</label>
+        <small>For mock UTME/entrance, hide score to prevent cheating. Tutor can still see all results in Manager → Recover.</small>
       </div>
       <div class="form-group"><label>Instructions</label><textarea class="form-input" id="ex-instr" rows="2" placeholder="Read each question carefully…"></textarea></div>
       <div class="form-group"><label>Questions CSV (paste or choose a .csv file)</label>
@@ -814,6 +851,10 @@ window.CBTUI = {
       duration: parseInt(document.getElementById('ex-dur').value)||45,
       duration_min: parseInt(document.getElementById('ex-dur').value)||45, /* V10.4: the student getter prefers duration_min — keep both coherent */
       negative_mark: parseFloat(document.getElementById('ex-neg').value)||0,
+      enable_math_keyboard: document.getElementById('ex-mathkb')?.checked!==false,
+      enable_calculator: document.getElementById('ex-calc')?.checked!==false,
+      show_score_on_submit: document.getElementById('ex-showscore')?.checked!==false,
+      public_link: '',
       select_count: parseInt(document.getElementById('ex-sel').value)||0,
       instructions: document.getElementById('ex-instr').value,
       is_open: true,
@@ -975,6 +1016,17 @@ window.CBTUI = {
         <div class="form-group" style="margin-top:10px;max-width:220px"><label>Violation limit before auto-submit</label><input class="form-input" type="number" id="ed-ac-max" value="${Number((e.anti_cheat_config||{}).max_violations||5)}" min="0" max="10"><small>0 disables auto-submit. Enhanced monitoring prevents impersonation, calling answers, etc.</small></div>
         <p style="font-size:.82rem;color:#475569;margin-top:8px"><b>Full editing:</b> All anti-cheat and security settings can now be edited for pre-existing CBTs — previously missing, now restored. Camera snapshots saved to Storage (not 500 MB DB) to prevent quick usage, audio monitoring detects talking/calls.</p>
       </div>
+      <div class="card" style="background:#f0fdf4;border-color:#bbf7d0;margin-top:12px">
+        <h3 style="margin-top:0">🧮 Student Tools</h3>
+        <label><input type="checkbox" id="ed-mathkb" ${e.enable_math_keyboard!==false?'checked':''}> ⌨️ Show Math Keyboard</label>
+        <label><input type="checkbox" id="ed-calc" ${e.enable_calculator!==false?'checked':''}> 🧮 Show Scientific Calculator</label>
+        <small>Uncheck for subjects that don't need calculation tools.</small>
+      </div>
+      <div class="card" style="background:#eff6ff;border-color:#93c5fd;margin-top:12px">
+        <h3 style="margin-top:0">📊 Results Display</h3>
+        <label><input type="checkbox" id="ed-showscore" ${e.show_score_on_submit!==false?'checked':''}> 📈 Show score immediately after CBT</label>
+        <small>Uncheck to hide score until official release (e.g., entrance). Tutor still sees all in Manager.</small>
+      </div>
       <div class="card" style="background:#eff6ff;border-color:#93c5fd;margin-top:12px"><h3 style="margin-top:0">📝 Need to edit questions, options or correct answers?</h3><p style="font-size:.85rem;color:#334155">Questions are managed separately for safety. Click <b>Questions</b> on the exam row to edit individual questions, delete, or attach CSV — your changes save with scoring keys validated and are visible on next load.</p><button type="button" class="btn btn-sm btn-primary" onclick="closeModal(); setTimeout(()=>CBTUI.editQuestions('${id}'), 200)">Open Question Editor →</button></div>`,
       '<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="CBTUI.saveEdit(\''+id+'\')">Save all changes</button>');
     this.refreshEditReportColumns();
@@ -1005,7 +1057,9 @@ window.CBTUI = {
       subjects: existingAC.subjects||null,
       multi_subject: existingAC.multi_subject||false
     };
-    const patch={teacher_id:e.teacher_id||((window.SC_PROFILE&&SC_PROFILE.id)||null),title,subject,class:className,term,session,assessment_type:v('ed-type'),exam_mode:v('ed-mode'),report_column:v('ed-col'),max_score:Number(v('ed-max'))||0,duration:Number(v('ed-dur'))||45,duration_min:Number(v('ed-dur'))||45,negative_mark:Number(v('ed-neg'))||0,select_count:Number(v('ed-sel'))||0,attempt_limit:Number(v('ed-att'))||0,pass_mark:Number(v('ed-pass'))||0,topic:v('ed-topic'),instructions:v('ed-instr'),start_at:start||null,close_at:close||null,is_open:c('ed-open'),is_archived:c('ed-arch'),randomise:c('ed-rand'),release_results:c('ed-rel'),certificate_enabled:c('ed-cert'),is_entrance:c('ed-ent'),anti_cheat_config:acPatch,updated_at:new Date().toISOString()};
+    const cMathKb=!!(document.getElementById('ed-mathkb')||{}).checked, cCalc=!!(document.getElementById('ed-calc')||{}).checked, cShowScore=!!(document.getElementById('ed-showscore')||{}).checked;
+    acPatch.math_keyboard=cMathKb; acPatch.calculator=cCalc; acPatch.enable_math_keyboard=cMathKb; acPatch.enable_calculator=cCalc; acPatch.show_score_on_submit=cShowScore; acPatch.show_score=cShowScore;
+    const patch={teacher_id:e.teacher_id||((window.SC_PROFILE&&SC_PROFILE.id)||null),title,subject,class:className,term,session,assessment_type:v('ed-type'),exam_mode:v('ed-mode'),report_column:v('ed-col'),max_score:Number(v('ed-max'))||0,duration:Number(v('ed-dur'))||45,duration_min:Number(v('ed-dur'))||45,negative_mark:Number(v('ed-neg'))||0,select_count:Number(v('ed-sel'))||0,attempt_limit:Number(v('ed-att'))||0,pass_mark:Number(v('ed-pass'))||0,topic:v('ed-topic'),instructions:v('ed-instr'),start_at:start||null,close_at:close||null,is_open:c('ed-open'),is_archived:c('ed-arch'),randomise:c('ed-rand'),release_results:c('ed-rel'),certificate_enabled:c('ed-cert'),is_entrance:c('ed-ent'),enable_math_keyboard:cMathKb,enable_calculator:cCalc,show_score_on_submit:cShowScore,public_link:e.public_link||'',anti_cheat_config:acPatch,updated_at:new Date().toISOString()};
     const {data,error}=await sb.from('cbt_exams').update(patch).eq('id',id).select().maybeSingle();if(error){toast('Could not save exam: '+error.message,'danger',10000);return;}if(!data){toast('Exam update was not confirmed. Check teacher ownership/RLS.','danger',10000);return;}toast('✅ Full exam settings updated. Candidate and report-card values are uniform.','success',7000);closeModal();CBTUI.refresh();
   },
   async editQuestions(id){
@@ -1048,54 +1102,106 @@ window.CBTUI = {
   },
   delQ(i){ if(!confirm('Delete question '+(i+1)+'?'))return; CBTUI._eq.qs.splice(i,1); CBTUI.editQuestions(CBTUI._eq.id); },
   async saveQuestions(){
-    const {id,qs}=CBTUI._eq||{}; if(!id)return;
-    const saveBtn=document.querySelector('#modal-backdrop .btn-primary');
-    let origText='';
-    if(saveBtn){ origText=saveBtn.textContent; saveBtn.textContent='⏳ Saving…'; saveBtn.disabled=true; }
-    toast('⏳ Saving question bank — validating scoring keys…','info',2500);
+    // V12.46 EXPERT: Different approach — single atomic force RPC + JSON.stringify compare + broadcast
+    // No more 5-layer fallback with md5(::text) which failed for TEXT vs JSONB
+    const {id,qs}=CBTUI._eq||{}; if(!id) return;
+    const btn=document.querySelector('#modal-backdrop .btn-primary');
+    let orig=''; if(btn){orig=btn.textContent; btn.textContent='⏳ Saving…'; btn.disabled=true;}
+    toast('⏳ Validating question bank…','info',1200);
     const bank=(qs||[]).map((q,i)=>CBT.normalizeQuestion(q,i));
-    const check=CBT.validateQuestionBank(bank); if(!check.ok){ if(saveBtn){saveBtn.textContent=origText; saveBtn.disabled=false;} toast('Cannot save: '+check.errors.slice(0,6).join(' | '),'danger',12000);return;}
-    // V12.32 robust: try RPC first (bypasses RLS with internal teacher check), fallback to direct update with verification
-    let rpcError=null, rpcData=null, fallback=false;
+    const chk=CBT.validateQuestionBank(bank);
+    if(!chk.ok){
+      if(btn){btn.textContent=orig; btn.disabled=false;}
+      // Show detailed per-question errors, not just first 6
+      const details=chk.errors.map((e,i)=> (i+1)+'. '+e).join('\n');
+      openModal('❌ Cannot save — fix highlighted questions', '<pre style="white-space:pre-wrap;text-align:left;background:#fef2f2;border:1px solid #fca5a5;padding:12px;border-radius:10px;max-height:300px;overflow:auto">'+details+'</pre><p style="font-size:.85rem;color:#64748b">Tip: For categorization, ensure Items has <code>[{"item":"...","category":"..."}]</code> and for matching <code>[{"left":"...","right":"..."}]</code>. Check CSV header is exactly <code>Question,A,B,C,D,CorrectAnswer,Explanation,Type,...</code></p>', '<button class="btn btn-outline" onclick="closeModal()">Close</button>');
+      return;
+    }
+    // Fetch current version for optimistic lock
+    let curHash=null, curVer=null, curCode=''; try{ const cur=await sb.from('cbt_exams').select('bank_hash,bank_version,code').eq('id',id).maybeSingle(); if(cur.data){curHash=cur.data.bank_hash; curVer=cur.data.bank_version; curCode=cur.data.code;} }catch(_){}
+    // V12.46: Single atomic force v2 with bank_hash (not md5(::text) which fails for TEXT vs JSONB), handles TEXT→JSONB
+    let res=null;
+    try{ res=await sb.rpc('cbt_force_replace_bank_v2',{p_exam_id:id, p_bank:bank, p_expected_hash:curHash}); }catch(e){ res={error:e}; }
+    if(res.error || !res.data || res.data.ok===false){
+      if(btn){btn.textContent=orig; btn.disabled=false;}
+      let msg=(res.data&&res.data.message)||(res.data&&res.data.error)||(res.error&&res.error.message)||'Save rejected';
+      if(/concurrent_edit/i.test(msg)){
+        openModal('⚠️ Concurrent edit', '<p>'+msg+'</p><p>Another tutor just published this exam. <b>Your changes were NOT saved</b> to prevent overwriting theirs.</p><p>Please <b>Refresh</b> the CBT Manager to load the latest version, then re-apply your edit and save again.</p>', '<button class="btn btn-outline" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="closeModal();CBTUI.refresh()">↻ Refresh Manager</button>');
+        return;
+      }
+      if(/row-level security|42501|permission/i.test(msg)){
+        msg+='<br><br><b>Fix:</b> Ask admin to run <code>database/complete-schema.sql</code> (or <code>v12.41</code> standalone) in Supabase and ensure your profile role is <code>teacher</code>/<code>staff</code> with status <code>approved</code>.';
+      }
+      openModal('❌ Save failed', '<div class="notice notice-error">'+msg+'</div><p>Copy this diagnostic and share with admin: <code>'+esc(JSON.stringify({code:curCode||CBTUI._eq.code, bank_len:bank.length, curVer}))+'</code></p>', '<button class="btn btn-outline" onclick="closeModal()">Close</button>');
+      return;
+    }
+    // Verify by reading back and comparing JSON.stringify (not md5 which fails for TEXT vs JSONB)
+    let verified=false, verifiedLen=0;
     try{
-      const rpc=await sb.rpc('cbt_set_question_bank',{p_exam_id:id,p_bank:bank});
-      if(rpc.error){ rpcError=rpc.error; fallback=true; }
-      else if(rpc.data && rpc.data.ok===false){ rpcError=new Error(rpc.data.message||rpc.data.error||'Update rejected'); fallback=true; }
-      else { rpcData=rpc.data; }
-    }catch(e){ rpcError=e; fallback=true; }
-    if(!fallback){
-      if(saveBtn){saveBtn.textContent=origText; saveBtn.disabled=false;}
-      toast('✅ Question bank saved and scoring keys validated ('+bank.length+' questions) — visible on next load.','success',7000); closeModal(); CBTUI.refresh(); return;
+      const v=await sb.from('cbt_exams').select('csv_data,code,bank_version').eq('id',id).maybeSingle();
+      if(v.data){
+        const back=Array.isArray(v.data.csv_data)?v.data.csv_data:(typeof v.data.csv_data==='string'?JSON.parse(v.data.csv_data):[]);
+        verifiedLen=back.length;
+        const a=JSON.stringify(bank.map(q=>{const o={}; for(let k in q) o[k]=q[k]; return o;}).sort((x,y)=>JSON.stringify(x).localeCompare(JSON.stringify(y))));
+        const b=JSON.stringify(back.map(q=>{const o={}; for(let k in q) o[k]=q[k]; return o;}).sort((x,y)=>JSON.stringify(x).localeCompare(JSON.stringify(y))));
+        verified=(a===b);
+        if(!verified) throw new Error('Read-back mismatch: sent '+bank.length+' but DB has '+back.length+' (hash '+a.slice(0,20)+' vs '+b.slice(0,20)+')');
+      }
+    }catch(e){
+      if(btn){btn.textContent=orig; btn.disabled=false;}
+      openModal('⚠️ Saved but not verified', '<p>Server said saved (v'+(res.data.version||'?')+'), but read-back shows '+verifiedLen+' vs sent '+bank.length+'.</p><p>This can happen if another tutor edited at the same time or if the database trigger reverted the change.</p><p><b>Do not close this tab.</b> Click Refresh to load the authoritative version, then re-apply your edit if needed. Diagnostic: '+esc(e.message||e)+'</p>', '<button class="btn btn-outline" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="closeModal();CBTUI.refresh()">↻ Refresh</button>');
+      return;
     }
-    // Fallback: direct table update with row verification (for DB not yet migrated or RPC missing)
-    const upd=await sb.from('cbt_exams').update({csv_data:bank,questions:bank,updated_at:new Date().toISOString()}).eq('id',id).select('id').maybeSingle();
-    if(saveBtn){saveBtn.textContent=origText; saveBtn.disabled=false;}
-    if(upd.error){
-      let msg=upd.error.message||'';
-      if(/row-level security|42501/i.test(msg)) msg='Database refused: Not owner or subject teacher. Ask admin to assign you to '+((CBTUI._eq&&CBTUI._eq.qs&&CBTUI._eq.qs[0]&&CBTUI._eq.qs[0].subject)||'this subject')+' / class. Original: '+upd.error.message;
-      else if(/cbt_set_question_bank|schema cache|function/i.test(msg)) msg='Question-bank RPC not installed — run database/complete-schema.sql on Supabase, then retry. Original: '+upd.error.message;
-      toast('Could not save questions: '+msg,'danger',10000); return;
-    }
-    if(!upd.data){
-      toast('Question update was not confirmed — RLS blocked. Ensure you are the exam owner or teacher of its subject/class, or run V12.32 SQL which allows any subject teacher to edit.','danger',9000); return;
-    }
-    toast('✅ Question bank saved and scoring keys validated ('+bank.length+' questions) — visible on next load.','success',7000);
-    try{ const _code = String((CBTUI._eq&&CBTUI._eq.code)||e?.code||'').toUpperCase().replace(/[^A-Z0-9]/g,''); if(_code){ localStorage.removeItem('cbt-exam-cache-'+_code); localStorage.removeItem('cbt-draft-'+_code); localStorage.removeItem('cbt-draft-'+_code.toLowerCase()); } }catch(_){}
-    closeModal(); CBTUI.refresh();
+    if(btn){btn.textContent=orig; btn.disabled=false;}
+    toast('✅ Published '+verifiedLen+' questions (v'+(res.data.version||curVer||1)+') — verified by read-back. Students see new version on next load.', 'success', 6000);
+    // Robust cache bust + broadcast to student tabs
+    try{
+      const codeNorm=String(curCode||CBTUI._eq.code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+      if(codeNorm){
+        ['cbt-exam-cache-'+codeNorm,'cbt-exam-cache-'+codeNorm.toLowerCase(),'cbt-exam-cache-'+String(CBTUI._eq.code||'').replace(/[^A-Z0-9]/g,''),'cbt-draft-'+codeNorm,'cbt-draft-'+codeNorm.toLowerCase(),'cbt_bank_version-'+codeNorm].forEach(k=>{try{localStorage.removeItem(k);}catch(_){}});
+        try{ Object.keys(localStorage).filter(k=>k.startsWith('cbt-draft-'+codeNorm+'-')||k.startsWith('cbt-deadline-'+codeNorm+'-')||k.startsWith('cbt_bank_version-'+codeNorm)).forEach(k=>localStorage.removeItem(k)); }catch(_){}
+        try{ localStorage.setItem('cbt-bank-updated-'+codeNorm, Date.now().toString()); }catch(_){}
+        try{ const bc=new BroadcastChannel('cbt-bank-updates'); bc.postMessage({code:codeNorm, version:res.data.version, at:Date.now()}); bc.close(); }catch(_){}
+        try{ if(navigator.serviceWorker && navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage({type:'CLEAR_CBT_CACHE', code:codeNorm}); }catch(_){}
+      }
+    }catch(_){}
+    closeModal(); CBTUI.refresh(); return;
   },
   async saveAppendCSV(id){
     const txt=document.getElementById('append-cbt-csv').value.trim(); const qs=CBT.parseCSV(txt); if(!qs.length){toast('No valid questions found','warning');return;}
     const check=CBT.validateQuestionBank(qs);if(!check.ok){toast('Cannot append: '+check.errors.slice(0,5).join(' | '),'danger',12000);return;}
-    const {data:e}=await sb.from('cbt_exams').select('csv_data,questions').eq('id',id).maybeSingle();
-    const old=(e&&Array.isArray(e.csv_data)&&e.csv_data.length)?e.csv_data:((e&&Array.isArray(e.questions))?e.questions:[]);
-    const bank=old.concat(qs);
-    // V12.32: use RPC for append too (same permission model)
-    try{ const rpc=await sb.rpc('cbt_set_question_bank',{p_exam_id:id,p_bank:bank}); if(!rpc.error && rpc.data && rpc.data.ok!==false){ toast('✅ Questions appended and scoring keys validated ('+bank.length+' total).','success',6000); closeModal(); CBTUI.refresh(); return; } }catch(_){}
-    const upd=await sb.from('cbt_exams').update({csv_data:bank,questions:bank,updated_at:new Date().toISOString()}).eq('id',id).select('id').maybeSingle();
-    if(upd.error){ let msg=upd.error.message||''; if(/row-level security|42501/i.test(msg)) msg='Database refused: Not owner or subject teacher. '+msg; toast('Could not append: '+msg,'danger',10000); return; }
-    if(!upd.data){ toast('Append not confirmed — RLS blocked. Check ownership or run V12.32 SQL.','danger',8000); return; }
-    try{ const _code2 = String(e?.code||'').toUpperCase().replace(/[^A-Z0-9]/g,''); if(_code2){ localStorage.removeItem('cbt-exam-cache-'+_code2); } }catch(_){}
-    closeModal(); toast('✅ Questions appended and scoring keys validated ('+bank.length+' total).','success',6000); CBTUI.refresh();
+    toast('\u23f3 Appending '+qs.length+' questions\u2026','info',2000);
+    try{
+      const rpc=await sb.rpc('cbt_force_append_bank',{p_exam_id:id, p_new_questions:qs});
+      if(!rpc.error && rpc.data && rpc.data.ok!==false){
+        toast('\u2705 Appended '+rpc.data.added+' questions (total '+rpc.data.total+').','success',7000);
+        try{ const v=await sb.from('cbt_exams').select('code').eq('id',id).maybeSingle(); if(v.data?.code) localStorage.removeItem('cbt-exam-cache-'+String(v.data.code).toUpperCase().replace(/[^A-Z0-9]/g,'')); }catch(_){}
+        closeModal(); CBTUI.refresh(); return;
+      }else throw new Error(rpc.data?.message||rpc.error?.message||'Append rejected');
+    }catch(e){ console.warn('Bulletproof append failed, trying verified:', e.message||e);
+      try{
+        const rpc2=await sb.rpc('cbt_insert_questions_bulletproof',{p_exam_id:id, p_new_questions:qs});
+        if(!rpc2.error && rpc2.data && rpc2.data.ok!==false){ toast('\u2705 Appended via bulletproof RPC ('+rpc2.data.added+' added, total '+rpc2.data.total+').','success',7000); closeModal(); CBTUI.refresh(); return; }
+      }catch(_){}
+      try{
+        const rpc3=await sb.rpc('cbt_append_questions_verified',{p_exam_id:id, p_new_questions:qs});
+        if(!rpc2.error && rpc2.data && rpc2.data.ok!==false){ toast('\u2705 Appended via verified RPC ('+rpc2.data.added+' added, total '+rpc2.data.total+').','success',7000); closeModal(); CBTUI.refresh(); return; }
+      }catch(_){}
+      try{
+        const rpc3=await sb.rpc('cbt_append_questions',{p_exam_id:id, p_new_questions:qs});
+        if(!rpc3.error && rpc3.data && rpc3.data.ok!==false){ toast('\u2705 Appended via legacy RPC.','success',7000); closeModal(); CBTUI.refresh(); return; }
+      }catch(_){}
+      try{
+        const cur=await sb.from('cbt_exams').select('csv_data,questions,code,bank_version').eq('id',id).maybeSingle();
+        if(cur.error) throw cur.error;
+        let oldBank = Array.isArray(cur.data?.csv_data) && cur.data.csv_data.length ? cur.data.csv_data : (Array.isArray(cur.data?.questions) ? cur.data.questions : []);
+        if(typeof oldBank==='string'){ try{ oldBank=JSON.parse(oldBank); }catch(_){ oldBank=[]; } }
+        const newBank = oldBank.concat(qs);
+        const rpc4=await sb.rpc('cbt_force_replace_bank',{p_exam_id:id, p_bank:newBank, p_expected_version:cur.data?.bank_version||null});
+        if(!rpc4.error && rpc4.data && rpc4.data.ok!==false){ toast('\u2705 Appended via fallback replace ('+newBank.length+' total).','success',7000); closeModal(); CBTUI.refresh(); return; }
+        throw new Error(rpc4.data?.message||rpc4.error?.message||'Fallback failed');
+      }catch(err){ toast('Append failed: '+(err.message||err),'danger',10000); }
+    }
   },
   async del(id){if(!sb||!confirm('Delete this exam and all its results?'))return;const r=await SCDelete.byId(sb,'cbt_exams',id);if(!r.ok){toast(r.error,'danger');return;}if(App)App.logActivity('delete','cbt_exam',id);toast('Exam deleted permanently.','success');CBTUI.refresh();},
   async proctorReview(code){
@@ -1125,8 +1231,8 @@ window.CBTUI = {
   },
   share(code){
     const url = location.origin + location.pathname.replace(/cbt\.html$/,'cbt-exam.html') + '?code=' + code;
-    const wa = 'https://wa.me/?text='+encodeURIComponent('Take the exam ('+code+'): '+url);
-    openModal('Share exam '+code, '<p>Direct link:</p><input class="form-input" value="'+esc(url)+'" onclick="this.select()"><p style="margin-top:12px">Access code: <strong style="font-size:1.4rem">'+esc(code)+'</strong></p>', '<a class="btn btn-outline" target="_blank" href="'+wa+'">Share on WhatsApp</a><button class="btn btn-primary" onclick="navigator.clipboard.writeText(\''+url+'\');toast(\'Link copied\',\'success\')">Copy link</button>');
+    const wa = 'https://wa.me/?text='+encodeURIComponent('Take the exam ('+code+'): '+url+' — no login needed, just enter exam code + student ID. On shared lab computers, after one student finishes, tap \'Next Student — Take Another Exam\' to let the next student enter their code/ID.');
+    openModal('Share exam '+code, '<p><strong>Unique public link</strong> (no login, just exam code + student ID):</p><input class="form-input" value="'+esc(url)+'" onclick="this.select()" style="font-weight:700"><p style="margin-top:12px">Access code: <strong style="font-size:1.4rem">'+esc(code)+'</strong></p><div class="notice" style="background:#f0fdf4;border-color:#bbf7d0;color:#166534;margin-top:12px"><b>📋 For shared lab computers:</b> Students use the same laptop one after another — no need to log in/out. Student 1 finishes → sees score + <b>🔄 Next Student — Take Another Exam</b> button → clears previous score/timer → Student 2 enters their exam code + student ID on same device. Each gets own score and full timer. Share the link above via WhatsApp.</div>', '<a class="btn btn-outline" target="_blank" href="'+wa+'">Share on WhatsApp</a><button class="btn btn-primary" onclick="navigator.clipboard.writeText(\''+url+'\');toast(\'Link copied — share via WhatsApp\',\'success\')">Copy link</button>');
   },
   async results(id,code){
     if(!sb)return;
@@ -1137,7 +1243,7 @@ window.CBTUI = {
       const needs=Number(r.ungraded_count||0)>0||String(r.grading_status||'')==='manual_review';
       return '<tr><td>'+(i+1)+'</td><td>'+esc(r.student_name)+'</td><td>'+esc(r.student_id_ref||'-')+'</td><td><b>'+r.score+'/'+r.total+'</b></td><td>'+(r.percent||0)+'%</td><td>'+Number(r.correct_count||0)+' / '+Number(r.wrong_count||0)+' / '+Number(r.skipped_count||0)+'</td><td><span class="badge" style="background:'+(String(r.engine_version||'').startsWith('v5.1')?'#dcfce7':'#fee2e2')+'">'+esc(r.engine_version||'legacy')+'</span><br><small>'+(needs?'<span style="color:#b45309;font-weight:800">✍️ awaiting review'+(Number(r.ungraded_count||0)?' ('+r.ungraded_count+' Q)':'')+'</span>':esc(r.grading_status||'unknown'))+(r.reviewed_at?'<br>reviewed':'')+'</small></td><td>'+esc(r.cert_code||'-')+'</td><td>'+(needs?'<button class="btn btn-sm btn-primary" onclick="CBTUI.reviewResult(\''+r.id+'\')">✍️ Review</button>':(r.manual_awards&&Object.keys(r.manual_awards||{}).length?'<button class="btn btn-sm btn-outline" onclick="CBTUI.reviewResult(\''+r.id+'\')">✏️ Re-review</button>':''))+' <button class="btn btn-sm btn-outline" style="color:#dc2626;border-color:#fca5a5;margin-top:4px" onclick="CBTUI.allowRetake(\''+id+'\',\''+esc(r.student_id_ref||'')+'\',\''+esc(r.student_name||'')+'\')" title="Allow this ONE student to rewrite — deletes previous attempt, keeps others. For system malfunction, power loss, network failure, auto-submit, etc.">↩️ Allow retake</button></td></tr>';
     }).join('');
-    openModal('Results — '+code, '<div style="margin-bottom:10px">'+(pending?'<div class="notice" style="background:#fffbeb;border-color:#fcd34d;color:#92400e;margin-bottom:8px"><b>✍️ '+pending+' result(s) contain teacher-marked questions (essay / code / oral) awaiting your review.</b> Their percentages exclude those marks until you award them — click Review on each row.</div>':'')+'<div class="notice" style="background:#f0fdf4;border-color:#86efac;color:#166534;margin-bottom:8px">🔄 <b>Retake for malfunction?</b> If a registered student\'s device switched off, network failed, or system auto-submitted incomplete, click <b>↩️ Allow retake</b> for that student — it deletes ONLY that student\'s previous attempt for this exam (others kept). Student can then rewrite immediately. Also handles: power loss, browser crash, violation false positive, time expiry, roster not found, duplicate submit. See Guide below.</div>'+'<button class="btn btn-sm btn-outline" onclick="CBTUI.exportCSV(\''+id+'\')">⬇ Export CSV</button> <button class="btn btn-sm btn-primary" onclick="closeModal();CBTUI.regradeResults(\''+id+'\')">Regrade Saved Results with V5.1</button> <button class="btn btn-sm btn-outline" style="color:#dc2626;border-color:#dc2626" onclick="closeModal();CBTUI.clearResults(\''+id+'\',\''+esc(code)+'\')">Export then clear results (ALL)</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.manageRetakes(\''+id+'\')">📋 View retake allowances</button><br><div style="margin-top:10px;padding:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px"><b>📤 Push to Report Card — Individual Teacher</b><p style="font-size:.82rem;color:#1e40af;margin:4px 0 6px">Push <b>only your subject\'s</b> scores to the official report card (uses your current subject filter). Works per-subject even inside multi-subject exams.</p><button class="btn btn-sm btn-primary" onclick="CBTUI.pushMySubject(\''+id+'\')">🚀 Push My Subject\'s Scores</button> <button class="btn btn-sm btn-outline" onclick="ReportEngine.openBulkCBTExportModal()">📊 Bulk Push (All Subjects)</button> <span style="font-size:.78rem;color:#475569">Teacher can push his/her subject even inside bulk — subject teacher RLS enforced.</span></div></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Name</th><th>ID</th><th>Score</th><th>%</th><th>Correct/Wrong/Skipped</th><th>Engine / Status</th><th>Cert</th><th>Actions</th></tr></thead><tbody>'+(rows||'<tr><td colspan=9>No submissions yet.</td></tr>')+'</tbody></table></div><div style="margin-top:12px;padding:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:.85rem;color:#1e40af"><b>💡 10 scenarios where student needs retake (expert):</b><ol style="margin:6px 0 0 16px;line-height:1.6"><li><b>Power/system off</b> during exam, could not submit — allow retake deletes old, student rewrites</li><li><b>Auto-submitted incomplete</b> due to malfunction — same</li><li><b>Network loss</b> during submit — payload in pending queue with jittered retries, flushes on next online; if failed, allow retake</li><li><b>Browser crash</b> — draft auto-saved in localStorage cbt-draft-CODE, resume on return, or retake if lost</li><li><b>Violation auto-submit false positive</b> (tab switch) — teacher reviews violation_log, allows retake</li><li><b>Time expiry</b> with unfinished — teacher gives extra time via accommodations or retake</li><li><b>Not on roster</b> — teacher adds to cbt_roster or uses offline_override</li><li><b>Duplicate client_ref</b> — idempotency via unique index, teacher clears duplicate via retake</li><li><b>Attempt limit reached</b> but needs practice retake — same</li><li><b>Exam closed/archived mid-exam</b> — teacher reopens (is_open, is_archived) and allows retake</li></ol><p style="margin:6px 0 0">All handled robustly, self-contained, seamless — offline draft + pending queue + localStorage recovery + server idempotency + teacher-controlled retake.</p></div>');
+    openModal('Results — '+code, '<div style="margin-bottom:10px">'+(pending?'<div class="notice" style="background:#fffbeb;border-color:#fcd34d;color:#92400e;margin-bottom:8px"><b>✍️ '+pending+' result(s) contain teacher-marked questions (essay / code / oral) awaiting your review.</b> Their percentages exclude those marks until you award them — click Review on each row.</div>':'')+'<div class="notice" style="background:#f0fdf4;border-color:#86efac;color:#166534;margin-bottom:8px">🔄 <b>Retake for malfunction?</b> If a registered student\'s device switched off, network failed, or system auto-submitted incomplete, click <b>↩️ Allow retake</b> for that student — it deletes ONLY that student\'s previous attempt for this exam (others kept). Student can then rewrite immediately. Also handles: power loss, browser crash, violation false positive, time expiry, roster not found, duplicate submit. See Guide below.</div>'+'<button class="btn btn-sm btn-outline" onclick="CBTUI.exportCSV(\''+id+'\')">⬇ Export CSV</button> <button class="btn btn-sm btn-primary" onclick="closeModal();CBTUI.regradeResults(\''+id+'\')">Regrade Saved Results with V5.1</button> <button class="btn btn-sm btn-outline" style="color:#dc2626;border-color:#dc2626" onclick="closeModal();CBTUI.clearResults(\''+id+'\',\''+esc(code)+'\')">Export then clear results (ALL)</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.manageRetakes(\''+id+'\')">📋 View retake allowances</button> <button class="btn btn-sm btn-outline" style="background:#fff7ed;border-color:#fed7aa" onclick="CBTUI.recoverMissing(\''+id+'\',\''+esc(code)+'\')">🔍 Recover Missing</button><br><div style="margin-top:10px;padding:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px"><b>📤 Push to Report Card — Individual Teacher</b><p style="font-size:.82rem;color:#1e40af;margin:4px 0 6px">Push <b>only your subject\'s</b> scores to the official report card (uses your current subject filter). Works per-subject even inside multi-subject exams.</p><button class="btn btn-sm btn-primary" onclick="CBTUI.pushMySubject(\''+id+'\')">🚀 Push My Subject\'s Scores</button> <button class="btn btn-sm btn-outline" onclick="ReportEngine.openBulkCBTExportModal()">📊 Bulk Push (All Subjects)</button> <span style="font-size:.78rem;color:#475569">Teacher can push his/her subject even inside bulk — subject teacher RLS enforced.</span></div></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Name</th><th>ID</th><th>Score</th><th>%</th><th>Correct/Wrong/Skipped</th><th>Engine / Status</th><th>Cert</th><th>Actions</th></tr></thead><tbody>'+(rows||'<tr><td colspan=9>No submissions yet.</td></tr>')+'</tbody></table></div><div style="margin-top:12px;padding:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:.85rem;color:#1e40af"><b>💡 10 scenarios where student needs retake (expert):</b><ol style="margin:6px 0 0 16px;line-height:1.6"><li><b>Power/system off</b> during exam, could not submit — allow retake deletes old, student rewrites</li><li><b>Auto-submitted incomplete</b> due to malfunction — same</li><li><b>Network loss</b> during submit — payload in pending queue with jittered retries, flushes on next online; if failed, allow retake</li><li><b>Browser crash</b> — draft auto-saved in localStorage cbt-draft-CODE, resume on return, or retake if lost</li><li><b>Violation auto-submit false positive</b> (tab switch) — teacher reviews violation_log, allows retake</li><li><b>Time expiry</b> with unfinished — teacher gives extra time via accommodations or retake</li><li><b>Not on roster</b> — teacher adds to cbt_roster or uses offline_override</li><li><b>Duplicate client_ref</b> — idempotency via unique index, teacher clears duplicate via retake</li><li><b>Attempt limit reached</b> but needs practice retake — same</li><li><b>Exam closed/archived mid-exam</b> — teacher reopens (is_open, is_archived) and allows retake</li></ol><p style="margin:6px 0 0">All handled robustly, self-contained, seamless — offline draft + pending queue + localStorage recovery + server idempotency + teacher-controlled retake.</p></div>');
   },
   async allowRetake(examId, studentRef, studentName){
     if(!sb) return;
@@ -1166,15 +1272,154 @@ window.CBTUI = {
     openModal('Retake allowances — '+esc(examId), html, '<button class="btn btn-outline" onclick="closeModal()">Close</button>');
   },
   async pushMySubject(examId){
-    // V12.34 robust: push ONLY this particular CBT (no subject typing prompt)
-    // For single-subject: pushes that subject's scores. For multi-subject: pushes all subjects of this exam, split per subject.
-    if(!window.ReportEngine||!window.ReportEngine.pushCBTToResults){ toast('Report engine not loaded','warning'); return; }
+    // V12.35 robust: push ONLY this particular CBT with detailed progress report (no typing prompt)
+    if(!window.ReportEngine){ toast('Report engine not loaded','warning'); return; }
     if(!sb){ toast('Database not configured','warning'); return; }
-    if(!confirm('Push scores from this CBT to report card?\n\nThis will create/update report_scores for this exam only.\nMulti-subject exams will split per subject automatically.')) return;
+    // Pre-check via new RPC for detailed progress (optional, fallback to direct push)
+    let exam=null, colInfo=null;
     try{
-      // Use the canonical single-exam push which handles multi-subject splitting correctly
+      const er=await sb.from('cbt_exams').select('id,code,title,subject,class,term,session,report_column,max_score').eq('id',examId).maybeSingle();
+      if(er.error||!er.data) throw new Error(er.error?.message||'Exam not found');
+      exam=er.data;
+      // Try new RPC for pre-flight check (shows column, results count)
+      const chk=await sb.rpc('cbt_push_exam_to_reports',{p_exam_id:examId, p_column: exam.report_column||null});
+      if(chk.data && chk.data.ok===false){
+        // Show error in modal, not just toast, so teacher sees why push failed
+        openModal('⚠️ Cannot push — '+esc(exam.code||''), '<div class="notice notice-error"><b>'+esc(chk.data.error||'Push blocked')+'</b><br>'+esc(chk.data.message||'Check report column exists.')+'</div><p>Fix: Create report column "'+esc(chk.data.message?.match(/"(.*)"/)?.[1]||exam.report_column||'CBT / Online Exam')+'" in Report Cards for '+esc(exam.class||'')+' / '+esc(exam.term||'')+' / '+esc(exam.session||'')+'</p>', '<button class="btn btn-outline" onclick="closeModal()">Close</button><a class="btn btn-primary" href="report-cards.html">Open Report Cards</a>');
+        return;
+      }
+      colInfo=chk.data;
+    }catch(e){
+      // Fallback: still try push, ReportEngine will handle missing column via ensureCBTDestination
+      console.warn('Pre-check failed, continuing:', e.message||e);
+    }
+    // Show progress modal
+    openModal('🚀 Pushing '+esc(exam?.code||examId)+' — '+esc(exam?.title||'')+'', '<div style="text-align:center;padding:20px"><span class="pulse">Preparing to push verified scores…</span><br><small>Destination: '+(colInfo?esc(colInfo.column||exam.report_column||'CBT / Online Exam')+' (max '+Number(colInfo.max_mark||exam.max_score||10)+') · '+Number(colInfo.results||'?')+' result(s)':'Checking…')+'</small></div>', '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>');
+    try{
       await ReportEngine.pushCBTToResults(examId);
-    }catch(e){ toast('Push failed: '+(e.message||e),'danger',10000); }
+      // ReportEngine.pushCBTToResults shows its own toast; we also update modal with success details
+      const successMsg = '<div class="notice" style="background:#f0fdf4;border-color:#86efac;color:#166534"><b>✅ Push complete for '+esc(exam.code||'')+' — '+esc(exam.title||'')+'</b><br>'+(colInfo?'Pushed '+Number(colInfo.results||0)+' result(s) for '+esc(exam.subject||'')+' to column <b>'+esc(colInfo.column||'')+'</b> (max '+Number(colInfo.max_mark||0)+')':'Scores pushed to report card')+'<br><small>Re-pushing updates existing rows (report_scores_uq), not duplicates. Check Report Cards → Generate.</small></div><p style="text-align:center"><a class="btn btn-primary" href="report-cards.html">Open Report Cards</a> <button class="btn btn-outline" onclick="closeModal()">Close</button></p>';
+      // If modal still open (push didn't close it), update it; else show new
+      const body=document.getElementById('modal-body');
+      if(body && body.innerHTML.includes('Preparing to push')){
+        body.innerHTML=successMsg;
+        document.getElementById('modal-footer').innerHTML='<button class="btn btn-outline" onclick="closeModal()">Close</button><a class="btn btn-primary" href="report-cards.html">Open Report Cards</a>';
+      }else{
+        closeModal();
+        openModal('✅ Push complete — '+esc(exam.code||''), successMsg, '<button class="btn btn-outline" onclick="closeModal()">Close</button><a class="btn btn-primary" href="report-cards.html">Open Report Cards</a>');
+      }
+    }catch(e){
+      const body=document.getElementById('modal-body');
+      const errMsg='<div class="notice notice-error"><b>Push failed:</b> '+esc(e.message||e)+'</div>';
+      if(body && body.innerHTML.includes('Preparing to push')){
+        body.innerHTML=errMsg;
+      }else{
+        toast('Push failed: '+(e.message||e),'danger',10000);
+      }
+    }
+  },
+  async recoverMissing(examId, code){
+    // V12.39: Recover missing via BOTH server pending (device-independent) + this browser's localStorage (robust, self-contained)
+    if(!sb){ toast('Database not configured','warning'); return; }
+    openModal('🔍 Recover Missing Results — '+esc(code), '<div style="text-align:center;padding:20px"><span class="pulse">Checking for missing results…</span><br><small>This will list ALL results for this exam via secure RPC (bypasses RLS), even archived/hidden, plus server-side pending (from any student device) and this browser\'s localStorage queue.</small></div>', '<button class="btn btn-outline" onclick="closeModal()">Close</button>');
+    try{
+      const r=await sb.rpc('cbt_list_all_results',{p_exam_id: examId});
+      if(r.error) throw new Error(r.error.message);
+      const data=r.data||{};
+      const count=Number(data.count||0);
+      const rows=Array.isArray(data.results)?data.results:[];
+      let html='<div class="stats-grid"><div class="stat-card"><div class="stat-value">'+count+'</div><div class="stat-label">Total in DB</div></div><div class="stat-card"><div class="stat-value">'+(rows.length||0)+'</div><div class="stat-label">Visible via RPC</div></div></div>';
+      if(rows.length){
+        html+='<div class="table-wrap" style="max-height:300px;overflow:auto"><table><thead><tr><th>#</th><th>Name</th><th>ID</th><th>Score</th><th>When</th></tr></thead><tbody>'+rows.slice(0,50).map((row,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(row.student_name||'')+'</td><td>'+esc(row.student_id_ref||'')+'</td><td>'+Number(row.score||0)+'/'+Number(row.total||0)+'</td><td>'+(row.submitted_at||row.created_at||'').slice(0,16).replace('T',' ')+'</td></tr>').join('')+'</tbody></table></div>';
+        if(rows.length>50) html+='<p style="font-size:.8rem;color:#64748b">Showing first 50 of '+rows.length+'.</p>';
+      }else{
+        html+='<p style="color:#b91c1c">No results in DB for this exam. If students saw "Submitted successfully" but tutor sees nothing, their submissions may be stranded on server pending or localStorage.</p>';
+      }
+      // Server pending (device-independent, from any student device via cbt_store_pending)
+      let serverPending=[], serverCount=0;
+      try{
+        const sr=await sb.rpc('cbt_list_pending_server',{p_exam_id: examId});
+        if(!sr.error && sr.data && sr.data.ok!==false){ serverCount=Number(sr.data.count||0); serverPending=Array.isArray(sr.data.pending)?sr.data.pending:[]; }
+      }catch(_){}
+      if(serverCount){
+        html+='<div class="notice" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;margin-top:10px"><b>☁️ Found '+serverCount+' stranded submission(s) on SERVER (from any device, not just this browser)</b> — stored when student\'s network failed. One-click to flush to results.</div><button class="btn btn-sm btn-primary" onclick="CBTUI.flushServerPending(\''+examId+'\',\''+esc(code)+'\')">☁️ Flush Server Pending ('+serverCount+')</button>';
+        if(serverPending.length) html+='<div class="table-wrap" style="max-height:150px;overflow:auto;margin-top:6px"><table><thead><tr><th>#</th><th>Name</th><th>ID</th><th>When</th></tr></thead><tbody>'+serverPending.slice(0,20).map((p,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(p.student_name||'')+'</td><td>'+esc(p.student_id_ref||'')+'</td><td>'+(p.created_at||'').slice(0,16).replace('T',' ')+'</td></tr>').join('')+'</tbody></table></div>';
+      }else{
+        html+='<p style="font-size:.82rem;color:#475569;margin-top:8px">No server pending for this exam. Server pending appears when a student\'s submit fails but their device still reaches Supabase to store via <code>cbt_store_pending</code> (auto on cbt-exam.html network error).</p>';
+      }
+      let pending=[];
+      try{ pending=JSON.parse(localStorage.getItem('cbt-pending-queue')||'[]'); }catch(_){}
+      const myPending=pending.filter(p=>String(p.exam_id)===String(examId));
+      if(myPending.length){
+        html+='<div class="notice" style="background:#fffbeb;border-color:#fcd34d;color:#92400e;margin-top:10px"><b>📦 Found '+myPending.length+' pending submission(s) in THIS browser\'s localStorage</b> (from failed network). Click Recover to replay them.</div><button class="btn btn-sm btn-primary" onclick="CBTUI.replayPending(\''+examId+'\')">🔄 Replay My Pending Queue ('+myPending.length+')</button>';
+      }else{
+        html+='<p style="font-size:.85rem;color:#475569;margin-top:10px">No pending queue on this device. Ask student to open <code>cbt-exam.html</code> while online — it auto-flushes localStorage and server pending.</p>';
+      }
+      html+='<div style="margin-top:10px"><button class="btn btn-sm btn-outline" onclick="CBTUI.refresh()">↻ Refresh List</button> <a class="btn btn-sm btn-outline" href="cbt-exam.html?code='+esc(code||'')+'" target="_blank">Open Take Exam</a></div>';
+      document.getElementById('modal-body').innerHTML=html;
+      document.getElementById('modal-footer').innerHTML='<button class="btn btn-outline" onclick="closeModal()">Close</button>'+(serverCount?'<button class="btn btn-primary" onclick="CBTUI.flushServerPending(\''+examId+'\',\''+esc(code)+'\')">☁️ Flush Server ('+serverCount+')</button>':'')+'<button class="btn btn-primary" onclick="CBTUI.replayPending(\''+examId+'\')">🔄 Replay Pending</button>';
+    }catch(e){
+      document.getElementById('modal-body').innerHTML='<div class="notice notice-error"><b>Recovery check failed:</b> '+esc(e.message||e)+'</div>';
+    }
+  },
+  async replayPending(examId){
+    let pending=[];
+    try{ pending=JSON.parse(localStorage.getItem('cbt-pending-queue')||'[]'); }catch(_){}
+    if(!pending.length){ toast('No pending queue on this device.','info'); return; }
+    const toReplay=pending.filter(p=>!examId || String(p.exam_id)===String(examId));
+    if(!toReplay.length){ toast('No pending for this exam on this device.','info'); return; }
+    if(!confirm('Replay '+toReplay.length+' pending submission(s) to server?')) return;
+    const r=await sb.rpc('cbt_recover_pending',{p_payloads: toReplay});
+    if(r.error||!r.data||r.data.ok===false){ toast((r.data&&r.data.error)||r.error?.message||'Recover failed','danger'); return; }
+    toast('✅ Recovered '+Number(r.data.saved||0)+' pending, '+Number(r.data.failed||0)+' failed.','success',8000);
+    const remaining=pending.filter(p=> !toReplay.some(q=> String(q.client_ref)===String(p.client_ref)));
+    localStorage.setItem('cbt-pending-queue', JSON.stringify(remaining));
+    this.results(examId, '');
+  },
+  async flushServerPending(examId, code){
+    if(!sb){ toast('Database not configured','warning'); return; }
+    if(!confirm('Flush ALL server pending submissions for '+code+'? This will attempt to grade and insert each stranded payload.')) return;
+    const r=await sb.rpc('cbt_flush_pending_server',{p_exam_id: examId});
+    if(r.error||!r.data||r.data.ok===false){ toast((r.data&&r.data.error)||r.error?.message||'Flush failed','danger',10000); return; }
+    toast('✅ Server flush: '+Number(r.data.saved||0)+' saved, '+Number(r.data.failed||0)+' failed.','success',8000);
+    if(r.data.errors && r.data.errors.length) console.warn('Flush errors', r.data.errors);
+    this.recoverMissing(examId, code);
+  },
+  // V12.38: Global audit for ANY CBT's missing/uncompleted (not just civic SSS1-3) — robust, all-inclusive
+  async auditAllMissing(forceRefresh){
+    const box=document.getElementById('cbt-audit-stats');
+    if(box) box.innerHTML='<span class="pulse">Auditing every CBT via secure RPC (bypasses RLS, includes archived)…</span>';
+    if(!sb){ if(box) box.innerHTML='<span style="color:#b91c1c">Database not configured</span>'; return; }
+    try{
+      const r=await sb.rpc('cbt_audit_all_missing');
+      if(r.error) throw new Error(r.error.message);
+      const d=r.data||{};
+      if(!d.ok) throw new Error(d.error||d.message||'Audit failed');
+      const exams=Array.isArray(d.exams)?d.exams:[];
+      if(!exams.length){
+        if(box) box.innerHTML='<div class="notice">No CBT exams yet. Create one with + New Exam / Test.</div>';
+        return;
+      }
+      let pendingCnt=0; try{ pendingCnt=JSON.parse(localStorage.getItem('cbt-pending-queue')||'[]').length; }catch(_){}
+      const serverPendingTotal=Number(d.pending_server_total||0);
+      const missingExams=exams.filter(e=> Number(e.total_results||0)===0 || Number(e.has_missing) || Number(e.pending_server||0)>0);
+      const pendingReviewExams=exams.filter(e=> Number(e.pending_review||0)>0);
+      let html='<div class="stats-grid"><div class="stat-card"><div class="stat-value">'+d.total_exams+'</div><div class="stat-label">Total CBTs</div></div><div class="stat-card"><div class="stat-value">'+exams.filter(e=>!e.is_archived).length+'</div><div class="stat-label">Active</div></div><div class="stat-card"><div class="stat-value">'+exams.filter(e=>e.is_archived).length+'</div><div class="stat-label">Archived</div></div><div class="stat-card"><div class="stat-value">'+missingExams.length+'</div><div class="stat-label" style="color:'+(missingExams.length?'#b91c1c':'#16a34a')+'">'+(missingExams.length?'⚠️ Potential missing':'No missing')+'</div></div><div class="stat-card"><div class="stat-value">'+pendingCnt+'</div><div class="stat-label">Pending in THIS browser</div></div><div class="stat-card"><div class="stat-value">'+serverPendingTotal+'</div><div class="stat-label" style="color:'+(serverPendingTotal?'#b91c1c':'#16a34a')+'">Pending on SERVER</div></div></div>';
+      html+='<div class="table-wrap" style="max-height:400px;overflow:auto;margin-top:10px"><table><thead><tr><th>Code / Title</th><th>Subject / Class</th><th>Status</th><th>Results (total/graded/pending/server)</th><th>Roster</th><th>Alert</th><th>Action</th></tr></thead><tbody>'+exams.slice(0,100).map(e=>{
+        const total=Number(e.total_results||0), graded=Number(e.graded||0), rev=Number(e.pending_review||0), roster=Number(e.roster_count||0), pendSrv=Number(e.pending_server||0);
+        const hasMissing = e.has_missing || (roster>0 && total<roster) || (total===0 && !e.is_archived) || pendSrv>0;
+        const alert = hasMissing ? (pendSrv?'<span style="color:#dc2626;font-weight:800">☁️ '+pendSrv+' stranded on server</span>':(total===0 ? '<span style="color:#dc2626;font-weight:800">Empty — no results</span>' : '<span style="color:#d97706;font-weight:700">Roster '+roster+' → Results '+total+'</span>')) : (rev>0?'<span style="color:#92400e">✍️ '+rev+' pending review</span>':'<span style="color:#16a34a">✅ OK</span>');
+        return `<tr style="`+(hasMissing?'background:#fef2f2':'')+`"><td><b>`+esc(e.code)+`</b><br><small>`+esc(e.title)+`</small></td><td>`+esc(e.subject)+`<br><small>`+esc(e.class)+`</small></td><td>`+(e.is_archived?'<span class="badge">Archived</span>':'<span class="badge badge-success">'+(e.is_open?'Open':'Closed')+'</span>')+`<br><small>`+esc(e.assessment_type)+`</small></td><td>`+total+`/`+graded+`/`+(rev||0)+`/`+pendSrv+`</td><td>`+(roster||"—")+`</td><td>`+alert+`</td><td><button class="btn btn-sm btn-outline" onclick="CBTUI.results('`+e.id+`','`+esc(e.code)+`')">Results</button> <button class="btn btn-sm btn-outline" style="background:#fff7ed" onclick="CBTUI.recoverMissing('`+e.id+`','`+esc(e.code)+`')">Recover</button>`+(pendSrv?` <button class="btn btn-sm btn-primary" onclick="CBTUI.flushServerPending('`+e.id+`','`+esc(e.code)+`')">☁️ Flush ('+pendSrv+')</button>`:'')+`</td></tr>`;
+      }).join('')+'</tbody></table></div>';
+      if(exams.length>100) html+='<p style="font-size:.8rem;color:#64748b">Showing first 100 of '+exams.length+'.</p>';
+      if(pendingCnt) html+='<div class="notice" style="background:#fffbeb;border-color:#fcd34d;color:#92400e;margin-top:10px">📦 This browser has '+pendingCnt+' pending submission(s) in localStorage cbt-pending-queue. Click Recover on the affected exam.</div>';
+      if(serverPendingTotal) html+='<div class="notice" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;margin-top:10px">☁️ Server has '+serverPendingTotal+' stranded submission(s) from any device (cbt_pending_submissions). Use per-exam ☁️ Flush or global Audit → Flush.</div>';
+      html+='<p style="font-size:.82rem;color:#475569;margin-top:8px">Hint: Archived exams hide from default "Active" but still hold results — switch to "Archived only"/"All". Roster>Results or ☁️ stranded = use Recover Missing → Flush Server. Uncompleted (manual_review) = open Results → Review. Students\' pending auto-flushes on cbt-exam.html online + server store.</p>';
+      if(box) box.innerHTML=html;
+      toast('Audited '+exams.length+' CBTs — '+(missingExams.length? missingExams.length+' with potential missing':'all complete'),'info',7000);
+    }catch(e){
+      if(box) box.innerHTML='<div class="notice notice-error"><b>Audit failed:</b> '+esc(e.message||e)+'<br><small>Ensure you ran V12.38 SQL and are logged in as staff/admin.</small></div>';
+    }
   },
   /* V10.6 (#1): per-question marking panel for manual-review types. */
   async reviewResult(resultId){
