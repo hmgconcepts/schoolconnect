@@ -399,6 +399,8 @@ textarea.form-input{min-height:80px;resize:vertical}
     '</div>';
 
     this.root().innerHTML = html;
+    // V12.42: Bind floating toolbar only during actual CBT (not entry), respecting per-exam toggles
+    try{ if(this.data && this.qs().length && !this._done) CBT.bindFloatingToolbar(); else CBT.destroyFloatingToolbar(); }catch(_){}
 
     /* V10.8 (#3): READ-ALOUD (Adewale Classroom parity + Nigerian languages).
        A 🔊 Read-aloud bar mounts under the exam header: candidate-initiated,
@@ -543,7 +545,11 @@ textarea.form-input{min-height:80px;resize:vertical}
     try {
       const keyed = this.qs().map((q,i) => ({ index:(q._orig_index != null ? q._orig_index : i), answer:this.answers[i] }));
       const current = this.qs()[this.idx] || {};
-      localStorage.setItem('cbt-draft-' + (this.data && this.data.code), JSON.stringify({ version:2, answers:keyed, index:(current._orig_index != null ? current._orig_index : this.idx), client_ref:this.clientRef, t:Date.now() }));
+      // V12.37: draft per student (CODE + admission) to prevent cross-student leakage on shared laptop
+      const draftKey = 'cbt-draft-' + String(this.data && this.data.code || '').toUpperCase().replace(/[^A-Z0-9]/g,'') + '-' + String(this.student && this.student.id_ref || 'anon').toUpperCase().replace(/[^A-Z0-9]/g,'');
+      localStorage.setItem(draftKey, JSON.stringify({ version:2, answers:keyed, index:(current._orig_index != null ? current._orig_index : this.idx), client_ref:this.clientRef, student_ref: this.student && this.student.id_ref || '', t:Date.now() }));
+      // Also keep legacy key for backward compat (will be cleaned on submit)
+      try{ localStorage.setItem('cbt-draft-' + (this.data && this.data.code), JSON.stringify({ version:2, answers:keyed, index:(current._orig_index != null ? current._orig_index : this.idx), client_ref:this.clientRef, t:Date.now() })); }catch(_){}
     } catch(e) {}
   };
 
@@ -649,19 +655,39 @@ textarea.form-input{min-height:80px;resize:vertical}
     // Restore a recent draft by ORIGINAL question index, so randomisation and
     // multi-subject grouping cannot attach an answer to the wrong question.
     try {
-      const draft = JSON.parse(localStorage.getItem('cbt-draft-' + data.code) || 'null');
+      // V12.37: load draft per student (CODE + admission) first, fallback to legacy CODE only if student matches
+      const draftKey = 'cbt-draft-' + String(data.code||'').toUpperCase().replace(/[^A-Z0-9]/g,'') + '-' + String(this.student && this.student.id_ref || 'anon').toUpperCase().replace(/[^A-Z0-9]/g,'');
+      let draft = JSON.parse(localStorage.getItem(draftKey) || 'null');
+      // Fallback to legacy global draft only if it belongs to same student (check student_ref)
+      if (!draft) {
+        const legacy = JSON.parse(localStorage.getItem('cbt-draft-' + data.code) || 'null');
+        if (legacy && String(legacy.student_ref||'').toUpperCase().replace(/[^A-Z0-9]/g,'') === String(this.student && this.student.id_ref||'').toUpperCase().replace(/[^A-Z0-9]/g,'') && (Date.now() - Number(legacy.t||0)) < 86400000) {
+          draft = legacy;
+        }
+      }
       if (draft && (Date.now() - Number(draft.t||0)) < 86400000) {
-        if (Array.isArray(draft.answers)) {
-          const byIndex = new Map(draft.answers.map(x => [Number(x.index), x.answer]));
-          this.qs().forEach((q,i) => { const oi=Number(q._orig_index != null?q._orig_index:i); if(byIndex.has(oi)) this.answers[i]=byIndex.get(oi); });
-          const wanted=Number(draft.index); const at=this.qs().findIndex((q,i)=>Number(q._orig_index!=null?q._orig_index:i)===wanted); if(at>=0)this.idx=at;
-        } else if (Array.isArray(draft.a) && draft.a.length === this.answers.length) { this.answers=draft.a; this.idx=Math.max(0,Math.min(Number(draft.i)||0,this.answers.length-1)); }
-        if (draft.client_ref) this.clientRef=String(draft.client_ref);
+        // Only restore if draft's student_ref matches current student (prevent cross-student leakage)
+        const draftStudent = String(draft.student_ref||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+        const currStudent = String(this.student && this.student.id_ref||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+        if (draftStudent && currStudent && draftStudent !== currStudent) {
+          // Different student, ignore draft (do not restore answers or client_ref)
+          console.log('[CBT] Ignoring draft for different student:', draftStudent, 'vs', currStudent);
+        } else {
+          if (Array.isArray(draft.answers)) {
+            const byIndex = new Map(draft.answers.map(x => [Number(x.index), x.answer]));
+            this.qs().forEach((q,i) => { const oi=Number(q._orig_index != null?q._orig_index:i); if(byIndex.has(oi)) this.answers[i]=byIndex.get(oi); });
+            const wanted=Number(draft.index); const at=this.qs().findIndex((q,i)=>Number(q._orig_index!=null?q._orig_index:i)===wanted); if(at>=0)this.idx=at;
+          } else if (Array.isArray(draft.a) && draft.a.length === this.answers.length) { this.answers=draft.a; this.idx=Math.max(0,Math.min(Number(draft.i)||0,this.answers.length-1)); }
+          // V12.37: Do NOT restore client_ref from draft of different student (prevents duplicate client_ref score leakage)
+          // Only restore client_ref if draft's student matches current
+          if (draft.client_ref && (!draftStudent || draftStudent===currStudent)) this.clientRef=String(draft.client_ref);
+        }
       }
     } catch(_) {}
     this.startTs = Date.now();
     // V12.33 timer persistence — survive refresh (expert fix 4a)
-    const _deadlineKey='cbt-deadline-'+(data.code||canonicalCode)+'-'+(this.student&&this.student.id_ref||'anon');
+    // V12.37: deadline per student AND per attempt (use client_ref for anon to avoid cross-student leakage)
+    const _deadlineKey='cbt-deadline-'+String(data.code||canonicalCode).toUpperCase().replace(/[^A-Z0-9]/g,'')+'-'+String(this.student&&this.student.id_ref||this.clientRef||'anon').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12);
     const _savedDeadline=Number(localStorage.getItem(_deadlineKey)||0);
     if(_savedDeadline && _savedDeadline>Date.now() && _savedDeadline - Date.now() < (data.duration||45)*60*1000*2){
       this.deadline=_savedDeadline;
@@ -689,21 +715,32 @@ textarea.form-input{min-height:80px;resize:vertical}
     return '<div style="margin-top:12px"><a class="btn btn-outline" href="cbt-exam.html">Try a different code</a></div>';
   };
 
-  Exam.beginMonitor = function(){
+  Exam.beginMonitor = async function(){
     const cfg = (this.data && this.data.anti_cheat_config) || {};
-    // V6.3 #21: optional camera-snapshot + audio-loudness proctoring. Runs only
-    // when the teacher enabled the toggles for THIS exam; the browser asks the
-    // student for permission; refusal is logged but never blocks the exam.
+    // V12.45 ENFORCE: If pictoring required and not allowed, BLOCK exam — robust, no bypass
+    // Enhanced with face gate, liveness, virtual cam detection, screen share block
     if (window.Proctor && (cfg.camera || cfg.audio_monitor)) {
       try {
-        Proctor.start(cfg, (this.data && this.data.code) || 'exam', (this.student && this.student.name) || 'candidate', (type, detail) => {
+        const proctorRes = await Proctor.start(cfg, (this.data && this.data.code) || 'exam', (this.student && this.student.name) || 'candidate', (type, detail) => {
           try {
             this.violationLog = this.violationLog || [];
             this.violationLog.push({ type: type, detail: detail, at: new Date().toISOString() });
             if (type === 'audio_noise') { this.violations = (this.violations || 0) + 1; const v = document.getElementById('viol'); if (v) v.textContent = '⚠ ' + this.violations + ' integrity flag(s)'; }
             if (type === 'proctor_started' && typeof toast === 'function') toast('🔒 Exam monitoring is ON for this assessment: ' + detail + '. Work alone and stay in view of the camera.', 'info', 8000);
+            if (type === 'proctor_blocked') { /* Handled via proctorRes.blocked below */ }
           } catch (_) {}
         });
+        // V12.45 ENFORCE: Block exam if pictoring required but declined/blocked
+        if(proctorRes && proctorRes.blocked){
+          this._proctorBlocked = true;
+          // Stop any anti-cheat that may have started, clear timer, show blocking modal
+          try{ if(this.monitor) this.monitor.stop(); }catch(_){}
+          try{ clearInterval(this.timer); this.timer=null; }catch(_){}
+          const retryHtml = '<div style=\"text-align:center;padding:20px\"><div style=\"font-size:3rem;margin-bottom:12px\">📸</div><h2 style=\"color:#991b1b\">Camera Required</h2><p style=\"color:#991b1b;font-weight:600\">'+(proctorRes.reason||'Camera is required for this exam.')+'</p><p style=\"font-size:.85rem;color:#64748b\">This exam was set by your tutor to require picturing to prevent impersonation. You cannot bypass this security.</p><div style=\"display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap\"><button class=\"btn btn-primary\" onclick=\"location.reload()\">🔄 Retry Allow Camera</button><button class=\"btn btn-outline\" onclick=\"history.back()\">← Back</button></div><p style=\"font-size:.75rem;color:#64748b;margin-top:12px\">Tip: When browser asks \'Allow camera?\' choose <b>Allow</b>. If using iPhone, use Safari, not Chrome. Ensure no other app is using camera.</p></div>';
+          this.root().innerHTML = '<div class="card">'+retryHtml+'</div>';
+          if(typeof toast==='function') toast('📸 Camera required — exam blocked. Allow camera to continue.', 'danger', 10000);
+          return; // Do not proceed to startAntiCheat or timer
+        }
       } catch (e) { console.warn('[Proctor] start skipped:', e.message || e); }
     }
     if (window.CBT && typeof window.CBT.startAntiCheat === 'function') {
@@ -767,7 +804,7 @@ textarea.form-input{min-height:80px;resize:vertical}
     };
     let resp = null;
     for (let attempt = 0; attempt < 6; attempt++) {
-      try { resp = await window.sb.rpc('cbt_submit_v6', { p_payload: payload }); } catch (e) { resp = { error: e }; }
+      try { resp = await window.sb.rpc('cbt_submit_with_wal', { p_payload: payload }); if(resp.error) throw resp.error; } catch (e) { try{ resp = await window.sb.rpc('cbt_submit_v6', { p_payload: payload }); } catch(e2){ resp = { error: e2 }; } }
       if (resp && !resp.error && resp.data && resp.data.saved && String(resp.data.engine_version||'').startsWith('v5.1')) break;
       if (resp && !resp.error && resp.data && ['closed','not_started','attempts_exhausted','exam_not_found','answer_key_missing','question_bank_empty','wrong_class','not_on_roster','invalid_admission','admission_required'].includes(resp.data.error)) break;
       if(resp && resp.error && /cbt_submit_v6|schema cache|function/i.test(String(resp.error.message||resp.error))) break;
@@ -779,8 +816,21 @@ textarea.form-input{min-height:80px;resize:vertical}
     const terminalError=resp&&resp.data&&['closed','not_started','attempts_exhausted','exam_not_found','answer_key_missing','question_bank_empty','wrong_class','not_on_roster','invalid_admission','admission_required'].includes(resp.data.error);
     if (!confirmed && !terminalError) {
       try { const q = JSON.parse(localStorage.getItem('cbt-pending-queue') || '[]'); q.push(payload); localStorage.setItem('cbt-pending-queue', JSON.stringify(q.slice(-10))); } catch (_) {}
+      // V12.39: also store to server pending (device-independent, tutor can flush via cbt_flush_pending_server)
+      try { if(window.sb) window.sb.rpc('cbt_store_pending',{p_payload: payload}).then(()=>console.log('[CBT] Stored to server pending')).catch(()=>{}); } catch(_){}
     } else if (confirmed) {
-      try { localStorage.removeItem('cbt-pending-queue'); localStorage.removeItem('cbt-draft-' + (this.data && this.data.code)); } catch (_) {}
+      try {
+        // V12.37: clear per-student draft and deadline, plus global, to prevent next student on same laptop getting previous score/timer
+        const codeNorm = String(this.data && this.data.code || '').toUpperCase().replace(/[^A-Z0-9]/g,'');
+        const stuNorm = String(this.student && this.student.id_ref || 'anon').toUpperCase().replace(/[^A-Z0-9]/g,'');
+        localStorage.removeItem('cbt-pending-queue');
+        localStorage.removeItem('cbt-draft-' + (this.data && this.data.code));
+        localStorage.removeItem('cbt-draft-' + codeNorm + '-' + stuNorm);
+        localStorage.removeItem('cbt-draft-' + codeNorm + '-' + String(this.clientRef||'').slice(0,12).toUpperCase().replace(/[^A-Z0-9]/g,''));
+        localStorage.removeItem('cbt-deadline-' + codeNorm + '-' + stuNorm);
+        localStorage.removeItem('cbt-deadline-' + codeNorm + '-' + String(this.clientRef||'').slice(0,12).toUpperCase().replace(/[^A-Z0-9]/g,''));
+        localStorage.removeItem('cbt-exam-cache-' + codeNorm);
+      } catch (_) {}
     }
     if (!confirmed) {
       const blob = new Blob([JSON.stringify({ payload, graded }, null, 2)], { type: 'application/json' });
@@ -794,7 +844,9 @@ textarea.form-input{min-height:80px;resize:vertical}
       return;
     }
     const d = resp.data;
-    if (d.release_results === false) {
+    // V12.43: Tutor can toggle score display per exam (show_score_on_submit) — if false, hide score even if release_results true (for entrance/mock)
+    const showScore = (d.show_score_on_submit !== false) && (d.enable_score_display !== false) && (d.show_score !== false);
+    if (d.release_results === false || !showScore) {
       this.root().innerHTML =
         '<div class="card" style="text-align:center;padding:40px">' +
         '<div style="font-size:3rem;margin-bottom:12px">✅</div>' +
@@ -822,7 +874,12 @@ textarea.form-input{min-height:80px;resize:vertical}
       (d.cert_code ? '<p style="margin-top:20px">Certificate code: <strong style="font-size:1.1rem;color:#0506ae">' + esc(d.cert_code) + '</strong></p>' : '') +
       (d.report_column ? '<p style="color:#64748b;font-size:.88rem">This result was added to the <strong>' + esc(d.report_column) + '</strong> column of your report card.</p>' : '') +
       '<p style="margin-top:20px"><a class="btn btn-primary" href="cbt.html">Back to CBT Manager</a> <a class="btn btn-outline" href="verify-certificate.html">Verify Certificate</a></p>' +
+      '<p style="margin-top:14px"><a class="btn btn-outline" href=\'#\' onclick="try{CBT.destroyFloatingToolbar(); sessionStorage.setItem(\'sc_next_student\',\'1\'); location.replace(\'cbt-exam.html\');}catch(_){} return false;" style="background:#f0fdf4;border-color:#86efac;color:#166534">🔄 Next Student — Take Another Exam</a> <button class="btn btn-outline" onclick="try{navigator.clipboard.writeText(location.origin+location.pathname+\'?code=\'+encodeURIComponent(Exam.data.code)); toast(\'📋 Public link copied — share via WhatsApp\',\'success\')}catch(_){prompt(\'Copy link:\', location.origin+location.pathname+\'?code=\'+Exam.data.code)}">📋 Copy Public Link</button></p>' +
+      '<p style="margin-top:8px;font-size:.78rem;color:#64748b">Share <b>'+esc(location.origin+location.pathname+'?code='+this.data.code)+'</b> — students just enter exam code + student ID, no login needed. On shared lab computers, tap <b>Next Student</b> to clear previous score/timer and let the next student enter their code/ID.</p>' +
       '</div>';
+    // V12.45 Privacy: auto-hide score after 10s (faster for shared lab) + history.replaceState + Clear-Site-Data meta
+    try{ history.replaceState(null,'',location.href); const m=document.createElement('meta'); m.httpEquiv='Clear-Site-Data'; m.content='cache'; document.head.appendChild(m); }catch(_){}
+    setTimeout(function(){ try{ if(Exam && Exam._done){ var r=document.getElementById('exam-root'); if(r && r.innerHTML.includes('Exam Complete')){ r.innerHTML='<div class=\'card\' style=\'text-align:center;padding:40px\'><p>🔒 Score hidden for privacy. Next student can now take their exam.</p><a class=\'btn btn-primary\' href=\'cbt-exam.html\'>Take Another Exam</a></div>'; try{CBT.destroyFloatingToolbar(); history.replaceState(null,'',location.href);}catch(_){} } } }catch(_){} }, 10000);
   };
 
   // ENTERPRISE V8: flush any queued (failed) submissions from a previous session
@@ -834,7 +891,7 @@ textarea.form-input{min-height:80px;resize:vertical}
         const rest = [];
         for (const p of q) {
           try {
-            const r = await window.sb.rpc('cbt_submit_v6', { p_payload: Object.assign({client_engine:'v5.5'},p) });
+            let r=null; try{ r = await window.sb.rpc('cbt_submit_with_wal', { p_payload: Object.assign({client_engine:'v5.5'},p) }); if(r.error) throw r.error; }catch(_){ r = await window.sb.rpc('cbt_submit_v6', { p_payload: Object.assign({client_engine:'v5.5'},p) }); }
             if (!(r && !r.error && r.data && r.data.saved && String(r.data.engine_version||'').startsWith('v5.1'))) rest.push(p);
           } catch (_) { rest.push(p); }
         }
@@ -848,7 +905,7 @@ textarea.form-input{min-height:80px;resize:vertical}
   })();
 
   // V12.33 draft persistence on browser close (expert fix 4g)
-  window.addEventListener('beforeunload', ()=>{ try{ Exam.saveDraft(); if(Exam.deadline) try{ localStorage.setItem('cbt-deadline-'+(Exam.data&&Exam.data.code||'')+'-'+(Exam.student&&Exam.student.id_ref||'anon'), String(Exam.deadline)); }catch(_){} }catch(_){} });
+  window.addEventListener('beforeunload', ()=>{ try{ Exam.saveDraft(); if(Exam.deadline){ const codeNorm=String(Exam.data&&Exam.data.code||'').toUpperCase().replace(/[^A-Z0-9]/g,''); const stuNorm=String(Exam.student&&Exam.student.id_ref||Exam.clientRef||'anon').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12); try{ localStorage.setItem('cbt-deadline-'+codeNorm+'-'+stuNorm, String(Exam.deadline)); }catch(_){} } }catch(_){} });
 
   // Exposed for accessibility tooling, automated regression tests and the
   // manager's safe preview—not for grading (grading remains server-authoritative).
