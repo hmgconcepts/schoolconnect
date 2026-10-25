@@ -31,7 +31,7 @@
         <p style="font-size:.85rem;color:#334155">Tip: Create a Midterm Test CBT (type <code>test</code>), push its scores to a column named <b>Midterm</b> (create it in Report Cards → Columns if not exists), then generate here.</p>
       </div>
 
-      <div class="card">
+      <div class="card" id="mr-staff-tools">
         <div class="grid grid-3" style="gap:10px">
           <div class="form-group"><label>Class *</label><select id="mr-class" class="form-select"><option value="">— select class —</option></select></div>
           <div class="form-group"><label>Term *</label><select id="mr-term" class="form-select"><option value="">— select term —</option></select></div>
@@ -47,6 +47,18 @@
         <div id="mr-status" style="margin-top:12px;font-size:.9rem;color:#475569"></div>
       </div>
 
+      <div class="card" id="mr-family-view" style="display:none;margin-top:16px">
+        <h3>👨‍👩‍👧 Your Midterm Sheet</h3>
+        <p style="color:#475569">Only your own (or your linked child’s) <b>published</b> midterm report is shown here. Terminal reports remain separate.</p>
+        <div class="grid grid-3" style="gap:10px">
+          <div class="form-group"><label>Student</label><select id="mr-family-student" class="form-select"><option value="">Loading linked student…</option></select></div>
+          <div class="form-group"><label>Term</label><select id="mr-family-term" class="form-select"><option value="">Select term</option></select></div>
+          <div class="form-group"><label>Session</label><select id="mr-family-session" class="form-select"><option value="">Select session</option></select></div>
+        </div>
+        <button class="btn btn-primary" onclick="MR.loadFamilyReport()">View Midterm Sheet</button>
+        <div id="mr-family-output" style="margin-top:12px"></div>
+        <p><a href="report-cards.html" class="btn btn-outline">View Terminal Report Card</a></p>
+      </div>
       <div id="mr-list" class="card" style="margin-top:16px"><span class="pulse">Select class/term/session to generate.</span></div>
 
       <div class="card" style="margin-top:16px;background:#f8fafc">
@@ -86,9 +98,42 @@ const MR = {
         const ap=await sb.from('academic_periods').select('session,term').eq('is_current',true).limit(1).maybeSingle();
         if(ap.data){ if(ap.data.session) document.getElementById('mr-session').value=ap.data.session; if(ap.data.term) document.getElementById('mr-term').value=ap.data.term; }
       }catch(_){}
+      // Family-safe view: students/parents see only published reports for linked children.
+      for(let i=0;i<25 && !(window.SC_PROFILE&&SC_PROFILE.role);i++) await new Promise(r=>setTimeout(r,200));
+      const role=String((window.SC_PROFILE||{}).role||'').toLowerCase();
+      if(['student','parent'].includes(role)){
+        const tools=document.getElementById('mr-staff-tools'); if(tools) tools.style.display='none';
+        const family=document.getElementById('mr-family-view'); if(family) family.style.display='block';
+        const sel=document.getElementById('mr-family-student'); let people=[];
+        try{
+          if(role==='student'){
+            const r=await sb.from('students').select('id,admission_no,full_name,class').eq('user_id',SC_PROFILE.id); people=r.data||[];
+          }else{
+            const links=await sb.from('parent_child').select('student_id').eq('parent_id',SC_PROFILE.id);
+            const ids=(links.data||[]).map(x=>x.student_id).filter(Boolean);
+            if(ids.length){const r=await sb.from('students').select('id,admission_no,full_name,class').in('id',ids);people=r.data||[];}
+          }
+        }catch(e){console.warn('Midterm family lookup',e.message);}
+        if(sel) sel.innerHTML=people.length?people.map(x=>'<option value="'+MR.esc(x.admission_no||'')+'" data-class="'+MR.esc(x.class||'')+'">'+MR.esc(x.admission_no||'')+' — '+MR.esc(x.full_name||'')+' ('+MR.esc(x.class||'')+')</option>').join(''):'<option value="">No linked student found</option>';
+        const terms=document.getElementById('mr-family-term'), sessions=document.getElementById('mr-family-session');
+        const fill2=(el,rows,key)=>{if(el&&rows&&rows.length)el.innerHTML='<option value="">Select</option>'+rows.map(r=>'<option>'+String(r[key]||'')+'</option>').join('');};
+        fill2(terms,(await sb.from('lookups').select('value').eq('kind','term').eq('active',true).order('position')).data,'value');
+        fill2(sessions,(await sb.from('lookups').select('value').eq('kind','session').eq('active',true).order('position')).data,'value');
+        const currentTerm=document.getElementById('mr-term')?.value||'', currentSession=document.getElementById('mr-session')?.value||''; if(terms) terms.value=currentTerm; if(sessions) sessions.value=currentSession;
+      }
     }catch(e){ console.warn('MR init failed', e.message); }
   },
+  esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');},
   vals(){ return {c:document.getElementById('mr-class').value.trim(), t:document.getElementById('mr-term').value.trim(), s:document.getElementById('mr-session').value.trim()}; },
+  async loadFamilyReport(){
+    const student=document.getElementById('mr-family-student'), sid=student?.value||'', cls=student?.selectedOptions?.[0]?.dataset?.class||'', term=document.getElementById('mr-family-term')?.value||'', session=document.getElementById('mr-family-session')?.value||'', host=document.getElementById('mr-family-output');
+    if(!sid||!cls||!term||!session){if(host)host.innerHTML='<div class="notice">Select student, term and session.</div>';return;}
+    if(host)host.innerHTML='<span class="pulse">Loading published midterm sheet…</span>';
+    const r=await sb.rpc('get_midterm_report',{p_student_id_ref:sid,p_class:cls,p_term:term,p_session:session});
+    if(r.error||!r.data||!r.data.ok){host.innerHTML='<div class="notice">'+MR.esc((r.data&&r.data.message)|| (r.data&&r.data.error)||r.error?.message||'No report available')+'</div>';return;}
+    const row=r.data.report, scores=row.scores||{};
+    host.innerHTML='<div class="mr-card"><h3>Midterm Report — '+MR.esc(row.student_name)+' · '+MR.esc(row.class)+'</h3><p>'+MR.esc(row.term)+' · '+MR.esc(row.session)+' · Position '+MR.esc(row.position||'—')+'</p><table class="mr-table"><thead><tr><th>Subject</th><th>Midterm score</th></tr></thead><tbody>'+Object.entries(scores).map(([subject,score])=>'<tr><td>'+MR.esc(subject)+'</td><td>'+Number(score||0).toFixed(1)+'</td></tr>').join('')+'</tbody><tfoot><tr><th>Total / Average</th><th>'+Number(row.total||0).toFixed(1)+' / '+Number(row.average||0).toFixed(1)+'%</th></tr></tfoot></table><button class="btn btn-outline no-print" onclick="window.print()">🖨️ Print / Save PDF</button></div>';
+  },
   async generate(){
     const {c,t,s}=this.vals(); if(!c||!t||!s){ toast('Pick class, term, session','warning'); return; }
     const status=document.getElementById('mr-status'); status.innerHTML='<span class="pulse">Generating midterm reports…</span>';
