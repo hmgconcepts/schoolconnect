@@ -215,7 +215,7 @@ const Generator = {
     // ---- 2b. Load specialised page templates when available ----
     // These pages have richer workflows than generic CRUD pages (CBT taking,
     // certificate printing, admissions links, inbox workflow and teacher overview).
-    const specialIds = ['payment-history','forgot-password', 'cbt','cbt-prompts','cbt-exam','certificates','entrance','teacher-overview','inbox','messages','notifications','voting','report-cards','idcards','analytics','apply','exam-register','profile','change-password','cbt-multi','surveys','student-profile','checkin','checkin-staff','geofence-settings','school-fees','school_fees','school-products','school_products','status-manager','status_manager','ecosystem','ecosystem_products','hmg-digital-products','hmg_digital_products','attendance','punctuality','idcards','academic-records','settings','install','license',
+    const specialIds = ['payment-history','forgot-password', 'cbt','cbt-prompts','cbt-exam','certificates','entrance','teacher-overview','inbox','messages','notifications','voting','report-cards','midterm-reports','idcards','analytics','apply','exam-register','profile','change-password','cbt-multi','surveys','student-profile','checkin','checkin-staff','geofence-settings','school-fees','school_fees','school-products','school_products','status-manager','status_manager','ecosystem','ecosystem_products','hmg-digital-products','hmg_digital_products','attendance','punctuality','idcards','academic-records','settings','install','license',
     // v7-15 robustness sync: the remaining rich bespoke pages (copied from the
     // field-proven GoSA site into assets/templates/pages/) are probed here too,
     // so generated client ZIPs ship the REAL pages instead of generic fallbacks.
