@@ -1,9 +1,9 @@
 // School Connect — Service Worker (V5 cumulative release, generator v8)
 // Bump this literal on every runtime release so previously cached CBT/report code is purged.
-const CACHE = 'sc-builder-v12.46-20261008-53';
+const CACHE = 'sc-builder-v12.51-20261025-58';
 const CORE = [
   './', './index.html', './builder.html', './voting.html', './notifications.html',
-  './install.html', './ecosystem.html', './about.html', './guide.html', './offline.html',
+  './install.html', './midterm-reports.html', './ecosystem.html', './about.html', './guide.html', './offline.html',
   './assets/css/style.css',
   './assets/js/config.js', './assets/js/catalog.js',
   './assets/js/notifications.js', './assets/js/voting.js', './assets/js/pwa-install.js',
@@ -39,6 +39,12 @@ self.addEventListener('fetch', e => {
   if (url.origin !== location.origin && !e.request.url.includes('fonts.googleapis')) return;
 
   if (e.request.mode === 'navigate') {
+    // Sensitive CBT entry/result page: never serve a cached candidate page on shared devices.
+    // Network required for authentication/exam lookup; offline fallback is generic, not a prior score.
+    if (/\/cbt-exam\.html$/i.test(url.pathname)) {
+      e.respondWith((async()=>{ try { return await fetch(new Request(e.request,{cache:'no-store'})); } catch(_) { return (await caches.match('./offline.html')) || new Response('You are offline. Reconnect to start or continue this CBT.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'}}); } })());
+      return;
+    }
     e.respondWith((async () => {
       const cached = await caches.match(e.request);
       try {
@@ -55,6 +61,22 @@ self.addEventListener('fetch', e => {
         if (cached) return cached;
         return (await caches.match('./offline.html')) || (await caches.match('./index.html'));
       }
+    })());
+    return;
+  }
+
+  // V12.48: Network-first for executable/page assets. Stale-while-revalidate served old CBT JS/HTML
+  // on the first visit after deploy, causing users to keep seeing old edit/verify code.
+  const isRuntimeAsset = e.request.destination === 'script' || e.request.destination === 'style' || /\.(?:js|mjs|css|html)$/i.test(url.pathname);
+  if (isRuntimeAsset) {
+    e.respondWith((async () => {
+      const cached = await caches.match(e.request);
+      try {
+        const freshReq = new Request(e.request, {cache:'reload'});
+        const net = await Promise.race([fetch(freshReq), new Promise((_,rej)=>setTimeout(()=>rej(new Error('runtime-timeout')),6000))]);
+        if (net && net.ok) { const copy=net.clone(); caches.open(CACHE).then(c=>c.put(e.request,copy)); return net; }
+        return cached || net;
+      } catch (_) { return cached || Response.error(); }
     })());
     return;
   }

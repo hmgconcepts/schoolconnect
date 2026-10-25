@@ -9,13 +9,14 @@ echo "[0/6] Installing development-only test dependencies"
 npm install --silent --no-audit --no-fund
 
 echo "[1/6] JavaScript syntax"
-for f in assets/js/*.js tools/*.js verify-generated-output.js verify-role-navigation.js verify-v5-cbt-tabs.js verify-v6-enterprise-workflows.js; do node --check "$f" >/dev/null; done
+for f in assets/js/*.js tools/*.js sw.js verify-generated-output.js verify-role-navigation.js verify-v5-cbt-tabs.js verify-v6-enterprise-workflows.js; do node --check "$f" >/dev/null; done
 python3 tools/test-inline-scripts.py
 
 echo "[2/6] SQL, links, cross-repository parity and critical contracts"
 python3 tools/audit-42703.py
 python3 tools/audit-v5.py
 node tools/test-complete-schema-idempotence.mjs
+node tools/test-v12-48-integrity-midterm.mjs
 
 echo "[3/6] Generator packaging contract"
 node verify-generated-output.js
