@@ -339,7 +339,7 @@ ${T.setupRequiredBanner()}
     const publicPages = 'any all public ' + admin + ' staff teacher parent student';
     const canonical = (x) => {
       const map = {
-        'academic-records':'academic_records', 'admin-data':'admin_data', 'report-cards':'report_cards',
+        'academic-records':'academic_records', 'admin-data':'admin_data', 'report-cards':'report_cards', 'midterm-reports':'midterm_reports',
         'cbt-prompts':'cbt_prompts', 'cbt-exam':'cbt_exam', 'cbt-multi':'cbt_multi', 'change-password':'change_password', 'timetable-generator':'timetable_generator',
         'student-profile':'student_profile', 'profile':'profile', 'change-password':'change_password', 'cbt-multi':'cbt_multi', 'feature-guide':'feature_guide', 'verify-certificate':'verify_certificate'
       };
@@ -359,16 +359,16 @@ ${T.setupRequiredBanner()}
       'complaints','broadcast','diary','checkin','checkin_staff','checkin-staff','punctuality','behaviour','conduct','health','support_plans',
       'certificates','reports','directory','idcards','rubrics','counselling','substitutions','helpdesk','book_request', 'ecosystem_products','hmg_digital_products',
       /* V6.4 #5: teachers fill domain ratings & report comments for their students */
-      'affective_traits','psychomotor_traits','report_comments','developer'
+      'affective_traits','psychomotor_traits','report_comments','midterm_reports','developer'
     ]);
     const parentSet = new Set([
       'dashboard','profile','change_password','notifications','feature_guide','student_profile','fees','payments_online','results',
-      'report_cards','attendance','assignments','diary','timetable','exam_timetable','announcements','events','messages','inbox',
+      'report_cards','midterm_reports','attendance','assignments','diary','timetable','exam_timetable','announcements','events','messages','inbox',
       'complaints','eresources','certificates','school_calendar','voting','idcards', 'ecosystem_products','hmg_digital_products','developer'
     ]);
     const studentSet = new Set([
       'dashboard','profile','change_password','notifications','feature_guide','student_profile','cbt_exam','assignments','digital_library',
-      'eresources','timetable','exam_timetable','results','report_cards','attendance','announcements','events','messages','inbox',
+      'eresources','timetable','exam_timetable','results','report_cards','midterm_reports','attendance','announcements','events','messages','inbox',
       'complaints','certificates','diary','school_calendar','voting','idcards', 'ecosystem_products','hmg_digital_products','developer'
     ]);
 
