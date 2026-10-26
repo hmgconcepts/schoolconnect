@@ -18,6 +18,7 @@ await q(`insert into auth.users(id,email,email_confirmed_at) values($1,'admin@te
 await q(`insert into profiles(id,email,full_name,role,status) values($1,'admin@test','Test Admin','admin','active'),($2,'parent@test','Test Parent','parent','active') on conflict(id) do update set email=excluded.email,full_name=excluded.full_name,role=excluded.role,status=excluded.status`,[admin,parent]);
 const sid=(await q(`insert into students(admission_no,full_name,class,status) values('ADM001','Student One','JSS 1','active') returning id`)).rows[0].id;
 await q(`insert into parent_child(parent_id,student_id) values($1,$2)`,[parent,sid]);
+const sid2=(await q(`insert into students(admission_no,full_name,class,status) values('ADM002','Student Two','JSS 1','active') returning id`)).rows[0].id;
 await q(`insert into cbt_exams(id,code,title,subject,class,term,session,is_open,exam_mode,csv_data,questions) values($1,'TST123','Test CBT','Mathematics','JSS 1','First Term','2026/2027',true,'registered',$2::jsonb,$2::jsonb)`,[exam,JSON.stringify([{question:'Old',type:'mcq',options:['A','B'],answer:'A',mark:1}])]);
 await q(`update auth_uid_holder set uid=$1`,[admin]);
 const bank=[{question:'Edited question',type:'mcq',options:['A','B'],answer:'B',mark:2}];
@@ -32,6 +33,9 @@ const col=(await q(`insert into assessment_columns(class,subject,term,session,na
 await q(`insert into report_scores(column_id,student_id,student_id_ref,student_name,class,subject,term,session,score,source) values($1,$2,'ADM001','Student One','JSS 1','Mathematics','First Term','2026/2027',24,'cbt')`,[col,sid]);
 const mid=(await q(`select * from midterm_report_cards where student_id_ref='ADM001' and class='JSS 1' and term='First Term' and session='2026/2027'`)).rows[0];
 if(!mid||Number(mid.total)!==24||mid.published!==false) throw new Error('midterm auto sync failed '+JSON.stringify(mid));
+const gen=(await q(`select generate_midterm_reports('JSS 1','First Term','2026/2027') as d`)).rows[0].d;
+const noScore=(await q(`select has_scores,total from midterm_report_cards where student_id_ref='ADM002' and class='JSS 1' and term='First Term' and session='2026/2027'`)).rows[0];
+if(!gen.ok||!noScore||noScore.has_scores!==false||Number(noScore.total)!==0)throw new Error('midterm roster completeness failed '+JSON.stringify({gen,noScore}));
 const terminalCount=Number((await q(`select count(*)::int n from report_cards where student_id_ref='ADM001'`)).rows[0].n);
 if(terminalCount!==0) throw new Error('midterm generation changed terminal report_cards');
 await q(`update auth_uid_holder set uid=$1`,[parent]);
