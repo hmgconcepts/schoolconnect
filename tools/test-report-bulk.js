@@ -1,4 +1,17 @@
 #!/usr/bin/env node
-const fs=require('fs'),vm=require('vm');const sandbox={console,window:{SCHOOL:{}},localStorage:{getItem:()=>''},document:{},sb:null};sandbox.window.window=sandbox.window;vm.createContext(sandbox);vm.runInContext(fs.readFileSync('assets/js/report-engine.js','utf8'),sandbox);const R=sandbox.window.ReportEngine;let pushed=[];const results=[{id:'r1',student_id:'s1',student_id_ref:'ADM1',student_name:'Ada',student_class:'SS2',engine_version:'v5.1.0',grading_status:'graded',score:8,total:10,percent:80,subject_scores:{}},{id:'r2',student_id:'s2',student_id_ref:'ADM2',student_name:'Bola',student_class:'SS2',engine_version:'legacy',grading_status:'graded',score:9,total:10,percent:90,subject_scores:{}},{id:'r3',student_id:'s3',student_id_ref:'ADM3',student_name:'Chi',student_class:'SS2',engine_version:'v5.1.0-regraded',grading_status:'graded',subject_scores:{English:{score:30,total:40},Mathematics:{score:45,total:60}}}];
-R.sb={from(t){if(t==='cbt_results')return{select(){return this},eq(){return this},limit:async()=>({data:results,error:null})};if(t==='report_scores')return{upsert:async rows=>{pushed.push(...rows);return{error:null}}};throw Error(t)}};R._bulkCBT={columns:[]};
-(async()=>{let n=0;const ok=(m,c)=>{if(!c)throw Error(m);console.log('OK  - '+m);n++};const exam={id:'e1',class:'SS2',subject:'English',term:'First',session:'2026'};const column={id:'c1',max_mark:10};const out=await R.pushOneCBTExam(exam,'CBT',{column,verifiedOnly:true,subjectFilter:''});ok('bulk push skips legacy unverified result',out.skippedLegacy===1);ok('single result scales percent to destination maximum',pushed.find(x=>x.student_id_ref==='ADM1').score===8);ok('multi-subject breakdown creates separate subject rows',pushed.some(x=>x.student_id_ref==='ADM3'&&x.subject==='English'&&x.score===7.5)&&pushed.some(x=>x.student_id_ref==='ADM3'&&x.subject==='Mathematics'&&x.score===7.5));ok('bulk writes canonical report_scores fields only',pushed.every(x=>x.column_id==='c1'&&x.term==='First'&&x.session==='2026'&&String(x.source).startsWith('cbt:')));console.log(`Bulk CBT report push tests: ${n} passed`);})().catch(e=>{console.error(e);process.exit(1)});
+const fs=require('fs'),vm=require('vm');
+const sandbox={console,window:{SCHOOL:{}},localStorage:{getItem:()=>''},document:{},sb:null};
+sandbox.window.window=sandbox.window;vm.createContext(sandbox);vm.runInContext(fs.readFileSync('assets/js/report-engine.js','utf8'),sandbox);
+const R=sandbox.window.ReportEngine;let rpcName='',rpcArgs=null;
+R.sb={rpc:async(name,args)=>{rpcName=name;rpcArgs=args;return{data:{ok:true,saved:1,skipped_unverified:1,skipped_manual:0,skipped_unidentified:0,created_column:true,attempt_policy:args.p_attempt_policy},error:null}}};
+(async()=>{
+ let n=0;const ok=(m,c)=>{if(!c)throw Error(m);console.log('OK  - '+m);n++};
+ const exam={id:'exam-57',code:'MTERM1',class:'SS2',subject:'English',term:'First',session:'2026'};
+ const out=await R.pushOneCBTExam(exam,'CA1',{createMissing:true,maxMark:20,verifiedOnly:true,subjectFilter:'English',attemptPolicy:'best',requireMidterm:true});
+ ok('bulk push is routed through the authorized server RPC',rpcName==='sc_cbt_bulk_push_exam_v2');
+ ok('server receives exam, destination, safe create, and max mark',rpcArgs.p_exam_id==='exam-57'&&rpcArgs.p_destination==='CA1'&&rpcArgs.p_create_missing===true&&rpcArgs.p_max_mark===20);
+ ok('purpose filter and verified-only options reach the server',rpcArgs.p_require_midterm===true&&rpcArgs.p_verified_only===true&&rpcArgs.p_subject_filter==='English');
+ ok('best/latest attempt policy is explicit and passed to the server',rpcArgs.p_attempt_policy==='best'&&out.attempt_policy==='best');
+ ok('server-confirmed push reports saved, skipped and created-column counts',out.ok===true&&out.saved===1&&out.skipped_unverified===1&&out.created_column===true);
+ console.log(`Bulk CBT server-push tests: ${n} passed`);
+})().catch(e=>{console.error(e);process.exit(1)});
