@@ -2,17 +2,17 @@
   {
     "kind": "traditional",
     "entries": 272,
-    "bytes": 5061328,
+    "bytes": 5078290,
     "orphans": 0,
-    "brokenLinks": 0,
+    "brokenLinks": 1,
     "missing": []
   },
   {
     "kind": "modern",
     "entries": 376,
-    "bytes": 5471676,
+    "bytes": 5496903,
     "orphans": 0,
-    "brokenLinks": 0,
+    "brokenLinks": 1,
     "missing": []
   }
 ]

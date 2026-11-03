@@ -1,13 +1,13 @@
 // School Connect — Service Worker (V5 cumulative release, generator v8)
 // Bump this literal on every runtime release so previously cached CBT/report code is purged.
-const CACHE = 'sc-builder-v12.54-20261028-61';
+const CACHE = 'sc-builder-v12.59-20261101-67';
 const CORE = [
   './', './index.html', './builder.html', './voting.html', './notifications.html',
   './install.html', './midterm-reports.html', './ecosystem.html', './about.html', './guide.html', './offline.html',
   './assets/css/style.css',
   './assets/js/config.js', './assets/js/catalog.js',
   './assets/js/notifications.js', './assets/js/voting.js', './assets/js/pwa-install.js',
-  './assets/js/super.js', './assets/js/wizard.js', './assets/js/generator.js', './assets/js/templates.js', './assets/js/site-help.js',
+  './assets/js/qrcode-generator.js','./assets/js/super.js', './assets/js/wizard.js', './assets/js/generator.js', './assets/js/templates.js', './assets/js/site-help.js',
   './assets/js/theme-manager.js', './assets/js/messages-center.js', './assets/js/drive-sync.js', './assets/js/proctor.js',
   './assets/img/logo.svg', './assets/img/favicon.svg', './manifest.json'
 ];
