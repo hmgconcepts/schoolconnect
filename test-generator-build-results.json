@@ -1,16 +1,16 @@
 [
   {
     "kind": "traditional",
-    "entries": 272,
-    "bytes": 5078290,
+    "entries": 275,
+    "bytes": 5152762,
     "orphans": 0,
     "brokenLinks": 1,
     "missing": []
   },
   {
     "kind": "modern",
-    "entries": 376,
-    "bytes": 5496903,
+    "entries": 379,
+    "bytes": 5571460,
     "orphans": 0,
     "brokenLinks": 1,
     "missing": []
