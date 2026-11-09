@@ -88,5 +88,16 @@ def main():
             src=GEN/rel
             if src.exists():
                 dst=target/rel;dst.parent.mkdir(parents=True,exist_ok=True);dst.write_text(rebrand(src.read_text(),cfg))
+        # V12.61 (#1): the GitHub workflows are part of the shipped product — a
+        # generated repo without .github/ silently loses the keep-alive and
+        # auto-restore jobs that keep its Supabase project from pausing.
+        gh=GEN/'.github'
+        if gh.exists():
+            for f in gh.rglob('*'):
+                if not f.is_file(): continue
+                rel=f.relative_to(GEN)
+                if rel.as_posix() in ('.github/a',): continue   # upstream marker quirk
+                dst=target/rel; dst.parent.mkdir(parents=True,exist_ok=True)
+                shutil.copy2(f,dst)
         print(f'Synchronised {target}')
 if __name__=='__main__': main()

@@ -1,10 +1,12 @@
 import { PGlite } from '@electric-sql/pglite';
 import fs from 'fs';
-let sql = fs.readFileSync('database/complete-schema.sql','utf8').replace(/create extension[^;]*;/gi,'select 1;');
+const HERE = new URL('.', import.meta.url).pathname;
+const BOOT = HERE + 'pglite-boot.sql';
+let sql = fs.readFileSync(process.env.SC_SCHEMA || (HERE + '../../database/complete-schema.sql'),'utf8').replace(/create extension[^;]*;/gi,'select 1;');
 const db = await PGlite.create();
-await db.exec(fs.readFileSync('pglite-boot.sql','utf8'));
+await db.exec(fs.readFileSync(BOOT,'utf8'));
 await db.exec(sql);
-await db.exec(fs.readFileSync('database/v12.60-expert-fix-pack.sql','utf8'));
+await db.exec(fs.readFileSync(HERE + '../../database/v12.60-expert-fix-pack.sql','utf8'));
 await db.exec(`create or replace function auth.uid() returns uuid language sql stable as $f$ select nullif(current_setting('app.uid', true),'')::uuid $f$;`);
 await db.exec(`
 insert into auth.users(id,email) values('11111111-1111-1111-1111-111111111111','t@x.com') on conflict do nothing;
