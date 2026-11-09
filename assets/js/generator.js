@@ -265,6 +265,12 @@ const Generator = {
       'assets/js/drive-sync.js',
       'assets/js/security-guard.js',
       'assets/js/proctor.js',
+      /* V12.60 — CorelDRAW-safe ID-card PDF (vector, font-embedded).
+         sc-pdf-fonts.js carries the embedded Roboto payload; idcard-pdf.js is
+         the writer; the selftest is the geometry guard shipped to every site. */
+      'assets/js/sc-pdf-fonts.js',
+      'assets/js/idcard-pdf.js',
+      'assets/js/idcard-pdf.selftest.js',
       'assets/js/theme-manager.js',
       'assets/js/messages-center.js',
       'assets/js/legibility.js',
