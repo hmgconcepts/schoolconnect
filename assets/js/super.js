@@ -44,7 +44,7 @@ const Super = {
        optional page link (p) and optional follow-up chips (chips). */
     KB: [
       { m: ['exam registration page','waec registration','neco registration','nabteb registration','ncee registration','jamb registration'], r: 'The **Public Examination Registration** page is for collecting candidate details for WAEC, NECO, NABTEB, NCEE, UTME/JAMB, GCE, IGCSE and other exams. Applicants fill biodata, exam type/year/series, subjects, centre preferences and documents; the school examination officer reviews and processes the registration.', p: 'exam-register.html' },
-      { m: ['v12 voting repair','invalid input syntax uuid','invalid input syntax for type uuid','cannot create poll','cannot close poll','cannot vote'], r: 'Voting has been repaired in V12. Admin/staff can create, edit, close and re-open polls. Students/parents can vote on open polls. If your Supabase project was created before V12, run `database/update-v12-schema.sql` after the main schemas so `poll_votes.candidate_id` is converted to text and the open-poll policies are installed.', p: 'voting.html', chips: ['Create a poll', 'Student voting', 'Run V12 SQL'] },
+      { m: ['v12 voting repair','invalid input syntax uuid','invalid input syntax for type uuid','cannot create poll','cannot close poll','cannot vote'], r: 'Voting has been repaired in V12. Admin/staff can create, edit, close and re-open polls. Students/parents can vote on open polls. If your Supabase project was created before V12, run `database/complete-schema.sql` after the main schemas so `poll_votes.candidate_id` is converted to text and the open-poll policies are installed.', p: 'voting.html', chips: ['Create a poll', 'Student voting', 'Run V12 SQL'] },
       { m: ['notification disappears','notification flashes','bell closes','parent notifications','student notifications'], r: 'V12 notifications now stay in the bell, the Notifications page, and a persistent live notification tray. If a toast appears, it no longer disappears as the only copy; open the bell or Notifications page to review it again.', p: 'notifications.html' },
       { m: ['teacher ownership','cannot edit another teacher','read only record','health clinic ownership','helpdesk ownership','counselling ownership'], r: 'V12 enforces creator/owner editing. Teachers may read relevant records for coordination, but only the creator/assigned owner or an admin can edit/delete exams, results, helpdesk, health/clinic, counselling and reports. Admins retain full oversight.', p: 'teacher-overview.html' },
       { m: ['staff geofence','school location','staff attendance location','outside premises','gps attendance'], r: 'Admins set the school GPS point in Settings → Staff Attendance Geofence. Staff check-in requires browser GPS and must be inside the configured radius, preventing attendance from outside the premises.', p: 'settings.html' },
@@ -124,7 +124,7 @@ const Super = {
       { m: ['promote class', 'move students', 'next class', 'end of session', 'session promotion', 'apply promotion'], r: '**One-click session promotion:** ① end of third term, open **Promotion** → ⚙ Auto-promote (by exam) — set the pass benchmark and graduating class; the system drafts promote/repeat/graduate for every student. ② Review/adjust drafts. ③ Click **✅ Apply promotions** — a full preview shows the per-class movements; on OK, promoted students MOVE to their new classes automatically (results, attendance, fees, timetable all follow instantly), graduates become alumni-ready, and every report card prints the decision (PROMOTED TO…, REPEAT, GRADUATED).', p: 'promotion.html' },
       { m: ['column read only', 'teacher columns', 'cannot add column'], r: 'Teachers see the report-card columns as a **read-only list** — the add/edit/delete controls only exist for administrators, and the database rejects any non-admin column change outright. Teachers\' job is entering scores in the Subject Broadsheet grid.', p: 'report-cards.html' },
       { m: ['sample data', 'demo data', 'fill demo', 'empty pages', 'no records yet'], r: 'Admins: open **Admin Data → 🎬 One-Click Demo Sample Data** and press the button — payroll, inventory, application links, messages, assignments, behaviour points, support plans, library books, help-desk tickets, house points, cafeteria menus, lost & found and PTA meetings are all filled with believable rows in seconds. Idempotent: tables that already have data are skipped. Guaranteed alternative: paste database/demo-sample-data.sql in the Supabase SQL Editor once. On demo deployments the pack also loads itself automatically each day.', p: 'admin-data.html' },
-      { m: ['signature', 'draw signature', 'sign pad', 'principal signature', 'stamp upload'], r: 'On **Settings**, draw the signature on the pad and click **☁️ Save signature to School Storage** — one click stores the tiny PNG (~5–20 KB) in the school\'s 1 GB File Storage (public branding bucket), sets it as the official signature, and it prints on report cards, e-receipts and certificates immediately. No Google Drive round-trip needed (Drive links still work too). Older databases: run database/branding-bucket.sql once.', p: 'settings.html' },
+      { m: ['signature', 'draw signature', 'sign pad', 'principal signature', 'stamp upload'], r: 'On **Settings**, draw the signature on the pad and click **☁️ Save signature to School Storage** — one click stores the tiny PNG (~5–20 KB) in the school\'s 1 GB File Storage (public branding bucket), sets it as the official signature, and it prints on report cards, e-receipts and certificates immediately. No Google Drive round-trip needed (Drive links still work too). Older databases: run database/complete-schema.sql once.', p: 'settings.html' },
       { m: ['deleted student still', 'ghost report', 'old report sheet', 'wrong column report', 'stale scores'], r: 'Two clean-up tools: ① deleting a student now auto-archives their full record (Activity/Admin Data → student_archive) and removes their loose score rows, freeing the admission number for reuse; ② on **Report Cards**, admins click **🧹 Sweep Ghost Report Sheets** to purge leftovers from deleted/re-created columns or deleted students — then regenerate and only current data prints.', p: 'report-cards.html' },
       { m: ['same name students', 'admission number report', 'duplicate name'], r: 'Report generation is admission-number aware: the student box on **Report Cards** now offers "ADM/NO — Name (Class)" suggestions; type either the name or the admission number. Two students sharing a name can never be confused, and class/term/session pickers let you generate PREVIOUS terms too.', p: 'report-cards.html' },
       { m: ['seo', 'google search', 'searchable', 'bing', 'index my site', 'search engine'], r: 'Every site ships crawl-ready (robots.txt, sitemap, meta tags, School structured-data with HMG ecosystem links). To appear on Google/Bing: follow **docs/SEO-AND-LEAD-GENERATION-GUIDE.md** — verify the domain in Google Search Console (HTML tag method), submit sitemap.xml, request indexing, then import into Bing Webmaster Tools. ~20 minutes per school.' },
@@ -667,7 +667,7 @@ const Super = {
     },
     /* Contact strip used by the new templates (#10: address + phone + email). */
     contactStrip(s, dark) {
-      const bits = [s.address ? '📍 ' + Super.esc(s.address) : '', s.phone ? '📞 ' + Super.esc(s.phone) : '', s.email ? '✉️ ' + Super.esc(s.email) : ''].filter(Boolean).join(' · ');
+      const bits = [s.address ? 'Address: ' + Super.esc(s.address) : '', s.phone ? 'Tel: ' + Super.esc(s.phone) : '', s.email ? 'Email: ' + Super.esc(s.email) : ''].filter(Boolean).join(' · ');
       return bits ? '<div style="font-size:.58rem;color:' + (dark ? '#94a3b8' : '#475569') + ';text-align:center;padding:5px 10px;line-height:1.5">' + bits + '</div>' : '';
     },
     /* V11.6 LIFETIME CARD helpers: the physical card serves the student for
@@ -686,8 +686,34 @@ const Super = {
       return (y >= 1900 && y <= new Date().getFullYear() + 1) ? String(y) : '';
     },
     validityNote(isStaff) { return isStaff ? 'Valid for the duration of employment' : 'Valid throughout studentship'; },
-    html(person) {
+    /* ================================================================
+       V12.71 (round-15 item 2) — ONE CARD, ONE PHYSICAL BOX.
+       ------------------------------------------------------------------
+       Every template below used to hard-code its own pixel width (520,
+       420, 400, 340) and NO height, so a card's shape was whatever its
+       text happened to add up to. There was no such thing as a portrait
+       card: choosing "Portrait" in the UI changed only the back, because
+       backHtml() honours opts and html() did not even accept them. Front
+       and back were therefore different shapes for every single card,
+       and no amount of CSS on the sheet could fix that.
+       The front now takes the SAME opts the back receives and fills the
+       box it is given (100% x 100%), so both faces are always one box in
+       one orientation. With no opts it keeps its historic pixel width.
+       ================================================================ */
+    faceBox(opts){
+      const mmW=Number(opts&&opts.widthMm), mmH=Number(opts&&opts.heightMm),
+            pxW=Number(opts&&opts.widthPx), pxH=Number(opts&&opts.heightPx);
+      if(mmW>0&&mmH>0) return {w:Math.round(mmW*96/25.4)+'px',h:Math.round(mmH*96/25.4)+'px',k:Math.min(mmW*96/25.4/340,mmH*96/25.4/220)};
+      if(pxW>0&&pxH>0) return {w:Math.round(pxW)+'px',h:Math.round(pxH)+'px',k:Math.min(pxW/340,pxH/220)};
+      return null; /* no size supplied: the template keeps its own width */
+    },
+    html(person, opts) {
       const s = Super.school || {};
+      /* when a box is supplied the card FILLS it; otherwise it keeps the
+         legacy auto-sized behaviour so nothing that already calls html()
+         without opts changes appearance. */
+      const _box=this.faceBox(opts);
+      const _fit=_box;
       const photo = this.driveDirect(person.photo_url || '');
       const initial = (person.full_name || person.name || 'S').charAt(0).toUpperCase();
       const altSmall = this.driveAlt(person.photo_url || '');
@@ -718,8 +744,8 @@ const Super = {
       const tpl = person.template || 'horizontal';
       const logo = 'assets/img/logo.' + (s.logoExt || 'svg');
       const contactFooter = '<div style="background:#f1f5f9;padding:7px 14px;font-size:.62rem;color:#475569;text-align:center;line-height:1.5">' +
-        (s.address ? '📍 ' + Super.esc(s.address) + '<br>' : '') +
-        [s.phone ? '📞 ' + Super.esc(s.phone) : '', s.email ? '✉️ ' + Super.esc(s.email) : ''].filter(Boolean).join(' · ') +
+        (s.address ? Super.esc(s.address) + '<br>' : '') +
+        [s.phone ? 'Tel: ' + Super.esc(s.phone) : '', s.email ? Super.esc(s.email) : ''].filter(Boolean).join(' · ') +
         (s.motto ? '<br><em style="color:#64748b">"' + Super.esc(s.motto) + '"</em>' : '') + '</div>';
       const credit = '<div style="background:#0f172a;color:#94a3b8;font-size:.56rem;text-align:center;padding:3px 0">If found, please return to the school office · Powered by HMG Concepts</div>';
       const bigPhoto = photo
@@ -745,7 +771,7 @@ const Super = {
         const photoBig = photo
           ? '<img src="' + Super.esc(photo) + '" referrerpolicy="no-referrer" style="width:132px;height:150px;border-radius:14px;object-fit:cover;background:#e2e8f0" data-alt="' + Super.esc(altPhoto) + '" onerror="if(this.dataset.alt&&this.src!==this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=\'\';}else{this.onerror=null;this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';}"><div style="display:none;width:132px;height:150px;border-radius:14px;background:' + navy + ';color:#fff;align-items:center;justify-content:center;font-weight:900;font-size:3rem">' + initial + '</div>'
           : '<div style="width:132px;height:150px;border-radius:14px;background:' + navy + ';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:3rem">' + initial + '</div>';
-        return '<div class="sc-idcard" style="width:520px;max-width:96vw;border-radius:22px;overflow:hidden;background:#f4f6fb;box-shadow:0 14px 40px rgba(15,23,42,.25);font-family:\'Segoe UI\',Arial,sans-serif;border:1px solid #d8dee9">' +
+        return '<div class="sc-idcard" style="width:'+(_fit?_fit.w:'520px')+';'+(_fit?('height:'+_fit.h+';'):'max-width:96vw;')+'border-radius:22px;overflow:hidden;background:#f4f6fb;box-shadow:0 14px 40px rgba(15,23,42,.25);font-family:\'Segoe UI\',Arial,sans-serif;border:1px solid #d8dee9">' +
           '<div style="background:' + navy + ';color:#fff;display:flex;align-items:center;gap:14px;padding:16px 22px">' +
             '<img src="' + logo + '" style="width:52px;height:52px;object-fit:contain;background:#fff;border-radius:12px;padding:4px" onerror="this.style.display=\'none\'">' +
             '<div style="flex:1;min-width:0"><div style="font-weight:900;font-size:1.02rem;letter-spacing:.4px;line-height:1.15">' + Super.esc((s.name || 'SCHOOL').toUpperCase()) + '</div><div style="font-size:.66rem;opacity:.85">' + Super.esc(s.motto || '') + '</div></div>' +
@@ -782,7 +808,7 @@ const Super = {
 
       // 1) EXECUTIVE — gold-trimmed dark green, embassy style
       if (tpl === 'executive') {
-        return '<div class="sc-idcard" style="width:420px;border-radius:16px;overflow:hidden;background:#0b3d2e;color:#f8fafc;font-family:Georgia,serif;box-shadow:0 12px 30px rgba(0,0,0,.3);border:2px solid #c9a227">' +
+        return '<div class="sc-idcard" style="width:'+(_fit?_fit.w:'420px')+';'+(_fit?('height:'+_fit.h+';'):'')+'border-radius:16px;overflow:hidden;background:#0b3d2e;color:#f8fafc;font-family:Georgia,serif;box-shadow:0 12px 30px rgba(0,0,0,.3);border:2px solid #c9a227">' +
           '<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:2px solid #c9a227"><img src="' + logo + '" style="width:42px;height:42px;border-radius:8px;background:#fff;padding:3px;object-fit:contain" onerror="this.style.display=\'none\'"><div><strong style="font-size:.95rem;letter-spacing:.5px">' + Super.esc((s.name||'SCHOOL').toUpperCase()) + '</strong><div style="font-size:.6rem;color:#c9a227;letter-spacing:2px">' + tag + '</div></div></div>' +
           '<div style="display:flex;gap:14px;padding:14px 16px;align-items:center">' + miniPhoto(96,112,10) +
           '<div style="flex:1"><div style="font-weight:800;font-size:1.05rem;color:#fff">' + Super.esc(person.full_name||'') + '</div><table style="font-size:.72rem;margin-top:5px;border-collapse:collapse;color:#d1fae5">' + detailRows.replace(/#64748b/g,'#a7f3d0') + '</table></div>' +
@@ -792,7 +818,7 @@ const Super = {
       }
       // 2) MINIMAL — clean white, thin accent line, Swiss typography
       if (tpl === 'minimal') {
-        return '<div class="sc-idcard" style="width:400px;border-radius:14px;overflow:hidden;background:#fff;border:1px solid #e2e8f0;font-family:Helvetica,Arial,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.08)">' +
+        return '<div class="sc-idcard" style="width:'+(_fit?_fit.w:'400px')+';'+(_fit?('height:'+_fit.h+';'):'')+'border-radius:14px;overflow:hidden;background:#fff;border:1px solid #e2e8f0;font-family:Helvetica,Arial,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.08)">' +
           '<div style="height:6px;background:' + pc + '"></div>' +
           '<div style="padding:16px 18px;display:flex;gap:14px;align-items:flex-start">' + miniPhoto(84,100,8) +
           '<div style="flex:1;min-width:0"><div style="font-size:.6rem;letter-spacing:2.5px;color:' + pc + ';font-weight:700">' + Super.esc((s.name||'SCHOOL').toUpperCase()) + ' · ' + tag + '</div>' +
@@ -803,7 +829,7 @@ const Super = {
       }
       // 3) GRADIENT — vibrant diagonal gradient, modern student card
       if (tpl === 'gradient') {
-        return '<div class="sc-idcard" style="width:400px;border-radius:18px;overflow:hidden;background:linear-gradient(120deg,' + pc + ' 0%,' + ac + ' 100%);color:#fff;font-family:\'Segoe UI\',Arial,sans-serif;box-shadow:0 12px 28px rgba(0,0,0,.25)">' +
+        return '<div class="sc-idcard" style="width:'+(_fit?_fit.w:'400px')+';'+(_fit?('height:'+_fit.h+';'):'')+'border-radius:18px;overflow:hidden;background:linear-gradient(120deg,' + pc + ' 0%,' + ac + ' 100%);color:#fff;font-family:\'Segoe UI\',Arial,sans-serif;box-shadow:0 12px 28px rgba(0,0,0,.25)">' +
           '<div style="display:flex;align-items:center;gap:10px;padding:14px 16px"><img src="' + logo + '" style="width:40px;height:40px;border-radius:10px;background:#fff;padding:3px;object-fit:contain" onerror="this.style.display=\'none\'"><div style="flex:1"><strong>' + Super.esc(s.name||'School') + '</strong><div style="font-size:.62rem;opacity:.9;letter-spacing:1.5px">' + tag + '</div></div></div>' +
           '<div style="background:rgba(255,255,255,.94);color:#0f172a;margin:0 12px;border-radius:14px;padding:12px;display:flex;gap:12px;align-items:center">' + miniPhoto(80,96,10) +
           '<div style="flex:1"><div style="font-weight:800;font-size:1.05rem">' + Super.esc(person.full_name||'') + '</div><table style="font-size:.72rem;border-collapse:collapse">' + detailRows + '</table></div>' + qrImg(58) + '</div>' +
@@ -824,7 +850,7 @@ const Super = {
       }
       // 5) SMART — fintech-style card with chip + wave pattern
       if (tpl === 'smart') {
-        return '<div class="sc-idcard" style="width:400px;border-radius:20px;overflow:hidden;position:relative;background:#111827;color:#e5e7eb;font-family:\'Segoe UI\',Arial,sans-serif;box-shadow:0 14px 34px rgba(0,0,0,.35)">' +
+        return '<div class="sc-idcard" style="width:'+(_fit?_fit.w:'400px')+';'+(_fit?('height:'+_fit.h+';'):'')+'border-radius:20px;overflow:hidden;position:relative;background:#111827;color:#e5e7eb;font-family:\'Segoe UI\',Arial,sans-serif;box-shadow:0 14px 34px rgba(0,0,0,.35)">' +
           '<div style="position:absolute;inset:0;background:radial-gradient(circle at 85% 15%,' + ac + '33,transparent 45%),radial-gradient(circle at 10% 90%,' + pc + '44,transparent 50%)"></div>' +
           '<div style="position:relative;padding:16px 18px">' +
           '<div style="display:flex;justify-content:space-between;align-items:center"><div style="display:flex;gap:8px;align-items:center"><img src="' + logo + '" style="width:34px;height:34px;border-radius:8px;background:#fff;padding:2px;object-fit:contain" onerror="this.style.display=\'none\'"><strong style="font-size:.85rem">' + Super.esc(s.name||'School') + '</strong></div><span style="font-size:.55rem;letter-spacing:2px;color:' + ac + ';font-weight:800">' + tag + '</span></div>' +
@@ -875,7 +901,108 @@ const Super = {
           '<div style="background:#1e293b;padding:7px 14px;font-size:.6rem;color:#94a3b8;text-align:center">' + Super.esc(s.address || '') + ' · ' + Super.esc(s.phone || '') + ' · ' + Super.esc(s.email || '') + '<div style="display:flex;justify-content:center;margin-top:4px;filter:invert(0)"><span style="background:#fff;border-radius:6px;padding:2px 8px;display:inline-block">' + this.signBlock('#0f172a', 84) + '</span></div></div>' +
           '<div style="background:' + ac + ';color:#0f172a;font-size:.56rem;text-align:center;padding:3px 0;font-weight:700">' + this.validityNote(isStaff) + ' · Powered by HMG Concepts</div></div>';
       }
-      // HORIZONTAL (default, enhanced)
+      /* ============================================================
+         V12.71 (round-15 item 2, part B) — PORTRAIT IS A LAYOUT, NOT A
+         CROP. Making the front fill a tall box was only half the job:
+         every template above is drawn for a wide card, so in a portrait
+         box the rows ran off the right edge and the footer fell below
+         the card. A portrait card therefore gets its own stacked
+         composition, with every size derived from the card's own width
+         (u below) so it stays correct at ID-1, at 60x90mm, at any size
+         the school types in. Same boxes, same order, same data — only
+         the arrangement changes, so nothing is lost.
+         ============================================================ */
+      /* V12.71 — the front must decide its shape with the SAME rule the back
+         uses, or a square card gets a landscape front and a portrait back.
+         backAspect() is that single rule: tall unless strictly wider. */
+      const _tall = _fit && this.backAspect(opts) === 'portrait';
+      if (_tall) {
+        const W = parseFloat(_fit.w), H = parseFloat(_fit.h);
+        /* ub-equivalent: a 54x86 card is width-bound; a 70x70 card is not, and
+           scaling its text off a 265px width overflowed the 265px face by 34px.
+           Use the same normalised unit the back uses so both faces always
+           agree on how big type is. */
+        const u = Math.min(W, H * (1 / 1.586)) / 100;   /* one "unit" in px */
+        const fs = n => (u * n).toFixed(2) + 'px';
+        const pad = (u * 5).toFixed(2) + 'px';
+        const qrPx = Math.round(Math.min(W * 0.34, H * 0.19));
+        const photoPx = Math.round(Math.min(W * 0.46, H * 0.22));
+        const photoBig = photo
+          ? `<img src="${Super.esc(photo)}" referrerpolicy="no-referrer" style="width:${photoPx}px;height:${photoPx}px;border-radius:${(u*4).toFixed(1)}px;object-fit:cover;border:${Math.max(1,Math.round(u*0.8))}px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);background:#f1f5f9" alt="photo" data-alt="${Super.esc(altSmall)}">`
+          : `<div style="width:${photoPx}px;height:${photoPx}px;border-radius:${(u*4).toFixed(1)}px;background:#fff;color:${pc};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:${(photoPx*0.42).toFixed(0)}px;border:${Math.max(1,Math.round(u*0.8))}px solid #fff">${Super.esc(initial)}</div>`;
+        const rowHtml = rows.map(r => r
+          .replace(/color:#64748b/g, 'color:rgba(255,255,255,.72)')
+          .replace(/padding:1px 8px 1px 0/g, 'padding:' + (u * 0.7).toFixed(2) + 'px ' + (u * 3).toFixed(2) + 'px ' + (u * 0.7).toFixed(2) + 'px 0')
+          .replace(/font-weight:600/g, 'font-weight:700;color:#fff')).join('');
+        return `<div class="sc-idcard sc-idcard-portrait" style="width:${_fit.w};height:${_fit.h};box-sizing:border-box;border-radius:${(u*5).toFixed(1)}px;overflow:hidden;border:1px solid #e2e8f0;font-family:'Segoe UI',Arial,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.12);background:#fff;display:flex;flex-direction:column">
+          <div style="background:linear-gradient(135deg,${pc},${ac});color:#fff;padding:${pad} ${pad} ${(u*3).toFixed(2)}px;display:flex;align-items:center;gap:${(u*3).toFixed(2)}px;flex-shrink:0">
+            <img src="${logo}" style="width:${(u*11).toFixed(1)}px;height:${(u*11).toFixed(1)}px;border-radius:${(u*2.5).toFixed(1)}px;background:#fff;padding:${(u*0.9).toFixed(1)}px;object-fit:contain;flex-shrink:0" alt="" onerror="this.style.display='none'">
+            <div style="flex:1;min-width:0"><strong style="font-size:${fs(4.6)};display:block;line-height:1.15;overflow-wrap:anywhere">${Super.esc(s.name || 'School')}</strong><div style="font-size:${fs(2.9)};opacity:.92;overflow-wrap:anywhere">${Super.esc(s.motto || s.address || '')}</div></div>
+          </div>
+          <div style="background:${isStaff ? '#0f766e' : '#1d4ed8'};color:#fff;font-size:${fs(2.7)};letter-spacing:${(u*0.28).toFixed(2)}px;text-align:center;padding:${(u*1.4).toFixed(2)}px 0;font-weight:800;flex-shrink:0">${tag}</div>
+          <div style="background:linear-gradient(135deg,${pc},${ac});padding:${pad};display:flex;flex-direction:column;align-items:center;gap:${(u*2.4).toFixed(2)}px;flex:0 0 auto">
+            ${photoBig}
+            <div style="text-align:center;color:#fff;font-weight:800;font-size:${fs(4.2)};line-height:1.15;overflow-wrap:anywhere">${Super.esc(person.full_name || person.name || '')}</div>
+            <table style="font-size:${fs(3.0)};border-collapse:collapse;color:#fff;text-align:left;max-width:100%">${rowHtml}</table>
+          </div>
+          <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;gap:${(u*4).toFixed(2)}px;padding:${(u*2).toFixed(2)}px ${pad}">
+            <img src="${qr}" style="width:${qrPx}px;height:${qrPx}px" alt="QR">
+            <div style="text-align:left"><div style="font-size:${fs(2.6)};font-weight:900;letter-spacing:${(u*0.2).toFixed(2)}px;color:${pc}">SCAN TO VERIFY</div><div style="font-size:${fs(2.4)};color:#64748b;margin-top:${(u*1).toFixed(2)}px;font-style:italic">${this.validityNote(isStaff)}</div><div style="margin-top:${(u*1.6).toFixed(2)}px;width:${(u*40).toFixed(1)}px">${this.signBlock('#334155', Math.round(u*34))}</div></div>
+          </div>
+          <div style="background:#f1f5f9;padding:${(u*1.6).toFixed(2)}px ${pad};font-size:${fs(2.3)};color:#475569;text-align:center;line-height:1.45;flex-shrink:0;overflow:hidden">
+            ${s.address ? Super.esc(s.address) + '<br>' : ''}${[s.phone ? 'Tel: ' + Super.esc(s.phone) : '', s.email ? Super.esc(s.email) : ''].filter(Boolean).join(' · ')}
+          </div>
+          <div style="background:#0f172a;color:#94a3b8;font-size:${fs(2.1)};text-align:center;padding:${(u*1.1).toFixed(2)}px 0;flex-shrink:0">If found, please return to the school office · Powered by HMG Concepts</div>
+        </div>`;
+      }
+      /* ============================================================
+         V12.71 (item 2, part D) — a landscape face needs the same
+         treatment for the same reason. The historic template is drawn
+         for a 340x300 card (ratio 1.13); a real ID-1 landscape card is
+         ratio 1.586, so its rows needed 402px of height inside a 204px
+         box and were silently cropped. When a box is supplied the wide
+         face is now composed against that box: every size is a share of
+         the card's own width and height, so it is correct at ID-1, at
+         100x60mm, and at any size the school types in.
+         ============================================================ */
+      if (_fit) {
+        const W = parseFloat(_fit.w), H = parseFloat(_fit.h);
+        const u = W / 100, v = H / 100;
+        const fh = n => (v * n).toFixed(2) + 'px';
+        const fw = n => (u * n).toFixed(2) + 'px';
+        const px = (base) => Math.round(Math.min(base * u / 3.4, base * v / 2.04));
+        const photoPx = px(70), qrPx = px(78), logoPx = px(38);
+        const photoBigH = photo
+          ? `<img src="${Super.esc(photo)}" referrerpolicy="no-referrer" style="width:${photoPx}px;height:${photoPx}px;border-radius:${fw(2.8)};object-fit:cover;background:#f1f5f9;flex-shrink:0" alt="photo" data-alt="${Super.esc(altSmall)}">`
+          : `<div style="width:${photoPx}px;height:${photoPx}px;border-radius:${fw(2.8)};background:${pc};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:${Math.round(photoPx*0.42)}px;flex-shrink:0">${Super.esc(initial)}</div>`;
+        const rowHtmlH = rows.map(r => r
+          .replace(/padding:1px 8px 1px 0/g, 'padding:' + fh(0.7) + ' ' + fw(2) + ' ' + fh(0.7) + ' 0')).join('');
+        return `<div class="sc-idcard sc-idcard-landscape" style="width:${_fit.w};height:${_fit.h};border-radius:${fw(4)};overflow:hidden;border:1px solid #e2e8f0;font-family:'Segoe UI',Arial,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.12);background:#fff;display:flex;flex-direction:column;box-sizing:border-box">
+          <div style="background:linear-gradient(135deg,${pc},${ac});color:#fff;padding:${fh(2)} ${fw(3)};display:flex;align-items:center;gap:${fw(2)};flex-shrink:0">
+            <img src="${logo}" style="width:${logoPx}px;height:${logoPx}px;border-radius:${fw(2)};background:#fff;padding:${fw(0.9)};object-fit:contain;flex-shrink:0" alt="" onerror="this.style.display='none'">
+            <div style="flex:1;min-width:0"><strong style="font-size:${fh(5.6)};display:block;line-height:1.12;overflow-wrap:anywhere">${Super.esc(s.name || 'School')}</strong><div style="font-size:${fh(3.4)};opacity:.92;overflow-wrap:anywhere">${Super.esc(s.motto || s.address || '')}</div></div>
+          </div>
+          <div style="background:${isStaff ? '#0f766e' : '#1d4ed8'};color:#fff;font-size:${fh(3.2)};letter-spacing:${fw(0.34)};text-align:center;padding:${fh(1.2)} 0;font-weight:800;flex-shrink:0">${tag}</div>
+          <div style="display:flex;gap:${fw(3)};padding:${fh(3)} ${fw(3)} 0;align-items:flex-start;flex:1 1 auto;min-height:0;overflow:hidden">
+            ${photoBigH}
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:800;font-size:${fh(6.2)};line-height:1.15;color:#0f172a;overflow-wrap:anywhere">${Super.esc(person.full_name || person.name || '')}</div>
+              <table style="font-size:${fh(3.7)};margin-top:${fh(1.2)};border-collapse:collapse;width:100%">${rowHtmlH}</table>
+            </div>
+            <div style="text-align:center;flex-shrink:0"><img src="${qr}" style="width:${qrPx}px;height:${qrPx}px" alt="QR"><div style="font-size:${fh(2.4)};font-weight:800;color:${pc};line-height:1.1">SCAN TO VERIFY</div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:${fh(1.4)} ${fw(3)} ${fh(1.8)};flex-shrink:0;gap:${fw(3)}">
+            <div style="font-size:${fh(2.8)};color:#64748b;font-style:italic;flex:1;min-width:0">${this.validityNote(isStaff)}</div>
+            <div style="width:${fw(30)}">${this.signBlock('#334155', Math.round(W * 0.28))}</div>
+          </div>
+          <div style="background:#f1f5f9;padding:${fh(1.2)} ${fw(3)};font-size:${fh(2.5)};color:#475569;text-align:center;line-height:1.35;flex-shrink:0;overflow:hidden">
+            ${s.address ? Super.esc(s.address) + ' · ' : ''}${[s.phone ? 'Tel: ' + Super.esc(s.phone) : '', s.email ? Super.esc(s.email) : ''].filter(Boolean).join(' · ')}
+          </div>
+          <div style="background:#0f172a;color:#94a3b8;font-size:${fh(2.2)};text-align:center;padding:${fh(1)} 0;flex-shrink:0">If found, please return to the school office · Powered by HMG Concepts</div>
+        </div>`;
+      }
+      // HORIZONTAL (default, enhanced) — legacy auto-sized form, used when no
+      // physical box was supplied (previews and older callers).
       return `<div class="sc-idcard" style="width:340px;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;font-family:'Segoe UI',Arial,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.12);background:#fff">
         <div style="background:linear-gradient(135deg,${pc},${ac});color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px">
           <img src="${logo}" style="width:38px;height:38px;border-radius:9px;background:#fff;padding:3px;object-fit:contain" alt="" onerror="this.style.display='none'">
@@ -910,9 +1037,36 @@ const Super = {
          • magnetic-stripe-style band + barcode for realism,
          • matches the chosen template's colours automatically.
        ================================================================ */
-    backHtml(person) {
+    /* V12.70 — ISSUE 1: THE BACK WAS ALWAYS PORTRAIT.
+       ------------------------------------------------------------------
+       The back face was emitted as a fixed 340px-wide stacked block, while the
+       front takes the width of whichever template is chosen (520px for
+       'premium', 420px for 'executive', …). Printed on a landscape card the
+       front filled the card and the back appeared as a narrow portrait column
+       floating in the middle — "the back is always portrait".
+       The back is now drawn to the SAME canvas as the front and re-lays itself
+       out for the shape it is given: wide cards get two columns, tall cards
+       stack. `opts` carries the finished size in millimetres (or the front's
+       pixel width), so front and back can never disagree again. */
+    backAspect(opts) {
+      const w = Number(opts && (opts.widthMm || opts.width)), h = Number(opts && (opts.heightMm || opts.height));
+      if (w > 0 && h > 0) return w > h ? 'landscape' : 'portrait';
+      /* no explicit size: fall back to the front template's own proportions */
+      const t = (opts && opts.template) || 'horizontal';
+      return (t === 'badge' || t === 'vertical') ? 'portrait' : 'landscape';
+    },
+    backHtml(person, opts) {
+      opts = opts || {};
       const s = Super.school || {};
       const isStaff = (person.type === 'staff');
+      const portrait = this.backAspect(opts) === 'portrait';
+      /* the back fills the same canvas the front was drawn on: prefer the
+         exact millimetres, then an explicit pixel width, and only then the
+         legacy 340px default. */
+      const mmW = Number(opts.widthMm), mmH = Number(opts.heightMm);
+      const boxW = (mmW > 0 ? Math.round(mmW * 96 / 25.4) : 0) || Number(opts.widthPx) || 340;
+      const boxH = (mmH > 0 ? Math.round(mmH * 96 / 25.4) : 0) || Number(opts.heightPx)
+                 || (portrait ? Math.round(boxW * 1.586) : Math.round(boxW / 1.586));
       const idNo = person.admission_no || person.staff_no || person.id || '';
       const pc = person.pc || s.primary || '#1e3a8a';
       const ac = person.ac || s.accent || '#0ea5e9';
@@ -933,39 +1087,120 @@ const Super = {
         'Report loss or damage to the class teacher or school office immediately.',
         'Surrender this card to the school office on graduation or withdrawal.'
       ];
-      const contact = [s.address ? '📍 ' + Super.esc(s.address) : '', s.phone ? '📞 ' + Super.esc(s.phone) : '', s.email ? '✉️ ' + Super.esc(s.email) : ''].filter(Boolean).join('<br>');
-      return '<div class="sc-idcard sc-idcard-back" style="width:340px;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;font-family:\'Segoe UI\',Arial,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.12);background:#fff;display:flex;flex-direction:column">' +
-        // magnetic-stripe band (classic card realism)
-        '<div style="height:34px;background:#1f2937;margin-top:14px"></div>' +
-        '<div style="padding:10px 14px 4px;display:flex;gap:12px;align-items:flex-start">' +
-          '<div style="flex:1;min-width:0">' +
-            '<div style="font-size:.6rem;font-weight:900;letter-spacing:1.6px;color:' + pc + ';margin-bottom:4px">CARD RULES · ' + (isStaff ? 'STAFF' : 'STUDENT') + '</div>' +
-            '<ol style="margin:0;padding-left:14px;font-size:.56rem;line-height:1.55;color:#334155">' + rules.map(r => '<li>' + r + '</li>').join('') + '</ol>' +
-          '</div>' +
-          '<div style="flex-shrink:0;text-align:center;width:86px">' +
-            '<img src="' + qr + '" style="width:78px;height:78px" alt="QR">' +
-            '<div style="font-size:.5rem;font-weight:900;letter-spacing:1px;color:' + pc + '">SCAN TO VERIFY</div>' +
-            (person.blood_group ? '<div style="margin-top:5px;background:#dc2626;color:#fff;border-radius:7px;font-size:.6rem;font-weight:900;padding:2px 0">🩸 ' + Super.esc(person.blood_group) + '</div>' : '') +
-          '</div>' +
-        '</div>' +
-        '<div style="display:flex;gap:12px;padding:6px 14px;align-items:flex-end">' +
-          '<div style="flex:1;font-size:.56rem;color:#475569;line-height:1.55">' +
-            '<b style="color:#0f172a">If found, please return to:</b><br>' +
-            '<b>' + Super.esc(s.name || 'the school') + '</b><br>' + contact +
-            (person.phone ? '<br><b style="color:#0f172a">' + (isStaff ? 'Holder\u2019s line' : 'Emergency contact') + ':</b> ' + Super.esc(person.phone) : '') +
-          '</div>' +
-          '<div style="flex-shrink:0;text-align:center">' +
-            this.signBlock(pc, 88) +
-            '<div style="font-size:.5rem;color:#64748b;margin-top:2px">Issued ' + Super.esc(issued) + ' · ' + this.validityNote(isStaff) + '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div style="display:flex;align-items:center;gap:8px;padding:4px 14px 8px">' +
-          '<img src="' + logo + '" style="width:20px;height:20px;object-fit:contain" onerror="this.style.display=\'none\'">' +
-          '<div style="flex:1;display:flex;justify-content:center">' + this.barcodeImg(idNo, 32) + '</div>' +
-          '<span style="font-size:.52rem;font-weight:800;color:#0f172a">' + Super.esc(idNo) + '</span>' +
-        '</div>' +
-        '<div style="background:linear-gradient(90deg,' + pc + ',' + ac + ');color:#fff;font-size:.52rem;text-align:center;padding:3px 0;font-weight:700">' + Super.esc(s.motto || '') + (s.motto ? ' · ' : '') + 'Powered by HMG Concepts</div>' +
-      '</div>';
+      const contact = [s.address ? Super.esc(s.address) : '', s.phone ? 'Tel: ' + Super.esc(s.phone) : '', s.email ? Super.esc(s.email) : ''].filter(Boolean).join('<br>');
+      /* one card box, sized to the face it sits on */
+      /* V12.71 (item 2, part C) — the back was drawn in REM, i.e. against
+         the root font size, never against the card. On a 54mm-wide portrait
+         card its five rules needed 250px more height than the card had, so
+         the text ran off the bottom. Every size on the portrait back is now
+         derived from the card's own width (ub = one percent of it). */
+      /* V12.71 — size the back against whatever is actually scarce. On a
+         landscape ID-1 the card is 324x204: scaling text off the WIDTH (324)
+         gave 131px of rules inside a 204px face and cropped the footers. The
+         unit is therefore the credit-card-normalised width, i.e. the width a
+         1.586 face would have at this height — for ID-1 that is the width, for
+         a square card it is the height, and the result reads the same. */
+      const ub = Math.min(boxW, Math.round(boxH * 1.586)) / 100;
+      const fb = n => (ub * n).toFixed(2) + 'px';
+      const vb0 = boxH / 100;
+      /* V12.71 — hoisted: the stripe/strip helpers below use fv, and a const
+         read before its declaration is a TDZ ReferenceError at render time.
+         (Same class of bug as the V12.70 report-engine fix.) */
+      const vb = vb0;
+      const fv = n => (vb * n).toFixed(2) + 'px';
+      const box = 'class="sc-idcard sc-idcard-back" style="width:' + boxW + 'px;height:' + boxH + 'px;'
+        + 'border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;'
+        + "font-family:'Segoe UI',Arial,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.12);background:#fff;"
+        + 'display:flex;flex-direction:column;box-sizing:border-box"';
+      const rulesHtml = '<div style="font-size:.6rem;font-weight:900;letter-spacing:1.6px;color:' + pc + ';margin-bottom:4px">CARD RULES · ' + (isStaff ? 'STAFF' : 'STUDENT') + '</div>'
+        + '<ol style="margin:0;padding-left:14px;font-size:.56rem;line-height:1.55;color:#334155">' + rules.map(r => '<li>' + r + '</li>').join('') + '</ol>';
+      /* card-relative twin of the rules block, used by the TALL face */
+      const rulesHtmlP = '<div style="font-size:' + fb(3.0) + ';font-weight:900;letter-spacing:' + (ub*0.28).toFixed(2) + 'px;color:' + pc + ';margin-bottom:' + fb(1.2) + '">CARD RULES · ' + (isStaff ? 'STAFF' : 'STUDENT') + '</div>'
+        + '<ol style="margin:0;padding-left:' + fb(4.6) + ';font-size:' + fb(2.7) + ';line-height:1.5;color:#334155">' + rules.map(r => '<li>' + r + '</li>').join('') + '</ol>';
+        + '<ol style="margin:0;padding-left:14px;font-size:.56rem;line-height:1.55;color:#334155">' + rules.map(r => '<li>' + r + '</li>').join('') + '</ol>';
+      const qrHtml = '<div style="flex-shrink:0;text-align:center;width:86px">'
+        + '<img src="' + qr + '" style="width:78px;height:78px" alt="QR">'
+        + '<div style="font-size:.5rem;font-weight:900;letter-spacing:1px;color:' + pc + '">SCAN TO VERIFY</div>'
+        + (person.blood_group ? '<div style="margin-top:5px;background:#dc2626;color:#fff;border-radius:7px;font-size:.6rem;font-weight:900;padding:2px 0">🩸 ' + Super.esc(person.blood_group) + '</div>' : '')
+        + '</div>';
+      const contactHtml = '<div style="flex:1;font-size:.56rem;color:#475569;line-height:1.55">'
+        + '<b style="color:#0f172a">If found, please return to:</b><br>'
+        + '<b>' + Super.esc(s.name || 'the school') + '</b><br>' + contact
+        + (person.phone ? '<br><b style="color:#0f172a">' + (isStaff ? 'Holder\u2019s line' : 'Emergency contact') + ':</b> ' + Super.esc(person.phone) : '')
+        + '</div>';
+      const signHtml = '<div style="flex-shrink:0;text-align:center">' + this.signBlock(pc, 88)
+        + '<div style="font-size:.5rem;color:#64748b;margin-top:2px">Issued ' + Super.esc(issued) + ' · ' + this.validityNote(isStaff) + '</div></div>';
+      const stripHtml = '<div style="display:flex;align-items:center;gap:' + (portrait?fb(2):fv(3)) + ';padding:' + (portrait?fb(1):fv(2)) + ' ' + (portrait?fb(3.6):fv(4)) + ';box-sizing:border-box">'
+        + '<img src="' + logo + '" style="width:20px;height:20px;object-fit:contain" onerror="this.style.display=\'none\'">'
+        + '<div style="flex:1;display:flex;justify-content:center">' + this.barcodeImg(idNo, 32) + '</div>'
+        + '<span style="font-size:.52rem;font-weight:800;color:#0f172a">' + Super.esc(idNo) + '</span></div>';
+      const footHtml = '<div style="background:linear-gradient(90deg,' + pc + ',' + ac + ');color:#fff;font-size:.52rem;text-align:center;padding:3px 0;font-weight:700">'
+        + Super.esc(s.motto || '') + (s.motto ? ' · ' : '') + 'Powered by HMG Concepts</div>';
+      /* cosmetic only: shrink it before it can ever push the footers out */
+      const stripe = '<div style="height:' + fv(14) + ';min-height:0;background:#1f2937;margin-top:' + fv(4) + ';flex-shrink:1"></div>';
+      /* WIDE face (landscape card): rules beside the QR, contacts and signature
+         side by side — the same reading order as the printed PDF back.
+         TALL face (portrait card): the blocks stack. */
+      const qrHtmlP = '<div style="flex-shrink:0;text-align:center;width:' + fb(26) + '">'
+        + '<img src="' + qr + '" style="width:' + fb(22) + ';height:' + fb(22) + '" alt="QR">'
+        + '<div style="font-size:' + fb(2.4) + ';font-weight:900;letter-spacing:' + (ub*0.2).toFixed(2) + 'px;color:' + pc + '">SCAN TO VERIFY</div>'
+        + (person.blood_group ? '<div style="margin-top:' + fb(1.4) + ';background:#dc2626;color:#fff;border-radius:' + fb(1.6) + ';font-size:' + fb(2.6) + ';font-weight:900;padding:' + fb(0.6) + ' 0">' + Super.esc(person.blood_group) + '</div>' : '')
+        + '</div>';
+      const contactHtmlP = '<div style="flex:1;font-size:' + fb(2.6) + ';color:#475569;line-height:1.5">'
+        + '<b style="color:#0f172a">If found, please return to:</b><br>'
+        + '<b>' + Super.esc(s.name || 'the school') + '</b><br>' + contact
+        + (person.phone ? '<br><b style="color:#0f172a">' + (isStaff ? 'Holder\u2019s line' : 'Emergency contact') + ':</b> ' + Super.esc(person.phone) : '')
+        + '</div>';
+      const signHtmlP = '<div style="flex-shrink:0;text-align:center">' + this.signBlock(pc, Math.round(ub * 30))
+        + '<div style="font-size:' + fb(2.2) + ';color:#64748b;margin-top:' + fb(0.8) + '">Issued ' + Super.esc(issued) + ' · ' + this.validityNote(isStaff) + '</div></div>';
+      const stripeP = '<div style="height:' + fb(9) + ';background:#1f2937;margin-top:' + fb(3) + ';flex-shrink:0;box-sizing:border-box"></div>';
+      /* landscape face: size against the card's *height* as well, since an
+         ID-1 landscape card is only 54mm tall — the rem-based block needed
+         464px for a 204px card and was cropped */
+      const rulesHtmlL = '<div style="font-size:' + fv(3.1) + ';font-weight:900;letter-spacing:' + (vb*0.3).toFixed(2) + 'px;color:' + pc + ';margin-bottom:' + fv(1) + '">CARD RULES · ' + (isStaff ? 'STAFF' : 'STUDENT') + '</div>'
+        + '<ol style="margin:0;padding-left:' + fv(5) + ';font-size:' + fv(2.7) + ';line-height:1.26;color:#334155">' + rules.map(r => '<li>' + r + '</li>').join('') + '</ol>';
+      const qrHtmlL = '<div style="flex-shrink:0;text-align:center;width:' + fv(24) + '">'
+        + '<img src="' + qr + '" style="width:' + fv(20) + ';height:' + fv(20) + '" alt="QR">'
+        + '<div style="font-size:' + fv(2.5) + ';font-weight:900;letter-spacing:' + (vb*0.2).toFixed(2) + 'px;color:' + pc + '">SCAN TO VERIFY</div>'
+        + (person.blood_group ? '<div style="margin-top:' + fv(1.2) + ';background:#dc2626;color:#fff;border-radius:' + fv(1.6) + ';font-size:' + fv(2.7) + ';font-weight:900;padding:' + fv(0.5) + ' 0">' + Super.esc(person.blood_group) + '</div>' : '')
+        + '</div>';
+      const contactHtmlL = '<div style="flex:1;font-size:' + fv(2.7) + ';color:#475569;line-height:1.35">'
+        + '<b style="color:#0f172a">If found, please return to:</b> <b>' + Super.esc(s.name || 'the school') + '</b><br>' + contact
+        + (person.phone ? '<br><b style="color:#0f172a">' + (isStaff ? 'Holder\u2019s line' : 'Emergency') + ':</b> ' + Super.esc(person.phone) : '')
+        + '</div>';
+      const signHtmlL = '<div style="flex-shrink:0;text-align:center">' + this.signBlock(pc, Math.round(boxH * 0.34))
+        + '<div style="font-size:' + fv(2.3) + ';color:#64748b;margin-top:' + fv(0.6) + '">Issued ' + Super.esc(issued) + ' · ' + this.validityNote(isStaff) + '</div></div>';
+      const body = portrait
+        ? '<div style="padding:' + fb(3) + ' ' + fb(3.6) + ' ' + fb(1.4) + ';display:flex;gap:' + fb(3) + ';align-items:flex-start"><div style="flex:1;min-width:0">' + rulesHtmlP + '</div>' + qrHtmlP + '</div>'
+          + '<div style="display:flex;gap:' + fb(3) + ';padding:' + fb(1.6) + ' ' + fb(3.6) + ';align-items:flex-end">' + contactHtmlP + signHtmlP + '</div>'
+          + '<div style="flex:1;min-height:0"></div>'
+        : '<div style="padding:' + fb(2.6) + ' ' + fb(4) + ' ' + fb(0.8) + ';display:flex;gap:' + fb(4) + ';align-items:flex-start;flex:1 1 auto;min-height:0;overflow:hidden"><div style="flex:2;min-width:0;max-height:100%;overflow:hidden">' + rulesHtmlL + '</div>' + qrHtmlL + '</div>'
+          + '<div style="display:flex;gap:' + fb(4) + ';padding:' + fb(1) + ' ' + fb(4) + ';align-items:flex-end;flex-shrink:0">' + contactHtmlL + signHtmlL + '</div>'
+          + '<div style="flex:1;min-height:0"></div>';
+      const inner = '<div ' + box + '>' + (portrait ? stripeP : stripe) + body + stripHtml + footHtml + '</div>';
+      /* A near-square face (a custom 70x70mm badge, say) cannot hold the full
+         rule set at a legible size: measured, it needs ~294px inside 265px.
+         Rather than crop the card rules — which the school is required to
+         print — the back is laid out on a canvas of a workable ratio and
+         scaled down into the face. It stays one card, one box, one size; only
+         the type is uniformly smaller, exactly as a printer would reduce a
+         page. Everything is still on the card. */
+      const ratio = boxW / boxH;
+      if (ratio > 0.95 && ratio < 1.25) {
+        /* the canvas is as WIDE as the face and only as tall as the content
+           needs; the scale is applied only when that content is taller than
+           the face, so the card is never enlarged, only reduced. */
+        const cw = boxW, ch = Math.round(boxW / 1.2);
+        const s = Math.min(1, boxH / ch);
+        return '<div class="sc-idcard sc-idcard-back sc-idcard-reduced" style="width:' + boxW + 'px;height:' + boxH + 'px;overflow:hidden;position:relative;box-sizing:border-box;display:block">'
+          + '<div style="position:absolute;top:' + Math.max(0, (boxH - ch * s) / 2).toFixed(1) + 'px;left:0;width:' + cw + 'px;height:' + ch + 'px;'
+          + 'transform:scale(' + s.toFixed(4) + ');transform-origin:top left">'
+          + inner.replace('class="sc-idcard sc-idcard-back"','class="sc-idcard-inner"')
+                 .replace('width:' + boxW + 'px;height:' + boxH + 'px;',
+                          'width:' + cw + 'px;height:' + ch + 'px;')
+          + '</div></div>';
+      }
+      return inner;
     },
     /* Front + back pair, laid side-by-side for printing & cutting (or duplex). */
     pairHtml(person) {
@@ -1140,7 +1375,7 @@ const Super = {
       const s = Super.school || {};
       const logo = `assets/img/logo.${(s.logoExt || 'svg')}`;
       const bullets = (o.bullets || []).map(b => `<p style="margin:7px 0;display:flex;align-items:flex-start;gap:8px"><span style="color:${o.ac};font-weight:900">✓</span><span>${Super.esc(b)}</span></p>`).join('');
-      const contact = o.contactBar !== false ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.25)"><p style="font-weight:700;margin:4px 0">📞 ${Super.esc(s.phone || '')} &nbsp; ✉️ ${Super.esc(s.email || '')}</p><p style="font-size:.78rem;opacity:.9;margin:0">📍 ${Super.esc(s.address || '')}</p></div>` : '';
+      const contact = o.contactBar !== false ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.25)"><p style="font-weight:700;margin:4px 0">Tel: ${Super.esc(s.phone || '')} &nbsp; ✉️ ${Super.esc(s.email || '')}</p><p style="font-size:.78rem;opacity:.9;margin:0">📍 ${Super.esc(s.address || '')}</p></div>` : '';
       const credit = '<p style="margin-top:14px;font-size:.68rem;opacity:.75">Powered by HMG Concepts</p>';
       const sz = this.SIZES[o.size] || this.SIZES.a4portrait;
       // professional decorations
@@ -1174,7 +1409,7 @@ const Super = {
             <h2 style="letter-spacing:2px;color:${o.pc};margin:8px 0 16px">${Super.esc(o.headline)}</h2>
             <div style="text-align:left;max-width:400px;margin:0 auto;color:#1f2937">${bullets}</div>
             <p style="font-weight:800;margin:18px 0;color:${o.pc};font-size:1.1rem">${Super.esc(o.cta)}</p>
-            <div style="border-top:1px solid #e7e2d0;padding-top:12px;color:#6b7280;font-size:.8rem">📞 ${Super.esc(s.phone || '')} · ✉️ ${Super.esc(s.email || '')}<br>📍 ${Super.esc(s.address || '')}</div>
+            <div style="border-top:1px solid #e7e2d0;padding-top:12px;color:#6b7280;font-size:.8rem">Tel: ${Super.esc(s.phone || '')} · Email: ${Super.esc(s.email || '')}<br>${Super.esc(s.address || '')}</div>
           </div></div>`;
       }
       if (o.layout === 'minimal') {

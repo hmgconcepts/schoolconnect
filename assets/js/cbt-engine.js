@@ -312,7 +312,13 @@ const CBT = {
   // × a 200 KB question bank used to download ~20 MB on every page open; the
   // slim list is a few KB. Full rows are still fetched per-exam whenever the
   // teacher edits, previews, exports or appends questions.
-  async listExams() { if (!this._sb) return {data:null,error:{message:'Database not configured'}}; const all=[];for(let from=0;from<5000;from+=500){const r=await this._sb.from('cbt_exams').select('id,code,title,subject,class,term,session,assessment_type,report_column,max_score,duration,duration_min,attempt_limit,select_count,randomise,negative_mark,exam_mode,is_open,is_archived,is_entrance,pass_mark,release_results,anti_cheat_config,certificate_enabled,start_at,close_at,teacher_id,created_at,updated_at').order('created_at',{ascending:false}).range(from,from+499);if(r.error)return r;all.push(...(r.data||[]));if(!r.data||r.data.length<500)break;}return{data:all,error:null}; },
+  async listExams() { if (!this._sb) return {data:null,error:{message:'Database not configured'}}; const all=[];for(let from=0;from<5000;from+=500){const r=await this._sb.from('cbt_exams').select('id,code,title,subject,class,term,session,assessment_type,report_column,max_score,duration,duration_min,attempt_limit,select_count,randomise,negative_mark,exam_mode,is_open,is_archived,is_entrance,pass_mark,release_results,anti_cheat_config,certificate_enabled,start_at,close_at,teacher_id,created_at,updated_at').order('created_at',{ascending:false}).range(from,from+499);if(r.error)return r;/* V12.70 — a response that is not an array (a proxy error object, a
+     gateway page, an RLS filter that returns {}) used to throw inside this
+     spread and take the whole CBT manager down with an uncaught TypeError.
+     Coerce it: a bad row is skipped, the page still renders, and the caller
+     is told the list may be incomplete instead of seeing a blank screen. */
+     const rows=Array.isArray(r.data)?r.data:(r.data&&Array.isArray(r.data.rows)?r.data.rows:[]);
+     all.push(...rows);if(rows.length<500)break;}return{data:all,error:null}; },
   async createExam(exam) {
     if (!this._sb) return {data:null,error:{message:'Database not configured'}};
     exam = exam || {};
@@ -345,7 +351,7 @@ const CBT = {
       const who = (window.SC_PROFILE && (SC_PROFILE.full_name || SC_PROFILE.email)) || 'your account';
       res.error = { ...res.error, message:
         'The database refused this exam for ' + who + ' (row-level security). Likely causes, in order:\n' +
-        '1) Your school database has not run database/v10.4-cbt-multisubject-rls.sql — required for MULTI-SUBJECT packages created by teachers (admin: run it once in Supabase).\n' +
+        '1) Your school database is missing the latest policies — run database/complete-schema.sql once in the Supabase SQL Editor (it is the only file needed, and it is safe to re-run).\n' +
         '2) The subject "' + (exam.subject||'') + '" is not assigned to you on the Subjects page (admin can assign it, or an admin account can create the exam).\n' +
         '3) Your profile had not finished loading — wait two seconds after sign-in and try again.\n' +
         'Admins are never blocked; ask an admin to create it if urgent.' };

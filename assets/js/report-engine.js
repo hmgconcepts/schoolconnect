@@ -13,8 +13,14 @@ const ReportEngine = {
   sb: null,
   init(supabaseClient) { this.sb = supabaseClient || (typeof sb !== 'undefined' ? sb : null); },
   esc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); },
-  n(v){ v=Number(v); return isNaN(v)?0:v; },
-  fmt(v, d=2){ v=this.n(v); return Number.isInteger(v)?String(v):v.toFixed(d).replace(/\.00$/,''); },
+  /* V12.71 (round-15 item 4) — `n` guarded only against NaN, so Infinity
+     passed straight through. Nothing in a school produces Infinity by intent,
+     but a division by a zero weight, a JSON body of 1e999, or a numeric column
+     holding 'Infinity' all do — and the card then printed the WORD "Infinity"
+     in a mark cell and handed an 'A' to an infinite score. A number that is not
+     finite is not a mark; treat it exactly like a missing one. */
+  n(v){ v=Number(v); return Number.isFinite(v)?v:0; },
+  fmt(v, d=2){ v=this.n(v); if(!Number.isFinite(v)) v=0; return Number.isInteger(v)?String(v):v.toFixed(d).replace(/\.00$/,''); },
   scoreCell(row,field){ return row&&row._assessmentPresent&&!row._assessmentPresent[field]?'—':this.fmt(row?row[field]:null); },
   ordinal(n){ n=Number(n)||0; const s=['th','st','nd','rd'], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); },
   fmtDMY(v){ if(!v)return ''; const d=new Date(String(v).length===10?String(v)+'T00:00:00':v); return isNaN(d)?String(v):String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); },
@@ -286,18 +292,254 @@ const ReportEngine = {
   subjects(rows){ return [...new Set(rows.map(r=>r.subject).filter(Boolean))].sort(); },
   studentsFromRows(rows){ return [...new Set(rows.map(r=>r.student_name).filter(Boolean))].sort(); },
 
+  /* ======================================================================
+     V12.64 — FAIR RANKING.  The browser mirror of database/v12.64.
+
+     The reported bug: a learner who sat ONE subject finished 1st, because the
+     overall percentage was the mean of whatever that learner happened to have
+     (38 out of one paper = "38 %") while a learner who sat four papers was
+     averaged over four (138/400 = "34.5 %"). Ranking those two numbers against
+     each other is meaningless.
+
+     Rules applied here, identical to the SQL engine:
+
+       1. A percentage is ALWAYS marks / the full expected load for the class.
+          A missing paper therefore costs its marks; it does not vanish.
+       2. Ranking uses competition ranking — equal percentages share a place
+          and the next place is skipped (1,1,3) — because that is what WAEC,
+          NECO, Cambridge and IB transcripts do.
+       3. Ties are ordered deterministically (more assessments sat, then more
+          subjects, then name) so re-running never reshuffles a class.
+       4. A learner below the participation threshold is NOT ranked. A learner
+          who sat nothing gets no grade at all — never an F.
+       5. Every ranked learner carries the cohort size and a written basis, so
+          any position on the sheet can be defended to a parent.
+     ====================================================================== */
+
+  /** The participation floor. Mirrors sc_report_min_participation() in SQL. */
+  MIN_PARTICIPATION: 0.34,
+
+  /** Grade scale — mirrors sc_report_grade(). '' when there is no evidence. */
+  gradeFor(percentage, satAssessments){
+    if (satAssessments != null && this.n(satAssessments) === 0) return '';
+    return this.grade(percentage);
+  },
+
+  /**
+   * The expected load for a cohort: every assessment the class is meant to sit.
+   * `rows` are normalised result rows; each row's `max` is its own obtainable
+   * total, so the cohort expectation is the largest subject load present,
+   * applied to every subject the class offers.
+   */
+  expectedLoad(rows, knownSubjects){
+    /* NB: build a plain object, not a Map. A Map returned from here is copied
+       into the per-person records by reference; when the caller spreads or
+       serialises it the lookup silently degrades and every learner falls back
+       to their OWN total — which is the very bug being fixed.
+
+       `knownSubjects` is the school's own statement of what this class offers
+       (from assessment_columns / the subjects table). It matters: if it is
+       omitted, a subject that only ONE learner sat disappears from the expected
+       load, and that learner is then measured out of one paper again — the
+       original bug, reintroduced through the back door. */
+    const bySubject = {};
+    (rows||[]).forEach(r=>{
+      const s = String(r.subject||'').trim();
+      if (!s) return;
+      const max = this.n(r.max) || 0;
+      bySubject[s] = Math.max(bySubject[s] || 0, max);
+    });
+    (knownSubjects||[]).forEach(raw=>{
+      const s = String(raw||'').trim();
+      if (!s || bySubject[s] != null) return;
+      /* a subject the class offers but this cohort has no marks for: assume the
+         standard 100-mark paper so it still counts as a paper owed */
+      bySubject[s] = 100;
+    });
+    const subjects = Object.keys(bySubject).sort();
+    let maxTotal = 0;
+    subjects.forEach(k=>{ maxTotal += bySubject[k]; });
+    return { subjects, perSubjectMax: bySubject,
+             subjectCount: subjects.length, maxTotal: maxTotal };
+  },
+
+  /**
+   * Rank a cohort. Returns { byName, expected, cohortSize }.
+   * `rows` must be every student's rows for ONE class/term/session.
+   */
+  rankCohort(rows, knownSubjects){
+    const expected = this.expectedLoad(rows, knownSubjects);
+    const perSubjectMax = expected.perSubjectMax;
+
+    /* fold each learner's rows into one record, measured against the load.
+       V12.71 (round-15 item 4) — KEYED BY IDENTITY, NOT BY NAME.
+       Two children in one class can genuinely share a name (siblings named
+       after a grandparent are common in the schools this serves). Keying on
+       student_name silently ADDED THEIR MARKS TOGETHER: two "Ada Obi" rows of
+       90 and 40 became one learner on 130, and both families received the wrong
+       position. Rows carry a student id whenever the query supplies one, so
+       prefer it; fall back to the name ONLY when no id exists, which is the
+       shape of the offline/preview path. */
+    const idOf = (r) => {
+      const id = r.student_id != null ? String(r.student_id).trim() : '';
+      return id || '';
+    };
+    const keyOf = (r) => {
+      const id = idOf(r);
+      const nm = String(r.student_name || r.full_name || '').trim();
+      if (id) return 'id:' + id;
+      return nm ? 'nm:' + nm : '';
+    };
+    const people = new Map();
+    (rows||[]).forEach(r=>{
+      const key = keyOf(r);
+      if (!key) return;
+      if (!people.has(key)) people.set(key, { name:String(r.student_name||r.full_name||'').trim(), id:idOf(r),
+                                              total:0, expected:0, subjects:new Set(), maxSubjects:new Set() });
+      const p = people.get(key);
+      p.total += this.n(r.total);
+      /* the denominator is the COHORT's max for this subject, never this
+         learner's own — a learner who sat one paper must still be measured
+         out of four */
+      const subj = String(r.subject||'').trim();
+      const exp = (perSubjectMax[subj] != null) ? Number(perSubjectMax[subj]) : (this.n(r.max) || 0);
+      p.expected += exp;
+      if (this.n(r.total) > 0) p.subjects.add(subj);   /* "sat" means marked, not merely listed */
+      p.maxSubjects.add(String(r.subject||'').trim());
+    });
+
+    const list = [...people.values()].map(p=>{
+      /* THE DENOMINATOR IS THE CLASS LOAD, NOT THIS LEARNER'S SUBMISSION.
+         `p.expected` (the sum of the subjects this learner submitted) is only a
+         fallback for a cohort with no discoverable structure at all. Using it as
+         the primary denominator reproduces the exact reported bug: a learner who
+         submitted one paper is measured out of one paper. */
+      const expectedTotal = expected.maxTotal || p.expected || 0;
+      const pct = expectedTotal > 0 ? (p.total / expectedTotal) * 100 : 0;
+      const sat = p.subjects.size;
+      const exp = expected.subjectCount || p.maxSubjects.size || sat;
+      const ratio = exp > 0 ? sat / exp : 0;
+      /* V12.71 — a cohort whose subjects all carry max = 0 has NO obtainable
+         total, so every percentage is meaningless. Such a learner was reported
+         as complete:true, rankable:true, position 1 — first place in a class
+         where nobody could score. Require a real denominator. */
+      const hasDenominator = expectedTotal > 0;
+      return { name:p.name, studentId:p.id, total:p.total, expected:expectedTotal,
+               percentage: hasDenominator ? Math.round(pct*100)/100 : null,
+               subjectsSat:sat, subjectsExpected:exp,
+               complete: hasDenominator && exp > 0 && sat >= exp && p.total > 0,
+               rankable: hasDenominator && p.total > 0 && exp > 0 && ratio >= this.MIN_PARTICIPATION };
+    });
+
+    /* competition ranking on percentage ONLY, so a genuine tie is a tie */
+    const ranked = list.filter(x=>x.rankable)
+      .sort((a,b)=> (b.percentage - a.percentage)
+                 || (b.subjectsSat - a.subjectsSat)
+                 || a.name.localeCompare(b.name));
+    const cohortSize = ranked.length;
+    let lastPct = null, lastPos = 0;
+    ranked.forEach((x,i)=>{
+      const pos = (lastPct !== null && x.percentage === lastPct) ? lastPos : i + 1;
+      x.position = pos; lastPos = pos; lastPct = x.percentage;
+      x.cohortSize = cohortSize;
+      x.basis = x.complete
+        ? 'Ranked ' + pos + ' of ' + cohortSize + ' on ' + this.n(x.percentage).toFixed(2) + '% of the full ' + x.subjectsExpected + '-subject load.'
+        : 'Ranked ' + pos + ' of ' + cohortSize + ' on ' + this.n(x.percentage).toFixed(2) + '% of the full load, but only '
+          + x.subjectsSat + ' of ' + x.subjectsExpected + ' subjects sat — provisional.';
+    });
+    list.forEach(x=>{
+      if (x.rankable) return;
+      x.position = null; x.cohortSize = cohortSize;
+      x.basis = x.total > 0
+        ? 'Provisional: ' + x.subjectsSat + ' of ' + x.subjectsExpected + ' subjects sat, below the '
+          + Math.round(this.MIN_PARTICIPATION*100) + '% participation threshold — not ranked.'
+        : 'No marks recorded — not ranked.';
+    });
+
+    const byName = {};
+    list.forEach(x=>{
+      /* byName stays the name map every caller already uses, but when two
+         learners share a name the FIRST one wins deterministically and the
+         other is reachable through list/byId — never a silent overwrite that
+         gives one child another child's position. */
+      if (!Object.prototype.hasOwnProperty.call(byName, x.name)) byName[x.name] = x;
+    });
+    const byId = {};
+    list.forEach(x=>{ if (x.studentId) byId[x.studentId] = x; });
+    return { byName, byId, expected, cohortSize, list };
+  },
+
+  /* V12.66 — report presentation policy. The school decides, per term and per
+     report kind, whether the position is printed; a class teacher may withhold
+     ONE learner's position without withholding anyone else's. Defaults keep the
+     old behaviour (everything shown) until the school chooses otherwise. */
+  _policy:{show_position:true,show_grade:true,show_subject_position:true,
+           show_remarks:true,position_label:'Position in class'},
+  async loadPolicy(kind, term, session){
+    const fallback = Object.assign({}, this._policy);
+    try{
+      const r = await this.sb.rpc('sc_report_policy',{p_kind:kind||'terminal',
+                                                    p_term:term||null, p_session:session||null});
+      if(!r.error && r.data && r.data.ok !== false){
+        this._policy = {
+          show_position: r.data.show_position !== false,
+          show_grade: r.data.show_grade !== false,
+          show_subject_position: r.data.show_subject_position !== false,
+          show_remarks: r.data.show_remarks !== false,
+          position_label: r.data.position_label || 'Position in class',
+          configured: !!r.data.configured
+        };
+      } else { this._policy = fallback; }
+    }catch(_){ this._policy = fallback; }
+    return this._policy;
+  },
+  policy(){ return this._policy || {show_position:true}; },
+  /* withheld for one learner only */
+  async holdsFor(kind, term, session){
+    if(!this._holds){ this._holds = {}; }
+    const key = [kind,term,session].join('|');
+    if(this._holds[key]) return this._holds[key];
+    const set = {};
+    try{
+      let q = this.sb.from('sc_report_position_hold').select('student_id_ref,student_id');
+      if(term) q = q.eq('term', term);
+      if(session) q = q.eq('session', session);
+      const {data} = await q;
+      (data||[]).forEach(h=>{
+        if(h.student_id_ref) set[String(h.student_id_ref).toLowerCase()] = true;
+        if(h.student_id) set['id:'+h.student_id] = true;
+      });
+    }catch(_){}
+    this._holds[key] = set;
+    return set;
+  },
+  positionWithheld(row, holds){
+    if(!row) return false;
+    const a = String(row.admission_no||row.student_id_ref||'').toLowerCase();
+    const b = row.student_id ? 'id:'+row.student_id : '';
+    return !!(holds && ((a && holds[a]) || (b && holds[b])));
+  },
   positionsBy(rows, groupKey='student_name'){
-    const totals = {};
-    rows.forEach(r => { totals[r[groupKey]] = (totals[r[groupKey]]||0) + this.n(r.total); });
-    const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
-    const pos = {}; sorted.forEach((x,i)=>pos[x[0]]=i+1); return pos;
+    /* V12.64 — percentage-aware. The old version summed raw totals, which ranks
+       a learner with one big paper above a learner with four good ones. */
+    const out = this.rankCohort(rows).byName;
+    const flat = {}; Object.keys(out).forEach(k=>{ flat[k] = out[k].position; });
+    return flat;
   },
 
   subjectPositions(rows){
+    /* Within one subject every learner sits the same paper, so raw totals are
+       comparable here. Ties still share a place (competition ranking). */
     const out = {};
     this.subjects(rows).forEach(sub => {
-      const list = rows.filter(r=>r.subject===sub).sort((a,b)=>this.n(b.total)-this.n(a.total));
-      list.forEach((r,i)=>{ out[r.student_name+'|'+sub]=i+1; });
+      const list = rows.filter(r=>r.subject===sub)
+        .sort((a,b)=>(this.n(b.total)-this.n(a.total)) || String(a.student_name||'').localeCompare(String(b.student_name||'')));
+      let last=null, lastPos=0;
+      list.forEach((r,i)=>{
+        const t=this.n(r.total);
+        const pos=(last!==null&&t===last)?lastPos:i+1;
+        out[r.student_name+'|'+sub]=pos; lastPos=pos; last=t;
+      });
     });
     return out;
   },
@@ -359,6 +601,16 @@ const ReportEngine = {
   dynamicScoreCell(row,col){const key=col.key||(this.labelToken?this.labelToken(col.name):String(col.name||'').toLowerCase().replace(/[^a-z0-9]/g,'')),cell=(row._assessmentCells||[]).find(c=>(this.labelToken?this.labelToken(c.name):String(c.name||'').toLowerCase().replace(/[^a-z0-9]/g,''))===key);return cell&&cell.present?this.fmt(cell.value):'—';},
 
   async renderStudent(ctx){
+    await this._preparePolicy(ctx, ctx.report_kind || 'terminal');
+    /* V12.70 BUG FIX — `pol` was declared 140 lines BELOW this point, but the
+       subject-row builder at the top of this function already reads it for the
+       GRADE / POSITION / REMARK columns. In a `const` binding that is a
+       temporal-dead-zone ReferenceError, thrown on EVERY single-student report
+       card that had any rows to print. The page caught it and showed
+       "Could not generate report card", so the visible symptom was simply that
+       report cards would not generate. Read the policy once, here, and use it
+       throughout. */
+    const pol = this.policy();
     const data = await this.loadContext(ctx); const rows = data.rows;
     if (!rows.length) return this.empty('No result records found for this student/filter.');
     const name = ctx.student || rows[0].student_name;
@@ -368,7 +620,18 @@ const ReportEngine = {
     const promotion=await this.loadPromotionStatus(first.student_id,first.student_name,ctx.term||first.term,ctx.session||first.session);
     const classTeacher=await this.loadClassTeacherIdentity(first.class||ctx.class);
     const metrics=await this.loadStudentMetrics(first.student_id,first.student_name,first.class||ctx.class,ctx.term||first.term,ctx.session||first.session),metricBMI=this.bmi(metrics);
-    const total = list.reduce((a,b)=>a+this.n(b.total),0); const obtainable=list.reduce((a,b)=>a+this.n(b.max||100),0)||list.length*100;
+    /* V12.64 — the headline percentage. `obtainable` used to be the sum of only
+       the subjects THIS learner submitted, so one paper out of four scored the
+       same as four out of four. It is now the cohort's full expected load. */
+    const cohortRows = rows.filter(r => String(r.class||'').trim().toLowerCase() === String(first.class||'').trim().toLowerCase());
+    /* the class's declared subject list — from the assessment structure when the
+       context loaded one — so a subject only one learner sat still counts */
+    const classSubjects = (data.assessmentColumns||[]).map(c=>String(c.subject||'').trim()).filter(x=>x&&x!=='*');
+    const cohort = this.rankCohort(cohortRows, classSubjects.length?classSubjects:null);
+    const me = cohort.byName[String(first.student_name||'').trim()] || null;
+    const total = list.reduce((a,b)=>a+this.n(b.total),0);
+    const obtainable = (me && me.expected) || cohort.expected.maxTotal
+                       || list.reduce((a,b)=>a+this.n(b.max||100),0) || list.length*100;
     const avg = obtainable ? (total/obtainable*100) : 0;
     const bal = data.feeBalances[first.student_id] ?? data.feeBalances[String(first.student_name||'').toLowerCase()] ?? 0;
     const logo='assets/img/logo.'+sc.logoExt;
@@ -392,22 +655,23 @@ const ReportEngine = {
       const subPosStr = subPos ? this.ordinal(subPos) : '—';
       const subjectPct=this.n(r.max)?this.n(r.total)/this.n(r.max)*100:0;
       const cells=legacyLayout.map(c=>'<td>'+(layout.length?this.dynamicScoreCell(r,c):this.scoreCell(r,c.legacy))+'</td>').join('');
-      return `<tr><td class="left">${this.esc(r.subject)}</td>${cells}<td><b>${this.fmt(r.total)} / ${this.fmt(r.max)}</b></td><td class="grade">${this.grade(subjectPct)}</td><td>${subPosStr}</td><td>${this.remark(subjectPct)}</td></tr>`;
+      return `<tr><td class="left">${this.esc(r.subject)}</td>${cells}<td><b>${this.fmt(r.total)} / ${this.fmt(r.max)}</b></td>${pol.show_grade?'<td class="grade">'+this.grade(subjectPct)+'</td>':''}${pol.show_subject_position?'<td>'+subPosStr+'</td>':''}${pol.show_remarks?'<td>'+this.remark(subjectPct)+'</td>':''}</tr>`;
     }).join('');
     const scoreHead=legacyLayout.map(c=>'<th>'+this.esc(c.name)+'<br>('+this.fmt(c.max_mark)+')</th>').join('');
 
-    // v5: Compute class position
+    /* V12.64 — class position, from the shared fair-ranking engine.
+       Previously this summed raw totals per learner and ordered them, which is
+       exactly how a one-subject learner ended up first. Now: percentage of the
+       expected load, competition ranking, and no position at all for a learner
+       who did not take part. */
     let classPosition = '—'; let classSize = '—';
+    let rankBasis = ''; let rankable = false; let complete = true;
     try{
-      const stName = String(first.student_name||'').toLowerCase();
-      const stClass = first.class;
-      // Compute position from all rows for the same class+term+session
-      const classRows = rows.filter(r => r.class === stClass);
-      const totals = {}; classRows.forEach(r => { totals[r.student_name] = (totals[r.student_name]||0) + this.n(r.total); });
-      const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
-      classSize = sorted.length;
-      const idx = sorted.findIndex(x => x[0].toLowerCase() === stName);
-      classPosition = idx >= 0 ? this.ordinal(idx+1) : '—';
+      classSize = cohort.cohortSize || '—';
+      if (me && me.position != null) { classPosition = this.ordinal(me.position); rankable = true; }
+      else if (me && me.total > 0)   { classPosition = 'Provisional'; }
+      else                           { classPosition = '—'; }
+      if (me) { rankBasis = me.basis || ''; complete = !!me.complete; }
     }catch(_){}
 
     // v5: Try to load affective/psychomotor from v9 tables or fall back to a sensible default
@@ -477,10 +741,27 @@ const ReportEngine = {
     const stampColor = settings.stamp_color || sc.stamp_color || '#1e3a8a';
     const stampText = settings.stamp_text || sc.stamp_text || 'OFFICIAL SCHOOL SEAL';
 
-    const classLearnerAverages={};
-    rows.filter(r=>r.class===first.class).forEach(r=>{const k=r.student_name;(classLearnerAverages[k]||(classLearnerAverages[k]={got:0,max:0}));classLearnerAverages[k].got+=this.n(r.total);classLearnerAverages[k].max+=this.n(r.max);});
-    const classAvgValues=Object.values(classLearnerAverages).map(x=>x.max?x.got/x.max*100:0);
+    /* V12.64 — the class average used each learner's OWN obtainable total as the
+       denominator (`x.max`), so a learner who sat one paper contributed a full
+       100%-scale average. It is now the mean of the same percentages that get
+       ranked — measured against the class's expected load — so the class average
+       printed on the sheet is the average of the numbers on the sheets. */
+    const classCohort = this.rankCohort(
+      rows.filter(r => String(r.class||'').trim().toLowerCase() === String(first.class||'').trim().toLowerCase()),
+      (data.assessmentColumns||[]).map(c=>String(c.subject||'').trim()).filter(x=>x&&x!=='*') || null);
+    const classAvgValues = (classCohort.list||[]).filter(x=>x.total>0).map(x=>x.percentage);
     const classAverage=classAvgValues.length?classAvgValues.reduce((a,b)=>a+b,0)/classAvgValues.length:0;
+
+    /* V12.66 — per-learner hold (the policy itself is read at the top of this
+       function; see the V12.70 note there) */
+    const holds = this._holdsForNow || {};
+    const withheld = !pol.show_position || this.positionWithheld(first, holds);
+    const posLabel = pol.position_label || 'Position in class';
+    const posCell = withheld
+      ? `<b style="color:#64748b">Not published</b> <small style="color:#94a3b8">· positions withheld for this report</small>`
+      : `<b style="color:${rankable?'#16a34a':'#b45309'}">${classPosition}</b>`
+        + (classSize && classSize !== '—' ? ' <small style="color:#64748b">of ' + this.esc(classSize) + '</small>' : '')
+        + (complete ? '' : ' <small style="color:#b45309;font-weight:700">· incomplete sitting</small>');
 
     const stampSvg = `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" class="re-stamp" style="position:relative">
       <defs>
@@ -504,11 +785,12 @@ const ReportEngine = {
       <text x="60" y="88" text-anchor="middle" font-family="Arial, sans-serif" font-size="4" font-weight="700" fill="${stampColor}">${new Date().toLocaleDateString()}</text>
     </svg>`;
 
-    return `<div class="report-sheet sample-report"><div class="head"><img class="logo" src="${logo}" onerror="this.style.display='none'"><div class="school"><h1>${this.esc(sc.name)}</h1><p>📍 ${this.esc(sc.address)} · 📞 ${this.esc(sc.phone)} · ✉️ ${this.esc(sc.email)}</p><p style="font-style:italic;color:#7c2d12">Motto: ${this.esc(sc.motto)}</p></div><div class="photo">${first.photo_url ? `<img src="${this.esc(first.photo_url)}" onerror="this.parentNode.innerHTML='Photo'">` : 'Student<br>Photo'}</div></div><div class="title">TERMINAL REPORT SHEET — ${this.esc(ctx.term||first.term||'TERM')}, ${this.esc(ctx.session||first.session||'SESSION')}</div><table class="info"><tr><td><b>Name:</b> ${this.esc(first.student_name)}</td><td><b>Admission No:</b> ${this.esc(first.admission_no)}</td><td><b>Class:</b> ${this.esc(first.class)}</td></tr><tr><td><b>No. in Class:</b> ${classSize}</td><td><b>Attendance:</b> ${this.esc(attendanceStr)}</td><td><b>Position:</b> <b style="color:#16a34a">${classPosition}</b></td></tr></table><table class="scores" style="margin-top:8px"><thead><tr><th class="left">SUBJECT</th>${scoreHead}<th>TOTAL /<br>ACTIVE MAX</th><th>GRADE</th><th>POSITION</th><th>REMARK</th></tr></thead><tbody>${scoreRows}</tbody></table><table class="info" style="margin-top:8px"><tr><td><b>Total Score:</b> ${this.fmt(total)} / ${this.fmt(obtainable)}</td><td><b>Average:</b> ${this.fmt(avg,1)}%</td><td><b>Class Average:</b> ${this.fmt(classAverage,1)}%</td><td><b>Grade:</b> <span class="grade">${this.grade(avg)}</span></td></tr></table>${promotion?`<div class="promotion-status" style="margin-top:8px;padding:9px 12px;border:1.5px solid ${promotion.color};background:${promotion.background};color:${promotion.color};border-radius:8px;text-align:center"><b style="font-size:13px;letter-spacing:.7px">${this.esc(promotion.label)}</b><div style="font-size:9.5px;margin-top:2px">${this.esc(promotion.detail)}</div></div>`:''}
+    return `<div class="report-sheet sample-report"><div class="head"><img class="logo" src="${logo}" onerror="this.style.display='none'"><div class="school"><h1>${this.esc(sc.name)}</h1><p>${this.esc(sc.address)} · ${this.esc(sc.phone)} · ${this.esc(sc.email)}</p><p style="font-style:italic;color:#7c2d12">Motto: ${this.esc(sc.motto)}</p></div><div class="photo">${first.photo_url ? `<img src="${this.esc(first.photo_url)}" onerror="this.parentNode.innerHTML='Photo'">` : 'Student<br>Photo'}</div></div><div class="title">TERMINAL REPORT SHEET — ${this.esc(ctx.term||first.term||'TERM')}, ${this.esc(ctx.session||first.session||'SESSION')}</div><table class="info"><tr><td><b>Name:</b> ${this.esc(first.student_name)}</td><td><b>Admission No:</b> ${this.esc(first.admission_no)}</td><td><b>Class:</b> ${this.esc(first.class)}</td></tr><tr><td><b>No. in Class:</b> ${classSize}</td><td><b>Attendance:</b> ${this.esc(attendanceStr)}</td><td><b>${this.esc(posLabel.replace(/\bin class$/i,'').trim())||'Position'}:</b> ${posCell}</td></tr></table>${rankBasis?'<p class="rank-basis" style="margin:2px 0 0;font-size:9px;color:#64748b;text-align:center">'+this.esc(rankBasis)+'</p>':''}<table class="scores" style="margin-top:8px"><thead><tr><th class="left">SUBJECT</th>${scoreHead}<th>TOTAL /<br>ACTIVE MAX</th>${pol.show_grade?'<th>GRADE</th>':''}${pol.show_subject_position?'<th>POSITION</th>':''}${pol.show_remarks?'<th>REMARK</th>':''}</tr></thead><tbody>${scoreRows}</tbody></table><table class="info" style="margin-top:8px"><tr><td><b>Total Score:</b> ${this.fmt(total)} / ${this.fmt(obtainable)}</td><td><b>Average:</b> ${this.fmt(avg,1)}%</td><td><b>Class Average:</b> ${this.fmt(classAverage,1)}%</td><td><b>Grade:</b> <span class="grade">${this.grade(avg)}</span></td></tr></table>${promotion?`<div class="promotion-status" style="margin-top:8px;padding:9px 12px;border:1.5px solid ${promotion.color};background:${promotion.background};color:${promotion.color};border-radius:8px;text-align:center"><b style="font-size:13px;letter-spacing:.7px">${this.esc(promotion.label)}</b><div style="font-size:9.5px;margin-top:2px">${this.esc(promotion.detail)}</div></div>`:''}
 <table class="info" style="margin-top:6px;background:#fffbeb;border:1px solid #fcd34d"><tr><td><b>Previous School Fees Owed:</b> <span style="color:${bal>0?'#b91c1c':'#16a34a'};font-weight:900">${bal===0?'₦0 (FULLY PAID)':'₦'+Number(bal).toLocaleString()}</span></td><td><b>Next Term School Bill:</b> <span style="color:#b45309;font-weight:900">${nextTermBill.fees ? (nextTermBill.currency + Number(nextTermBill.fees).toLocaleString()) : '—'} </span> <small style="color:#92400e">(${this.esc(nextTermBill.note||'Payable before resumption')})</small></td><td><b>Next Term Begins:</b> ${this.esc(nextTermBill.begins ? this.fmtDMY(nextTermBill.begins) : (nextTermBegins||'—'))}</td></tr></table><table class="info" style="margin-top:6px"><tr><td><b>Height:</b> ${metrics&&metrics.height_cm!=null?this.fmt(metrics.height_cm)+' cm':'—'}</td><td><b>Weight:</b> ${metrics&&metrics.weight_kg!=null?this.fmt(metrics.weight_kg)+' kg':'—'}</td><td><b>BMI:</b> ${metricBMI!=null?this.fmt(metricBMI,1):'—'}</td><td><b>Blood pressure:</b> ${this.esc(metrics&&metrics.blood_pressure||'—')}</td></tr><tr><td><b>Vision:</b> ${this.esc(metrics&&metrics.vision||'—')}</td><td><b>Blood group:</b> ${this.esc(metrics&&metrics.blood_group||'—')}</td><td><b>Genotype:</b> ${this.esc(metrics&&metrics.genotype||'—')}</td><td><b>Measured:</b> ${this.esc(metrics&&metrics.measured_on?this.fmtDMY(metrics.measured_on):'—')}</td></tr></table><div class="traits re-traits"><div><table><tr><th colspan="2">⭐ AFFECTIVE DOMAIN</th></tr>${affectiveRows}</table></div><div><table><tr><th colspan="2">🏃 PSYCHOMOTOR DOMAIN</th></tr>${psychomotorRows}</table></div></div><table class="comments" style="margin-top:10px"><tr><td>Class Teacher's Comment</td><td>${this.esc(classTeacherComment)}</td></tr><tr><td>Principal's Comment</td><td>${this.esc(principalComment)}</td></tr><tr><td>Next Term Begins</td><td>${this.esc(nextTermBegins || sc.next_term_begins || 'See school calendar')} &nbsp;·&nbsp; <b>Fees Balance:</b> ${bal===0?'₦0 (FULLY PAID)':'₦'+Number(bal).toLocaleString()}</td></tr></table><div class="sig re-sig"><div><div class="re-sig-script">${this.teacherSignatureInk(classTeacher)}</div><div class="re-sig-line">${this.esc(classTeacher.name||'Class Teacher')}<br><small>Class Teacher's Signature</small></div></div><div style="position:relative">${stampEnabled?'<div class="re-stamp-wrap">'+stampSvg+'</div>':(hasSig?'<img src="'+this.esc(sigUrl)+'" style="max-width:160px;max-height:65px;object-fit:contain;'+(removeSigBg?'mix-blend-mode:multiply;filter:contrast(1.35)':'')+'">':'')}<div class="re-sig-line" style="margin-top:6px">${this.esc(principalName)}<br><small>Principal\'s Signature${stampEnabled?' &amp; Official Stamp':''}</small></div></div></div><p class="note">This is an official computer-generated report sheet. It carries the school stamp with embedded verification code and is valid without physical seal. Verify at the school portal.</p></div>`;
   },
 
   async renderSubject(ctx){
+    await this._preparePolicy(ctx, ctx.report_kind || 'terminal');
     const data=await this.loadContext(ctx); const rows=data.rows; if(!rows.length)return this.empty('No subject score records found.');
     const sc=data.school; const pct=r=>this.n(r.max)?this.n(r.total)/this.n(r.max)*100:0;
     const sorted=rows.slice().sort((a,b)=>pct(b)-pct(a));
@@ -516,16 +798,40 @@ const ReportEngine = {
     const highest=sorted.length?pct(sorted[0]):0,lowest=sorted.length?pct(sorted[sorted.length-1]):0,passRate=sorted.length?sorted.filter(r=>pct(r)>=50).length/sorted.length*100:0;
     let teacher=''; try{const tr=await this.sb.from('subjects').select('teacher').eq('name',ctx.subject||rows[0].subject).maybeSingle();teacher=(tr.data&&tr.data.teacher)||'';}catch(_){}
     const layout=this.assessmentLayout(sorted),legacy=layout.length?layout:[{name:'CA1',max_mark:10,key:'ca1',legacy:'ca1'},{name:'CA2',max_mark:10,key:'ca2',legacy:'ca2'},{name:'CA3 / CBT',max_mark:10,key:'cbt',legacy:'cbt'},{name:'Project',max_mark:10,key:'project',legacy:'project'},{name:'Exam',max_mark:60,key:'paper',legacy:'paper'}],head=legacy.map(c=>'<th>'+this.esc(c.name)+' ('+this.fmt(c.max_mark)+')</th>').join('');
-    const body=sorted.map((r,i)=>`<tr${i===0?' class="top"':''}><td>${i+1}</td><td class="left">${this.esc(r.student_name)}</td><td>${this.esc(r.admission_no)}</td>${legacy.map(c=>'<td>'+(layout.length?this.dynamicScoreCell(r,c):this.scoreCell(r,c.legacy))+'</td>').join('')}<td><b>${this.fmt(r.total)} / ${this.fmt(r.max)}</b></td><td class="grade ${this.grade(pct(r))}">${this.grade(pct(r))}</td><td>${this.ordinal(i+1)}</td><td>${this.remark(pct(r))}</td></tr>`).join('');
+    const body=sorted.map((r,i)=>`<tr${i===0?' class="top"':''}><td>${i+1}</td><td class="left">${this.esc(r.student_name)}</td><td>${this.esc(r.admission_no)}</td>${legacy.map(c=>'<td>'+(layout.length?this.dynamicScoreCell(r,c):this.scoreCell(r,c.legacy))+'</td>').join('')}<td><b>${this.fmt(r.total)} / ${this.fmt(r.max)}</b></td><td class="grade ${this.grade(pct(r))}">${this.grade(pct(r))}</td><td>${i+1}</td><td>${this.remark(pct(r))}</td></tr>`).join('');
     return `<div class="sheet subject-sheet"><h1>${this.esc(sc.name)} — SUBJECT BROADSHEET</h1><p class="meta">SUBJECT: ${this.esc(ctx.subject||rows[0].subject)} · CLASS: ${this.esc(ctx.class||rows[0].class||'')} · ${this.esc(ctx.term||rows[0].term||'TERM')}, ${this.esc(ctx.session||rows[0].session||'SESSION')} · Subject Teacher: ${this.esc(teacher||'—')} · ${sorted.length} students</p><table><thead><tr><th>S/N</th><th class="left">FULL NAME</th><th>ADM NO.</th>${head}<th>TOTAL / ACTIVE MAX</th><th>GRADE</th><th>POS</th><th>REMARK</th></tr></thead><tbody>${body}</tbody></table><div class="stat"><div><b>${this.fmt(avg,1)}%</b>Subject Average</div><div><b>${this.fmt(highest,1)}</b>Highest Score</div><div><b>${this.fmt(lowest,1)}</b>Lowest Score</div><div><b>${this.fmt(passRate,1)}%</b>Pass Rate (≥50)</div></div><div class="grading-scale"><b>Grading scale:</b> A (80–100) Excellent · B (70–79) Very Good · C (60–69) Good · D (50–59) Credit · E (40–49) Pass · F (0–39) Fail</div><div class="sig"><div><div class="sig-script">${this.signatureInk('teacher')}</div><div class="sig-line">Subject Teacher's Signature</div></div><div>${this.sealSvg('subjectSeal','EXAMINATIONS OFFICE')}<div class="sig-line">Head of Department's Signature &amp; Stamp</div></div></div><p class="note">Official per-subject scoresheet. Automatic totals, grades, positions and subject statistics. Licensed Platform · HMG Technologies.</p></div>`;
   },
 
+  async _preparePolicy(ctx, kind){
+    const term = ctx.term || ctx.report_term || null;
+    const session = ctx.session || ctx.report_session || null;
+    try{ await this.loadPolicy(kind || ctx.report_kind || 'terminal', term, session); }catch(_){}
+    try{ this._holdsForNow = await this.holdsFor(ctx.position_kind || kind || 'terminal', term, session); }catch(_){ this._holdsForNow = {}; }
+  },
   async renderClass(ctx){
+    await this._preparePolicy(ctx, ctx.report_kind || 'terminal');
     const data=await this.loadContext(ctx); const rows=data.rows; if(!rows.length)return this.empty('No class score records found.');
     const sc=data.school; const subjects=this.subjects(rows); const students=this.studentsFromRows(rows);const classTeacher=await this.loadClassTeacherIdentity(ctx.class||rows[0].class);
-    const aggregates=students.map(st=>{const sr=rows.filter(r=>r.student_name===st),total=sr.reduce((a,b)=>a+this.n(b.total),0),max=sr.reduce((a,b)=>a+this.n(b.max),0)||subjects.length*100,avg=max?total/max*100:0;return{st,sr,total,max,avg};}).sort((a,b)=>b.avg-a.avg);
-    const classAvg=aggregates.reduce((a,b)=>a+b.avg,0)/(aggregates.length||1);
-    const body=aggregates.map((x,i)=>`<tr${i===0?' class="top"':''}><td>${i+1}</td><td class="left"><b>${this.esc(x.st)}</b></td><td>${this.esc((x.sr[0]||{}).admission_no||'')}</td>${subjects.map(s=>{const r=x.sr.find(y=>y.subject===s);return '<td>'+(r?this.fmt(this.n(r.max)?this.n(r.total)/this.n(r.max)*100:r.total):'-')+'</td>';}).join('')}<td><b>${this.fmt(x.total)}</b></td><td>${this.fmt(x.avg,1)}</td><td>${this.ordinal(i+1)}</td><td>${this.grade(x.avg)}</td><td>${this.remark(x.avg)}</td></tr>`).join('');
+    /* V12.64 — one aggregation for the whole broadsheet, through the shared
+       engine. The old version measured each learner against the sum of the
+       subjects THEY submitted (`sr.reduce((a,b)=>a+this.n(b.max))`), so a
+       one-subject learner printed 100% on a row meant to be comparable with a
+       four-subject learner's 60%. The broadsheet is a ranking document; every
+       row must share the same denominator. */
+    const classCohort = this.rankCohort(rows,
+      (data.assessmentColumns||[]).map(c=>String(c.subject||'').trim()).filter(x=>x&&x!=='*') || null);
+    const aggregates = students.map(st=>{
+      const sr = rows.filter(r=>r.student_name===st);
+      const m = classCohort.byName[st] || {};
+      return { st, sr,
+               total: m.total != null ? m.total : sr.reduce((a,b)=>a+this.n(b.total),0),
+               max: m.expected != null ? m.expected : (subjects.length*100),
+               avg: m.percentage != null ? m.percentage : 0,
+               pos: m.position != null ? m.position : null,
+               basis: m.basis || '', complete: m.complete !== false };
+    }).sort((a,b)=> (b.avg-a.avg) || String(a.st).localeCompare(String(b.st)));
+    const classAvg=aggregates.filter(x=>x.total>0).reduce((a,b)=>a+b.avg,0)/(aggregates.filter(x=>x.total>0).length||1);
+    const body=aggregates.map((x,i)=>`<tr${i===0?' class="top"':''}><td>${x.pos!=null?this.ordinal(x.pos):'—'}</td><td class="left"><b>${this.esc(x.st)}</b></td><td>${this.esc((x.sr[0]||{}).admission_no||'')}</td>${subjects.map(s=>{const r=x.sr.find(y=>y.subject===s);return '<td>'+(r?this.fmt(this.n(r.max)?this.n(r.total)/this.n(r.max)*100:r.total):'-')+'</td>';}).join('')}<td><b>${this.fmt(x.total)}</b></td><td>${this.fmt(x.avg,1)}</td><td>${x.pos!=null?this.ordinal(x.pos):'—'}</td><td>${this.grade(x.avg)}</td><td>${this.remark(x.avg)}</td></tr>`).join('');
     return `<div class="sheet class-sheet"><h1>${this.esc(sc.name)} — CLASS BROADSHEET</h1><p class="meta">${this.esc(ctx.term||rows[0].term||'TERM')} · ${this.esc(ctx.session||rows[0].session||'SESSION')} · CLASS: ${this.esc(ctx.class||rows[0].class||'')} · ${students.length} students · Class Average: ${this.fmt(classAvg,1)}% · Max obtainable per subject: 100</p><table><thead><tr><th>S/N</th><th class="left">FULL NAME</th><th>ADM NO.</th>${subjects.map(s=>'<th class="rot"><span>'+this.esc(s)+'</span></th>').join('')}<th>TOTAL</th><th>AVG %</th><th>POS</th><th>GRADE</th><th>REMARK</th></tr></thead><tbody>${body}</tbody></table><div class="grading-scale"><b>Grading scale:</b> A (80–100) Excellent · B (70–79) Very Good · C (60–69) Good · D (50–59) Credit · E (40–49) Pass · F (0–39) Fail</div><div class="sig"><div><div class="sig-script">${this.teacherSignatureInk(classTeacher)}</div><div class="sig-line">${this.esc(classTeacher.name||'Class Teacher')}<br><small>Class Teacher's Signature</small></div></div><div>${this.sealSvg('classSeal','EXAMINATIONS OFFICE')}<div class="sig-line">Principal's Signature &amp; Stamp</div></div></div><p class="note">Official class broadsheet. One row per student, one column per subject, automatic totals, averages, positions and grades. Landscape A4. Licensed Platform · HMG Technologies.</p></div>`;
   },
 
@@ -621,7 +927,75 @@ const ReportEngine = {
       const count=this._bulkCBT.counts[e.id]||0,unknown=!!this._bulkCBT.countsUnknown;
       return '<tr><td><input class="be-exam" type="checkbox" value="'+this.esc(e.id)+'" '+(unknown?'':' '+(count?'checked':'disabled'))+'></td><td><b>'+this.esc(e.code||'')+'</b><br>'+this.esc(e.title||'')+'<br><small>'+this.esc(this.cbtPurposeLabel(e.assessment_type))+'</small></td><td>'+this.esc(e.class||'—')+'</td><td>'+this.esc(this.examSubjects(e).join(', ')||'—')+'</td><td>'+this.esc(e.term||'—')+'<br>'+this.esc(e.session||'—')+'</td><td><b>'+(unknown?'Server will check':count)+'</b></td><td>'+this.esc(target)+(col?'<br><span style="color:#166534">Ready · max '+Number(col.max_mark||0)+'</span>':'<br><span style="color:#b45309">Missing — '+(document.getElementById('be-create')?.checked?'server will create safely':'enable auto-create')+'</span>')+'</td></tr>';
     }).join('');
-    host.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0"><b>'+filtered.length+' exam(s) match · '+(this._bulkCBT.countsUnknown?'server will validate result counts':filtered.reduce((a,e)=>a+(this._bulkCBT.counts[e.id]||0),0)+' result row(s)')+'</b><label><input type="checkbox" checked onchange="document.querySelectorAll(\'.be-exam:not(:disabled)\').forEach(x=>x.checked=this.checked)"> Select all</label></div><div class="table-wrap"><table><thead><tr><th>Push</th><th>Exam / purpose</th><th>Class</th><th>Subject(s)</th><th>Term / Session</th><th>Attempts</th><th>Destination</th></tr></thead><tbody>'+(rows||'<tr><td colspan="7">No exams match these filters.</td></tr>')+'</tbody></table></div><p style="font-size:.8rem;color:#64748b">One verified score per student + subject + destination is pushed. Multiple attempts use the policy chosen above. The server creates columns and writes scores under an authorized, audited transaction; duplicate rows and browser-side RLS failures are prevented.</p>';
+    /* V12.70 — say BEFORE the push that two different exams cannot share one
+       cell. The server refuses such a batch (it used to merge them and drop
+       marks silently), so the preview must show the same truth rather than
+       letting the bursar discover it from an error dialog. */
+    const cellMap={};
+    filtered.forEach(e=>{
+      const target=dest==='__exam__'?(e.report_column||'CBT / Online Exam'):dest;
+      const key=[String(e.class||'').trim().toLowerCase(),String(e.term||'').trim().toLowerCase(),
+                 String(e.session||'').trim().toLowerCase(),String(e.subject||'').trim().toLowerCase(),
+                 String(target).trim().toLowerCase()].join('|');
+      (cellMap[key]=cellMap[key]||[]).push(e.code||e.id);
+    });
+    const clashes=Object.keys(cellMap).filter(k=>cellMap[k].length>1).map(k=>cellMap[k]);
+    /* V12.71 (round-15 item 11) — A REFUSAL WITHOUT A WAY OUT IS A DEAD END.
+       The batch RPC is right to refuse two exams for one cell: report_scores
+       holds one mark per (column,student,subject), so merging would silently
+       discard marks. But the school was then stuck — told what was wrong and
+       left to hand-edit each CBT one at a time. The preview now names every
+       clashing group AND offers the one click that fixes it by giving each exam
+       its own column, which is exactly what the server asks for. */
+    this._bulkCBT.clashes=clashes;
+    const clashNote=clashes.length
+      ? '<div class="notice notice-error" style="margin:8px 0"><b>'+clashes.length+' group(s) of exams are aimed at the same report cell.</b>'
+        +'<div style="margin:6px 0 4px">'+clashes.map(g=>'<code>'+this.esc(g.join('  +  '))+'</code>').join('<br>')+'</div>'
+        +'A report column is ONE cell, so pushing these together would keep only one mark per student and silently discard the rest. '
+        +'The server refuses the batch rather than lose marks — that is why the push failed.'
+        +'<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'
+        +'<button class="btn btn-sm btn-primary" onclick="ReportEngine.splitClashingColumns()">🔧 Give each exam its own column (fixes all '+clashes.length+' group(s))</button>'
+        +'<button class="btn btn-sm btn-outline" onclick="ReportEngine.previewBulkCBTPush&&ReportEngine.previewBulkCBTPush()">↻ Re-check</button>'
+        +'</div></div>'
+      : '';
+    host.innerHTML=clashNote+'<div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0"><b>'+filtered.length+' exam(s) match · '+(this._bulkCBT.countsUnknown?'server will validate result counts':filtered.reduce((a,e)=>a+(this._bulkCBT.counts[e.id]||0),0)+' result row(s)')+'</b><label><input type="checkbox" checked onchange="document.querySelectorAll(\'.be-exam:not(:disabled)\').forEach(x=>x.checked=this.checked)"> Select all</label></div><div class="table-wrap"><table><thead><tr><th>Push</th><th>Exam / purpose</th><th>Class</th><th>Subject(s)</th><th>Term / Session</th><th>Attempts</th><th>Destination</th></tr></thead><tbody>'+(rows||'<tr><td colspan="7">No exams match these filters.</td></tr>')+'</tbody></table></div><p style="font-size:.8rem;color:#64748b">One verified score per student + subject + destination is pushed. Multiple attempts use the policy chosen above. The server creates columns and writes scores under an authorized, audited transaction; duplicate rows and browser-side RLS failures are prevented.</p>';
+  },
+
+  /* Assign a distinct report_column to every exam inside a clashing group, so
+     the batch can be pushed without losing a single mark. The FIRST exam in
+     each group keeps the shared column (it already owns those marks); the rest
+     get "<column> · <code>", which is unambiguous for the school and unique for
+     the database. Nothing is pushed here — the bursar still reviews and presses
+     Push, so this cannot commit a mark on its own. */
+  async splitClashingColumns(){
+    const self=this; const clashes=(this._bulkCBT&&this._bulkCBT.clashes)||[];
+    if(!clashes.length){ toast('Nothing to split.','info'); return; }
+    const sb2=this.sb||window.sb||(typeof sb!=='undefined'?sb:null);
+    if(!sb2){ toast('Database not configured','warning'); return; }
+    if(!confirm('Give each exam its own report column?\n\nThis only renames the destination column on the exams below; it does not push any mark. The first exam in each group keeps the column it already uses.')) return;
+    const exams=(this._bulkCBT.filtered||[]);
+    let changed=0; const problems=[];
+    for(const group of clashes){
+      for(let i=1;i<group.length;i++){
+        const code=group[i];
+        const exam=exams.find(e=>String(e.code||e.id)===String(code));
+        if(!exam){ problems.push(code+': not in the current list'); continue; }
+        const base=(exam.report_column||'CBT / Online Exam').split(' · ')[0];
+        const target=base+' · '+String(code);
+        const r=await sb2.from('cbt_exams').update({report_column:target}).eq('id',exam.id).select('id');
+        if(r.error||!r.data||!r.data.length){ problems.push(code+': '+(r.error?r.error.message:'not saved (permission?)')); continue; }
+        exam.report_column=target; changed++;
+      }
+    }
+    if(changed){ toast('🔧 '+changed+' exam(s) now have their own report column. Review the list, then push.','success',9000); }
+    if(problems.length){
+      openModal('Some exams could not be re-columned',
+        '<div class="notice notice-error"><b>'+problems.length+' exam(s) were not changed.</b></div>'
+        +'<ul style="font-size:.85rem">'+problems.map(p=>'<li>'+this.esc(p)+'</li>').join('')+'</ul>'
+        +'<p style="font-size:.82rem;color:#475569">Open those CBTs in the editor and set a Report column by hand, or push them individually.</p>',
+        '<button class="btn btn-outline" onclick="closeModal()">Close</button>');
+    }
+    try{ this.previewBulkCBTPush(); }catch(_){}
   },
 
   async pushOneCBTExam(exam,targetName,opts){
@@ -664,7 +1038,19 @@ const ReportEngine = {
     }catch(e){
       if(btn){btn.disabled=false;btn.textContent='Push selected exams now';}
       // The batch RPC is transaction-scoped: an error means no part of this batch committed.
-      openModal('❌ Bulk push not committed','<div class="notice notice-error"><b>No scores from this batch were committed.</b><br>'+this.esc(e.message||e)+'</div><p>Correct the destination, role or eligible-result issue and retry. Existing CBT attempts and report rows are preserved.</p>','<button class="btn btn-outline" onclick="closeModal()">Close</button>');
+      {
+        const msg=String(e.message||e);
+        const isConflict=/destination_conflict|single cell|same report column|keep only ONE/i.test(msg)||/would keep only one of the marks/i.test(msg);
+        openModal('❌ Bulk push not committed',
+          '<div class="notice notice-error"><b>Nothing was written — your existing marks are untouched.</b><br>'+this.esc(msg)+'</div>'
+          +(isConflict
+            ? '<p style="font-size:.86rem">Two or more of the exams you selected are aimed at <b>one</b> report column. That column holds one mark per pupil, so they cannot be pushed together without discarding marks — the server refused the whole batch rather than lose them.</p>'
+              +'<p style="font-size:.86rem"><b>One click fixes it:</b> each exam gets its own column, then you push again.</p>'
+            : '<p style="font-size:.86rem">Correct the destination, role or eligible-result issue and retry. Existing CBT attempts and report rows are preserved.</p>'),
+          (isConflict
+            ? '<button class="btn btn-outline" onclick="closeModal()">Close</button> <button class="btn btn-primary" onclick="closeModal();ReportEngine.splitClashingColumns()">🔧 Give each exam its own column</button>'
+            : '<button class="btn btn-outline" onclick="closeModal()">Close</button>'));
+      }
     }
   },
 
@@ -743,3 +1129,195 @@ const ReportEngine = {
 };
 if (typeof sb !== 'undefined') ReportEngine.init(sb);
 window.ReportEngine = ReportEngine;
+
+
+/* =====================================================================
+   V12.66 — ReportPolicy: the school's switch for what a report prints.
+   Backed by sc_report_policy / sc_report_policy_set. The report engine reads
+   the same row, so what you set here is exactly what prints.
+   ===================================================================== */
+const ReportPolicy = {
+  esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));},
+  _kind:'terminal', _data:{},
+  async initAll(){
+    /* fill the term/session pickers from the same sources the pages use */
+    const fill=async(id,table,col)=>{
+      const el=document.getElementById(id); if(!el) return;
+      try{
+        const {data}=await sb.from(table).select(col).limit(500);
+        [...new Set((data||[]).map(x=>x[col]).filter(Boolean))].sort().forEach(v=>{
+          const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o);});
+      }catch(_){}
+    };
+    await fill('pol-term','academic_periods','term');
+    await fill('pol-session','academic_periods','session');
+    await fill('mpol-term','academic_periods','term');
+    await fill('mpol-session','academic_periods','session');
+  },
+  async load(kind){
+    this._kind = kind || (document.getElementById('pol-kind')||{}).value || 'terminal';
+    const isMid = this._kind === 'midterm';
+    const p = isMid ? 'mpol' : 'pol';
+    const body = document.getElementById(p+'-body');
+    const term = (document.getElementById(p+'-term')||{}).value || '';
+    const session = (document.getElementById(p+'-session')||{}).value || '';
+    if(body) body.innerHTML='<span class="pulse">Reading current setting…</span>';
+    let d={ok:true,show_position:true,show_grade:true,show_subject_position:true,show_remarks:true,position_label:'Position in class',configured:false};
+    try{
+      const r = await sb.rpc('sc_report_policy',{p_kind:this._kind,p_term:term||null,p_session:session||null});
+      if(!r.error && r.data && r.data.ok!==false) d = r.data;
+      else if(r.error && /sc_report_policy|schema cache|does not exist/i.test(String(r.error.message||'')))
+        throw new Error('The report-settings module needs the V12.66 database pack. Run database/complete-schema.sql in Supabase, then reload this page.');
+    }catch(e){
+      if(body) body.innerHTML='<div class="notice notice-error">'+this.esc(e.message||e)+'</div>';
+      return;
+    }
+    this._data = d;
+    const row=(k,label,hint,on)=>`
+      <tr>
+        <td style="text-align:left"><b>${label}</b>${hint?'<div style="font-size:.78rem;color:var(--gray-600);margin-top:2px">'+hint+'</div>':''}</td>
+        <td style="width:110px">
+          <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="${p}-${k}" ${on?'checked':''}>
+            <span style="font-size:.85rem">${on?'On':'Off'}</span>
+          </label>
+        </td>
+      </tr>`;
+    const posOn = d.show_position !== false;
+    const html = `
+      <div class="table-wrap"><table style="font-size:.9rem">
+        <thead><tr><th style="text-align:left">Shown on this report?</th><th>Setting</th></tr></thead>
+        <tbody>
+          ${row('show_position','Show the position in class',
+              'Turn this off and no learner\'s class position appears anywhere on this report — screen or print.',
+              posOn)}
+          ${row('show_subject_position','Show a position for each subject','The per-subject POS column on the subject sheet.', d.show_subject_position !== false)}
+          ${row('show_grade','Show the letter grade','A to F next to each subject and on the summary row.', d.show_grade !== false)}
+          ${row('show_remarks','Show the automatic remark','Excellent / Very good / … printed beside each subject.', d.show_remarks !== false)}
+        </tbody></table></div>
+      <div class="form-group" style="margin-top:12px;max-width:420px">
+        <label>What to call it</label>
+        <input class="form-input" id="${p}-position_label" value="${this.esc(d.position_label||'Position in class')}"
+               placeholder="e.g. Position in class, Rank, or leave blank">
+        <small style="color:var(--gray-600)">Some schools print <i>Rank</i>, some print <i>Overall position</i>. Leave it as it is if you are happy.</small>
+      </div>
+      <p style="font-size:.82rem;color:${d.configured?'#166534':'#92400e'};margin-top:8px">
+        ${d.configured
+          ? '✅ A setting is saved for this report'+(term||session?' and these dates':'')+'.'
+          : '⚠️ No setting saved yet — the report currently shows positions (the old behaviour). Choose above and save.'}
+      </p>`;
+    if(body) body.innerHTML = html;
+    /* live toggle labels */
+    ['show_position','show_subject_position','show_grade','show_remarks'].forEach(k=>{
+      const cb=document.getElementById(p+'-'+k); if(!cb) return;
+      cb.addEventListener('change',()=>{ cb.nextElementSibling.textContent = cb.checked?'On':'Off'; });
+    });
+  },
+  async _write(kind, term, session){
+    const isMid = kind==='midterm'; const p = isMid ? 'mpol' : 'pol';
+    const get=k=>{const el=document.getElementById(p+'-'+k);return el?!!el.checked:true;};
+    const label=(document.getElementById(p+'-position_label')||{}).value||'Position in class';
+    const r = await sb.rpc('sc_report_policy_save',{
+      p_kind: kind,
+      p_term: term||null,
+      p_session: session||null,
+      p_show_position: get('show_position'),
+      p_show_grade: get('show_grade'),
+      p_show_subject_position: get('show_subject_position'),
+      p_show_remarks: get('show_remarks'),
+      p_position_label: label
+    });
+    if(r.error) throw r.error;
+    const d=r.data||{};
+    if(d.ok===false) throw new Error(d.error||'Could not save');
+    return d;
+  },
+  async save(kind){
+    this._kind = kind || this._kind;
+    const isMid = this._kind==='midterm'; const p = isMid ? 'mpol' : 'pol';
+    const term=(document.getElementById(p+'-term')||{}).value||'';
+    const session=(document.getElementById(p+'-session')||{}).value||'';
+    try{
+      const d=await this._write(this._kind, term, session);
+      toast(d.show_position?'Position will now be printed on this report.'
+                          :'Position is now withheld from this report.', 'success', 6000);
+      if(window.ReportEngine) ReportEngine._policy=null;
+      await this.load(this._kind);
+    }catch(e){ toast('Could not save: '+(e.message||e),'error',8000); }
+  },
+  async saveAll(kind){
+    this._kind = kind || this._kind;
+    try{
+      await this._write(this._kind, null, null);
+      toast('Saved as the school default for this report type — it applies to every term that has no setting of its own.','success',7000);
+      await this.load(this._kind);
+    }catch(e){ toast('Could not save: '+(e.message||e),'error',8000); }
+  },
+
+  /* ---- per-learner hold ---- */
+  async openHolds(){
+    const box=document.getElementById('pol-preview'); if(!box) return;
+    box.innerHTML='<span class="pulse">Loading learners…</span>';
+    const cls=(document.getElementById('pol-class')||{}).value||'';
+    /* the hold is stored against ONE class/term/session/kind — capture it now */
+    this._holdCtx = {
+      class: cls,
+      term: (document.getElementById('pol-term')||{}).value||'',
+      session: (document.getElementById('pol-session')||{}).value||'',
+      kind: this._kind || 'terminal'
+    };
+    /* V12.70 (item 4) — this asked `profiles` for `class` and `admission_no`.
+       `profiles` has NEITHER: class lives on `students`. PostgREST therefore
+       returned 42703 every time, the branch below rendered the error text, and
+       the "withhold this learner's position" panel showed nothing at all. A
+       teacher could not withhold anyone, and the screen blamed the database.
+       Learners are in `students`; that is what the panel is listing. */
+    const cols='id,full_name,class,admission_no';
+    let q=(sb.from('students').select(cols).order('class').limit(2000));
+    if(cls) q=q.eq('class',cls);
+    let {data,error}=await q;
+    if(error){
+      /* Older projects may not expose `students` to this role yet; fall back to
+         the register via the students table without the class filter so the
+         panel still works rather than dying. */
+      try{ const r2=await sb.from('students').select('id,full_name,admission_no').limit(2000); data=r2.data||[]; error=r2.error; }
+      catch(e){ error=error||e; }
+    }
+    if(error){box.innerHTML='<div class="notice notice-error">Could not load the learner list: '+this.esc(error.message||error)+'</div>';return;}
+    const held={};
+    try{
+      const h=await sb.from('sc_report_position_hold').select('student_id');
+      (h.data||[]).forEach(x=>held[x.student_id]=x.reason||true);
+    }catch(_){}
+    box.innerHTML='<div class="table-wrap"><table style="font-size:.85rem"><thead><tr><th style="text-align:left">Learner</th><th>Class</th><th>Admission no.</th><th>Position</th><th>Why (optional, for the file)</th></tr></thead><tbody>'
+      + (data||[]).slice(0,300).map(s=>`<tr>
+          <td style="text-align:left"><b>${this.esc(s.full_name)}</b></td>
+          <td>${this.esc(s.class||'')}</td>
+          <td>${this.esc(s.admission_no||'')}</td>
+          <td><button class="btn btn-sm ${held[s.id]?'btn-outline':'btn-primary'}" onclick="ReportPolicy.toggleHold('${s.id}',${held[s.id]?'false':'true'},{admission_no:'${this.esc(s.admission_no||'')}',class:'${this.esc(s.class||'')}'})">${held[s.id]?'Withheld':'Shown'}</button></td>
+          <td style="min-width:220px"><input class="form-input" id="hold-reason-${s.id}" value="${this.esc(typeof held[s.id]==='string'?held[s.id]:'')}" placeholder="e.g. mark under appeal"></td>
+        </tr>`).join('')
+      + '</tbody></table></div>';
+  },
+  async toggleHold(id, on, ctx){
+    const reason=(document.getElementById('hold-reason-'+id)||{}).value||'';
+    const c = ctx || this._holdCtx || {};
+    try{
+      const r=await sb.rpc('sc_report_hold_position',{
+        p_student_id_ref: c.admission_no || id,
+        p_class:   c.class   || '',
+        p_term:    c.term    || '',
+        p_session: c.session || '',
+        p_kind:    c.kind    || this._kind || 'terminal',
+        p_reason:  reason || '',
+        p_hold:    !!on
+      });
+      if(r.error) throw r.error;
+      const d=r.data||{}; if(d.ok===false) throw new Error(d.error||'Could not change');
+      toast(on?'Position withheld for this learner only.':'Position restored for this learner.','success',6000);
+      if(window.ReportEngine) ReportEngine._holds=null;
+      await this.openHolds();
+    }catch(e){ toast('Could not change: '+(e.message||e),'error',8000); }
+  }
+};
+document.addEventListener('DOMContentLoaded',()=>ReportPolicy.initAll());

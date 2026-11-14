@@ -119,7 +119,28 @@ const App = {
   async loadSchoolSettings() {
     try {
       const supabase = window.sb || this.sb || null; if (!supabase) return;
-      const { data } = await supabase.from('school_settings').select('*').eq('id', 1).maybeSingle();
+      // V12.68 — `select('*')` is all-or-nothing: ONE missing column and the
+      // whole settings row fails, so branding, terms, sessions, geofence and the
+      // currency symbol all vanish at once. Ask for the columns we actually use;
+      // if the API still refuses, drop to an empty select so the id row is still
+      // readable, and finally surface the reason instead of swallowing it.
+      let data = null;
+      {
+        const COLS = ['id','school_name','short_name','motto','address','phone','email','logo_url',
+          'currency','terms','sessions','principal_name','signature_url','principal_signature_bg_removed',
+          'proprietor_name','proprietor_signature_url','proprietor_signature_bg_removed',
+          'examination_officer_name','examination_officer_signature_url','examination_officer_signature_bg_removed',
+          'latitude','longitude','geo_radius_m','enforce_geofence','stamp_text','stamp_color',
+          'stamp_enabled','signature_enabled','class_teacher_signature_url','hmg_link'].join(',');
+        const r = await supabase.from('school_settings').select(COLS).eq('id', 1).maybeSingle();
+        if (!r.error) data = r.data;
+        else {
+          console.warn('[settings] named columns refused, retrying with id only:', r.error.message);
+          const r2 = await supabase.from('school_settings').select('id').eq('id', 1).maybeSingle();
+          if (r2.error) throw r2.error;
+          data = r2.data;                 // the row exists; other fields use defaults
+        }
+      }
       if (data) {
         window.SC_SETTINGS = data;
         try {
@@ -135,7 +156,9 @@ const App = {
           window.SCHOOL.enforceGeofence = data.enforce_geofence !== false;
         } catch (_) {}
       }
-    } catch (_) {}
+    } catch (e) {
+      console.warn('[settings] school_settings could not be read:', e && e.message ? e.message : e);
+    }
   },
 
   hydrateBrandAssets() {
@@ -573,6 +596,7 @@ const App = {
       'academic-records':'academic_records', 'academic_records':'academic_records',
       'admin-data':'admin_data', 'admin_data':'admin_data',
       'report-cards':'report_cards', 'report_cards':'report_cards', 'midterm-reports':'midterm_reports', 'midterm_reports':'midterm_reports',
+      'prep-exam-reports':'prep_exam_reports', 'prep_exam_reports':'prep_exam_reports',
       'cbt-prompts':'cbt_prompts', 'cbt_prompts':'cbt_prompts',
       'cbt-exam':'cbt_exam', 'cbt_exam':'cbt_exam',
       'timetable-generator':'timetable_generator', 'timetable_generator':'timetable_generator',
@@ -685,7 +709,7 @@ const App = {
   STUDENT_WHITELIST: new Set([
     'dashboard','profile','change-password','notifications',
     'student-profile','student_profile',
-    'results','report-cards','report_cards','midterm-reports','midterm_reports',
+    'results','report-cards','report_cards','midterm-reports','midterm_reports','prep-exam-reports','prep_exam_reports',
     'attendance','timetable','assignments','idcards','inbox','complaints','eresources','digital_library','digital-library','e-resources','certificates',
     'fees','idcards',
     'voting',
@@ -710,7 +734,7 @@ const App = {
     'dashboard','profile','change-password','notifications',
     'student-profile','student_profile',
     'fees','idcards',
-    'results','report-cards','report_cards','midterm-reports','midterm_reports',
+    'results','report-cards','report_cards','midterm-reports','midterm_reports','prep-exam-reports','prep_exam_reports',
     'attendance','assignments','timetable','idcards','inbox','complaints','eresources','e-resources','certificates',
     'announcements','events','school_calendar','school-calendar',
     'gallery','helpdesk','lost_found','lost-found',
@@ -992,7 +1016,7 @@ const App = {
   /* =================================================================
      NAVIGATION
      ================================================================= */
-  NAV_ORDER: ['dashboard','profile','student-profile','change-password','notifications','academic_setup','students','staff','parents','classes','subjects','departments','attendance','timetable','timetable-generator','sow','lesson_plans','results','report-cards','midterm-reports','affective_traits','psychomotor_traits','report_comments','academic-records','transcripts','rubrics','cbt','cbt-prompts','cbt-multi','cbt-exam','entrance','assignments','digital_library','library','book_request','eresources','lms','announcements','events','school_calendar','messages','inbox','broadcast','complaints','voting','surveys','gallery','birthdays','fees','school-fees','school-products','payment-history','payments_online','finance','financial_aid','donations','hr','payroll','staff_loans','staff_bonus','appraisals','leave','substitutions','admissions','exam_registrations','promotion','alumni','certificates','transfer_cert','idcards','flyer','document_builder','conduct','behaviour','health','counselling','support_plans','diary','gamification','hostel','cafeteria','menu','transport','fleet_tracking','visitors','checkin','front_desk','lost_found','parent_meeting','facility_booking','library_borrowers','career_counseling','helpdesk','directory','reports','analytics','inventory','storage','compliance','activity_log','admin-data','approvals','settings','teacher-overview','feature-guide','hmg-digital-products','status-manager','developer'],
+  NAV_ORDER: ['dashboard','profile','student-profile','change-password','notifications','academic_setup','students','staff','parents','classes','subjects','departments','attendance','timetable','timetable-generator','sow','lesson_plans','results','report-cards','midterm-reports','prep-exam-reports','affective_traits','psychomotor_traits','report_comments','academic-records','transcripts','rubrics','cbt','cbt-prompts','cbt-multi','cbt-exam','entrance','assignments','digital_library','library','book_request','eresources','lms','announcements','events','school_calendar','messages','inbox','broadcast','complaints','voting','surveys','gallery','birthdays','fees','school-fees','school-products','payment-history','payments_online','finance','financial_aid','donations','hr','payroll','staff_loans','staff_bonus','appraisals','leave','substitutions','admissions','exam_registrations','promotion','alumni','certificates','transfer_cert','idcards','flyer','document_builder','conduct','behaviour','health','counselling','support_plans','diary','gamification','hostel','cafeteria','menu','transport','fleet_tracking','visitors','checkin','front_desk','lost_found','parent_meeting','facility_booking','library_borrowers','career_counseling','helpdesk','directory','reports','analytics','inventory','storage','compliance','activity_log','admin-data','approvals','settings','teacher-overview','feature-guide','hmg-digital-products','status-manager','developer'],
 
   // v2 NAV-01: Pages may be generated from older static templates whose
   // hand-written sidebars do not contain later modules. Inject these canonical
@@ -1501,7 +1525,7 @@ const App = {
        the FIRST (the parent's, display:none for a student), so the loader
        filled an invisible div while the student stared at "Loading fee
        summary…" forever. Now every container is filled. */
-    const boxes = [...document.querySelectorAll('[id="dash-fees"]')];
+    const boxes = [...document.querySelectorAll('[id="dash-fees"],[id="dash-fees-student"]')];
     const box = boxes[0];
     const paint = (html) => boxes.forEach(b => { b.innerHTML = html; });
     if (!box || !window.sb) return;
@@ -1523,7 +1547,7 @@ const App = {
            the SAME engine's aggregates (sc_fee_overview) so both pages agree. */
         const ovr = await sb.rpc('sc_fee_overview', { p_class: null, p_term: null, p_session: null });
         if (ovr.error || !ovr.data) {
-          paint('<p style="color:var(--gray-500);font-size:.85rem">School-wide fee summary needs the V12.60 database pack (database/v12.60-expert-fix-pack.sql).</p>');
+          paint('<p style="color:var(--gray-500);font-size:.85rem">School-wide fee summary needs the V12.60 database pack (database/complete-schema.sql).</p>');
           return;
         }
         const o = ovr.data || {};
@@ -1557,6 +1581,7 @@ const App = {
             '</table>' : '') +
           '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
             '<a class="btn btn-sm btn-primary" href="fees.html">Open Fees &amp; Payments</a>' +
+            '<a class="btn btn-sm btn-outline" href="fees.html#fee-statement">🖨️ Paid vs outstanding statement</a>' +
             '<button class="btn btn-sm btn-outline" onclick="App.loadDashFees()">🔄 Refresh</button>' +
           '</div>' +
           '<p style="font-size:.74rem;color:var(--gray-500);margin:8px 0 0">Identical figures to the Fees page — both read the same server-side fee engine.</p>');
@@ -1567,11 +1592,51 @@ const App = {
       let h = '';
       for (const s of studs) {
         const r = await sb.rpc('sc_student_fee_state', { p_student: s.id });
-        if (r.error) { h += '<p style="color:var(--gray-500);font-size:.85rem">💤 Fee totals need a one-time database update (admin: run database/v9.4-fees-and-exams.sql). Payment history is on the <a href="fees.html">Fees page</a>.</p>'; break; }
+        /* ================================================================
+           V12.68 — STOP LYING ABOUT THE REASON.
+           This branch used to print "run database/complete-schema.sql" for
+           ANY error, which sent the school chasing a file that had been
+           superseded four releases earlier. The fee engine is in the complete
+           schema; the only thing that can genuinely be missing now is a stale
+           PostgREST catalogue. So: name the real cause, keep the technical
+           detail visible for support, and gain a retry that re-reads the cache
+           before giving up.
+           ================================================================ */
+        if (r.error) {
+          const msg = String(r.error.message || r.error || '');
+          const missing = /could not find|does not exist|schema cache|PGRST202|PGRST204|404/i.test(msg);
+          h += '<div class="notice notice-warning" style="font-size:.84rem;margin-top:8px">'
+            + '<b>⚠️ ' + (missing
+                ? 'The fee engine is not visible to the API yet.'
+                : 'The fee summary could not be loaded.') + '</b><br>'
+            + (missing
+                ? 'The database has the fee engine; the API has not noticed it yet. This is a '
+                  + '<b>cache</b> problem, not a missing update — do <b>not</b> run any other SQL. '
+                  + 'Press <b>Retry</b>. If it persists, wait one minute: Supabase reloads the API '
+                  + 'catalogue automatically.'
+                : 'Your payment history is safe. Press <b>Retry</b>.')
+            + '<div style="margin-top:6px;font-size:.74rem;color:var(--gray-500)">'
+            + 'Technical detail: <code>' + esc(msg.slice(0, 220)) + '</code></div>'
+            + '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">'
+            + '<button class="btn btn-sm btn-primary" onclick="App.loadDashFees()">🔄 Retry</button>'
+            + '<a class="btn btn-sm btn-outline" href="fees.html">🧾 Payment history</a>'
+            + '</div></div>';
+          break;
+        }
         const f = r.data || {};
         if (f.ok === false) continue;
         const cur = f.currency || '₦';
-        const owingNow = Number(f.balance || 0), arrears = Number(f.arrears || 0), totalDue = Number(f.total_due || 0);
+        /* V12.67 — arrears are unpaid PRIOR INVOICES. Absent an invoice there is
+           nothing owed, so `has_arrears` (server-side) is authoritative and the
+           figure is rendered as blank rather than ₦0. */
+        /* V12.69 — three separate debts, and ONE total. The opening balance is
+           no longer invisible: it is read from the ledger and printed on its
+           own tile, so a learner who owes from before the platform is never
+           shown as settled. */
+        const opening = (f.has_opening === false) ? 0 : Number(f.opening_arrears || 0);
+        const owingNow = Number(f.balance || 0);          /* this term alone */
+        const arrears = (f.has_arrears === false) ? 0 : Number(f.arrears || 0);
+        const totalDue = Number(f.total_due != null ? f.total_due : (owingNow + arrears + opening));
         h += '<div style="border:2px solid ' + (totalDue > 0 ? '#fca5a5' : '#86efac') + ';border-radius:14px;padding:14px;margin-bottom:12px;background:' + (totalDue > 0 ? '#fef2f2' : '#f0fdf4') + '">' +
           '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:baseline">' +
           '<b style="font-size:1.02rem">' + esc(s.full_name) + (f.class ? ' · ' + esc(f.class) : '') + '</b>' +
@@ -1579,19 +1644,169 @@ const App = {
           '<div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:8px">' +
           '<div><div style="font-size:1.5rem;font-weight:900;color:#0f172a">' + money(cur, f.bill) + '</div><div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-500)">Total fees this term</div></div>' +
           '<div><div style="font-size:1.5rem;font-weight:900;color:#15803d">' + money(cur, f.paid) + '</div><div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-500)">Paid</div></div>' +
-          '<div><div style="font-size:1.5rem;font-weight:900;color:' + (owingNow > 0 ? '#b91c1c' : '#15803d') + '">' + money(cur, owingNow) + '</div><div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-500)">Balance this term</div></div>' +
+          (opening > 0 ? '<div><div style="font-size:1.5rem;font-weight:900;color:#b45309">' + money(cur, opening) + '</div><div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#b45309">Opening balance (before School&nbsp;Connect)</div></div>' : '') +
+          '<div><div style="font-size:1.5rem;font-weight:900;color:' + ((owingNow + arrears + opening) > 0 ? '#b91c1c' : '#15803d') + '">' + money(cur, owingNow + arrears + opening) + '</div><div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-500)">Balance outstanding</div></div>' +
           (Number(f.aid || 0) > 0 ? '<div><div style="font-size:1.5rem;font-weight:900;color:#7c3aed">−' + money(cur, f.aid) + '</div><div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#7c3aed">🎓 Scholarship / aid</div></div>' : '') +
           (arrears > 0 ? '<div><div style="font-size:1.5rem;font-weight:900;color:#b91c1c">' + money(cur, arrears) + '</div><div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-500)">Previous terms owing</div></div>' : '') +
           (totalDue > 0 ? '<div><div style="font-size:1.5rem;font-weight:900;color:#b91c1c">' + money(cur, totalDue) + '</div><div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#b91c1c">TOTAL OUTSTANDING</div></div>' : '<div style="align-self:center;font-weight:800;color:#15803d">✅ Fully paid</div>') +
           '</div>';
+        /* ============================================================
+           V12.62 (item 1) — the card must be COMPLETE and must reconcile
+           line by line with the Fees page, without the family having to
+           navigate anywhere. Same engine (sc_student_fee_state →
+           sc_fee_ledger_for), same figures, four labelled lines that add
+           up, plus the actual receipts underneath.
+           ============================================================ */
         const br = f.breakdown || [];
-        if (br.length) h += '<details style="margin-top:8px"><summary style="cursor:pointer;font-size:.82rem;font-weight:700;color:var(--gray-600)">📋 Fee breakdown</summary><table style="width:100%;font-size:.82rem;margin-top:6px">' + br.map(b => '<tr><td style="padding:2px 6px">' + esc(b.item) + '</td><td style="padding:2px 6px;text-align:right"><b>' + money(cur, b.amount) + '</b></td></tr>').join('') + '<tr><td style="padding:4px 6px;border-top:1px solid var(--gray-300)"><b>Total</b></td><td style="padding:4px 6px;text-align:right;border-top:1px solid var(--gray-300)"><b>' + money(cur, f.bill) + '</b></td></tr></table></details>';
         const ar = f.arrears_rows || [];
-        if (ar.length) h += '<details style="margin-top:6px"><summary style="cursor:pointer;font-size:.82rem;font-weight:700;color:#b91c1c">🧮 Previous terms owing — breakdown</summary><table style="width:100%;font-size:.82rem;margin-top:6px">' + ar.map(a => '<tr><td style="padding:2px 6px">' + esc(a.term) + ' ' + esc(a.session) + '</td><td style="padding:2px 6px;text-align:right">billed <b>' + money(cur, a.bill) + '</b> · paid ' + money(cur, a.paid) + ' · owing <b style="color:#b91c1c">' + money(cur, a.owing) + '</b></td></tr>').join('') + '</table></details>';
-        h += '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-sm btn-outline" href="fees.html">🧾 Payment history & e-receipts</a>' + (role === 'parent' ? '<a class="btn btn-sm btn-outline" href="payments_online.html">💳 Pay online</a>' : '') + '</div></div>';
+        const paidPct = Number(f.paid_percent || 0);
+
+        /* ================================================================
+           V12.68 (B9) — PROVENANCE ON THE CARD.
+           Round 9 reported "Total fees this term" showing ₦0. A card that
+           prints a number without its source cannot be trusted or challenged,
+           so every card now states, in words, how the figure was arrived at:
+             • where the term came from (calendar / flag / fallback),
+             • which price list matched (exact term, "Current Term", another
+               term of the session, the latest one, or the invoice),
+             • and, when there is no bill at all, WHICH of the three reasons
+               applies — because "no fee structure exists anywhere", "this
+               class has none for this term" and "this class has none at all"
+               need three different actions from the bursar.
+           Nothing about the money changes here; this is the same engine.
+           ================================================================ */
+        const mStatus = String(f.match_status || '');
+        const mBy = String(f.matched_by || '');
+        const rBy = String(f.resolved_by || '');
+        const rungText = {
+          invoice: 'from the invoice raised for this term',
+          exact_term: 'from the class fee structure published for this exact term',
+          current_term_label: 'from the class fee structure saved as “Current Term”',
+          session_other_term: 'from another term of the same session — no structure names this term',
+          latest_structure: 'from the most recent class fee structure — nothing matches this term',
+          override: 'from a personal total set by the bursar'
+        }[mBy] || '';
+        if (f.bill_known === false) {
+          const unknownWhy = {
+            no_structures_at_all: ['⚠️ No class fee structure exists on this platform yet.',
+              'Open 💳 Class Fee Structure and enter the fees for each class once. Every dashboard then fills itself in — no student record needs editing.'],
+            no_structure_this_term: ['⚠️ This class has a fee structure, but none for ' + (f.term || 'this term') + '.',
+              'Publish the fee for ' + (f.term || 'this term') + (f.session ? ' · ' + f.session : '') + ' on the 💳 Class Fee Structure page. The bill is unknown — not zero.'],
+            no_structure: ['⚠️ No fee structure has ever been published for this learner’s class.',
+              'Check the spelling of the class on the student record against the 💳 Class Fee Structure page, then publish it.']
+          }[mStatus] || ['⚠️ The bill for this term has not been published yet.',
+            'Open the 💳 Class Fee Structure page and publish the fee for this class.'];
+          h += '<div style="margin-top:10px;border-left:4px solid #f59e0b;background:#fffbeb;padding:9px 12px;border-radius:8px;font-size:.83rem">'
+            + '<b>' + unknownWhy[0] + '</b><br>' + unknownWhy[1]
+            + '<div style="margin-top:5px;color:#78350f;font-size:.78rem">'
+            + 'The figures below are your payment record — they are <b>not</b> a statement that nothing is owed.'
+            + (rBy ? ' Term resolved by: <code>' + esc(rBy) + '</code>.' : '') + '</div></div>';
+        } else if (rungText) {
+          /* a bill exists — say where it came from, and warn when the rung is a fallback */
+          const soft = (mBy === 'session_other_term' || mBy === 'latest_structure');
+          h += '<div style="margin-top:10px;border-left:4px solid ' + (soft ? '#f59e0b' : '#16a34a') + ';'
+            + 'background:' + (soft ? '#fffbeb' : '#f0fdf4') + ';padding:7px 11px;border-radius:8px;font-size:.79rem;color:#334155">'
+            + (soft ? '⚠️ ' : '✅ ') + 'This bill is ' + esc(rungText) + '.'
+            + (soft ? ' <b>Publish the fee for ' + esc(f.term || 'this term') + ' so the amount is exact.</b>' : '')
+            + (f.term ? ' <span style="color:var(--gray-500)">Term: ' + esc(f.term) + (f.session ? ' · ' + esc(f.session) : '')
+              + (rBy && rBy !== 'is_current' ? ' (' + esc(rBy) + ')' : '') + '</span>' : '')
+            + '</div>';
+        }
+        h += '<div style="margin-top:10px;border:1px solid var(--gray-300);border-radius:10px;overflow:hidden">' +
+             '<div style="background:var(--gray-100);padding:6px 10px;font-size:.8rem;font-weight:800;color:var(--gray-700)">How this balance is calculated</div>' +
+             '<table style="width:100%;font-size:.84rem;border-collapse:collapse">' +
+               (opening > 0
+                 ? '<tr><td style="padding:4px 10px;color:#b45309">Opening balance — owed before School Connect' +
+                     (f.opening_source === 'invoice' ? ' <span style="font-size:.7rem;color:var(--gray-500)">(recorded as an invoice)</span>' : '') +
+                     '</td><td style="padding:4px 10px;text-align:right;color:#b45309;font-weight:700">+' + money(cur, opening) + '</td></tr>' : '') +
+               '<tr><td style="padding:4px 10px">Total fees this term</td>' +
+                   '<td style="padding:4px 10px;text-align:right;font-weight:700">' + money(cur, f.bill) + '</td></tr>' +
+               (Number(f.aid || 0) > 0
+                 ? '<tr><td style="padding:4px 10px;color:#7c3aed">Less scholarship / aid</td><td style="padding:4px 10px;text-align:right;color:#7c3aed;font-weight:700">−' + money(cur, f.aid) + '</td></tr>' : '') +
+               (arrears > 0
+                 ? '<tr><td style="padding:4px 10px;color:#b91c1c">Add arrears from earlier terms</td><td style="padding:4px 10px;text-align:right;color:#b91c1c;font-weight:700">+' + money(cur, arrears) + '</td></tr>' : '') +
+               '<tr><td style="padding:4px 10px;color:#15803d">Less total paid so far</td>' +
+                   '<td style="padding:4px 10px;text-align:right;color:#15803d;font-weight:700">−' + money(cur, f.paid) + '</td></tr>' +
+               '<tr style="border-top:2px solid var(--gray-300)"><td style="padding:6px 10px"><b>' +
+                   (f.bill_known === false ? 'BILL NOT YET PUBLISHED'
+                     : (totalDue > 0 ? 'BALANCE STILL OWED' : 'FULLY SETTLED')) + '</b></td>' +
+                   '<td style="padding:6px 10px;text-align:right"><b style="font-size:1.05rem;color:' + (totalDue > 0 ? '#b91c1c' : '#15803d') + '">' +
+                   money(cur, totalDue) + '</b></td></tr>' +
+             '</table>' +
+             /* progress bar: how much of the whole obligation is settled */
+             '<div style="padding:8px 10px;border-top:1px solid var(--gray-200)">' +
+               '<div style="height:8px;border-radius:999px;background:#e2e8f0;overflow:hidden">' +
+                 '<div style="height:100%;width:' + Math.max(0, Math.min(100, paidPct)) + '%;background:' + (totalDue > 0 ? '#f59e0b' : '#16a34a') + '"></div></div>' +
+               '<div style="font-size:.74rem;color:var(--gray-500);margin-top:4px">' + paidPct + '% settled · ' +
+                 Number(f.receipts || 0) + ' receipt(s)' + (f.last_payment ? ' · last payment ' + esc(String(f.last_payment).slice(0, 10)) : '') + '</div>' +
+             '</div>' +
+           '</div>';
+
+        /* this term's bill, itemised */
+        if (br.length) h += '<details style="margin-top:8px"' + (br.length > 4 ? '' : ' open') + '>' +
+          '<summary style="cursor:pointer;font-size:.82rem;font-weight:700;color:var(--gray-600)">📋 What the ' + money(cur, f.bill) + ' is made of</summary>' +
+          '<table style="width:100%;font-size:.82rem;margin-top:6px">' +
+          br.map(b => '<tr><td style="padding:2px 6px">' + esc(b.item) + '</td><td style="padding:2px 6px;text-align:right"><b>' + money(cur, b.amount) + '</b></td></tr>').join('') +
+          '<tr><td style="padding:4px 6px;border-top:1px solid var(--gray-300)"><b>Total</b></td><td style="padding:4px 6px;text-align:right;border-top:1px solid var(--gray-300)"><b>' + money(cur, f.bill) + '</b></td></tr>' +
+          '</table></details>';
+
+        /* which earlier terms are still owing */
+        if (ar.length) h += '<details style="margin-top:6px"><summary style="cursor:pointer;font-size:.82rem;font-weight:700;color:#b91c1c">🧮 Which earlier terms are still owing</summary>' +
+          '<table style="width:100%;font-size:.82rem;margin-top:6px"><thead><tr><th style="text-align:left;padding:2px 6px">Term</th><th style="padding:2px 6px">Billed</th><th style="padding:2px 6px">Paid</th><th style="padding:2px 6px">Owing</th></tr></thead><tbody>' +
+          ar.map(a => '<tr><td style="padding:2px 6px">' + esc(a.term || '—') + ' ' + esc(a.session || '') +
+            (a.opening ? ' <span style="font-size:.7rem;color:#7c3aed">(before School Connect)</span>' : '') + '</td>' +
+            '<td style="padding:2px 6px;text-align:right">' + money(cur, a.bill) + '</td>' +
+            '<td style="padding:2px 6px;text-align:right">' + money(cur, a.paid) + '</td>' +
+            '<td style="padding:2px 6px;text-align:right"><b style="color:#b91c1c">' + money(cur, a.owing) + '</b></td></tr>').join('') +
+          '</tbody></table></details>';
+
+        /* the actual receipts — the family can see the history right here */
+        try {
+          const pr = await sb.from('fee_payments')
+            .select('amount_paid,method,reference,term,session,payment_date,created_at')
+            .eq('student_id', s.id).order('created_at', { ascending: false }).limit(50);
+          const pays = pr.data || [];
+          if (pays.length) {
+            h += '<details style="margin-top:6px"><summary style="cursor:pointer;font-size:.82rem;font-weight:700;color:var(--gray-600)">🧾 Payment history — ' + pays.length + ' receipt(s)</summary>' +
+              '<div class="table-wrap" style="margin-top:6px"><table style="font-size:.8rem"><thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Term</th><th>Reference</th></tr></thead><tbody>' +
+              pays.map(p => '<tr><td>' + esc(String(p.payment_date || p.created_at || '').slice(0, 10)) + '</td>' +
+                '<td style="text-align:right"><b style="color:#15803d">' + money(cur, p.amount_paid) + '</b></td>' +
+                '<td>' + esc(p.method || '—') + '</td>' +
+                '<td>' + esc((p.term || '') + (p.session ? ' · ' + p.session : '')) + '</td>' +
+                '<td>' + esc(p.reference || '—') + '</td></tr>').join('') +
+              '</tbody></table></div></details>';
+          } else {
+            h += '<p style="font-size:.8rem;color:var(--gray-500);margin:8px 0 0">No payment has been recorded yet.</p>';
+          }
+        } catch (_) { /* the totals above are authoritative even if history fails */ }
+
+        h += '<div style="font-size:.74rem;color:var(--gray-500);margin-top:8px">Every figure above is the same one the Fees page prints — both read one server-side engine.</div>';
+        h += '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-sm btn-outline" href="fees.html#fee-truth-card">🧾 Full fee statement</a><a class="btn btn-sm btn-outline" href="fees.html">🧾 Receipts &amp; e-receipts</a>' + (role === 'parent' ? '<a class="btn btn-sm btn-outline" href="payments_online.html">💳 Pay online</a>' : '') + '<button class="btn btn-sm btn-outline" onclick="App.loadDashFees()">🔄 Refresh</button></div></div>';
       }
-      paint(h || '<div style="color:var(--gray-500);font-size:.85rem"><p>💤 No fee structure has been published for the class yet.</p><p>Once the school saves the Class Fee Structure (admin: 💰 School Fee Structure page) and runs the v9.4 database update, the full bill, payments and balance appear here automatically.</p><button class="btn btn-sm btn-outline" onclick="App.loadDashFees()">🔄 Refresh</button></div>');
-    } catch (e) { paint('<p style="color:var(--gray-500);font-size:.85rem">Fee summary could not load. <button class="btn btn-sm btn-outline" onclick="App.loadDashFees()">🔄 Retry</button></p>'); }
+      /* V12.68 — an EMPTY card is itself a finding. If every learner was skipped
+         (engine returned ok=false, or a record had no id) the old fallback blamed
+         "no fee structure" and told the school to run a superseded SQL file.
+         Say what is actually true and give the next step. */
+      paint(h || ('<div style="color:var(--gray-600);font-size:.85rem">'
+        + '<p><b>No fee figures were returned for ' + studs.length + ' linked learner(s).</b></p>'
+        + '<p style="font-size:.8rem">The bill comes from the class fee structure. Check that the '
+        + 'learner’s <b>class</b> on their student record matches a class on the '
+        + '<a href="school-fees.html">💰 Class Fee Structure</a> page — a typo in the class '
+        + 'is the usual cause — then press Refresh.</p>'
+        + '<p style="font-size:.74rem;color:var(--gray-500)">Every fee figure is computed by '
+        + 'database/complete-schema.sql; no other SQL file is needed.</p>'
+        + '<button class="btn btn-sm btn-outline" onclick="App.loadDashFees()">🔄 Refresh</button></div>'));
+    } catch (e) {
+      /* V12.68 — an unexpected exception must never hide what it was. A bursar
+         can copy this line to support; a developer gets the real cause. */
+      console.error('[dash-fees]', e);
+      paint('<div style="font-size:.85rem;color:var(--gray-600)">'
+        + '<b>⚠️ The fee summary could not be built.</b><br>'
+        + '<span style="font-size:.78rem">Your payment records are safe. Try again; if it repeats, send this line to support.</span>'
+        + '<div style="margin-top:5px;font-size:.74rem;color:var(--gray-500)">'
+        + '<code>' + esc(String(e && e.message || e).slice(0, 200)) + '</code></div>'
+        + '<button class="btn btn-sm btn-outline" style="margin-top:8px" onclick="App.loadDashFees()">🔄 Retry</button></div>');
+    }
   },
   /* V10 (#3): MY PAY & BENEFITS — every staff member sees their own payslips,
      loans/advances (with balance) and bonuses on the dashboard, newest first.
@@ -1610,7 +1825,7 @@ const App = {
          fee card. */
       const r = await sb.rpc('sc_staff_pay_state');
       if (r.error) {
-        if (/could not find|does not exist|schema cache/i.test(r.error.message||'')) { box.innerHTML = '<p style="color:var(--gray-500);font-size:.85rem">💤 Pay summary needs a one-time database update — admin: run <code>database/v10.1-staffpay-attendance-vetting.sql</code>.</p>'; return; }
+        if (/could not find|does not exist|schema cache/i.test(r.error.message||'')) { box.innerHTML = '<p style="color:var(--gray-500);font-size:.85rem">💤 Pay summary needs a one-time database update — admin: run <code>database/complete-schema.sql</code>.</p>'; return; }
         box.innerHTML=''; return;
       }
       const f = r.data || {};
@@ -1643,7 +1858,7 @@ const App = {
     /* V10.2 (#1): the card exists in BOTH the parent and student sections →
        duplicate id. getElementById filled only the FIRST (hidden) one — the
        V9.5 lesson applied again: paint EVERY container. */
-    const boxes = [...document.querySelectorAll('[id="dash-products"]')];
+    const boxes = [...document.querySelectorAll('[id="dash-products"],[id="dash-products-student"]')];
     const box = boxes[0];
     const paint = (html) => boxes.forEach(b => { b.innerHTML = html; });
     if (!box || !window.sb) return;
@@ -1666,7 +1881,7 @@ const App = {
      #dash-exam-tt container on the page; silently skips when absent. */
   async loadDashExamTT() {
     /* V9.5: same duplicate-id fix as loadDashFees (parent + student sections). */
-    const boxes = [...document.querySelectorAll('[id="dash-exam-tt"]')];
+    const boxes = [...document.querySelectorAll('[id="dash-exam-tt"],[id="dash-exam-tt-student"]')];
     const box = boxes[0];
     const paint = (html) => boxes.forEach(b => { b.innerHTML = html; });
     if (!box || !window.sb) return;
@@ -1685,7 +1900,7 @@ const App = {
       let q = sb.from('exam_timetable').select('*').gte('exam_date', new Date().toISOString().slice(0, 10)).order('exam_date').order('start_time').limit(60);
       if (classes.length) q = q.in('class', classes);
       const r = await q;
-      if (r.error) { paint('<p style="color:var(--gray-500);font-size:.85rem">💤 The exam timetable appears here after a one-time database update (admin: run database/v9.4-fees-and-exams.sql or complete-schema.sql).</p>'); return; }
+      if (r.error) { paint('<p style="color:var(--gray-500);font-size:.85rem">💤 The exam timetable appears here after a one-time database update (admin: run database/complete-schema.sql or complete-schema.sql).</p>'); return; }
       const rows = r.data || [];
       if (!rows.length) { paint('<p style="color:var(--gray-500);font-size:.85rem">📭 No upcoming exam papers scheduled' + (classes.length ? ' for ' + classes.join(', ') : '') + ' yet — new papers appear here the moment the school publishes them. <a href="exam-timetable.html">Open the Exam Timetable →</a></p>'); return; }
       let h = '<div class="table-wrap"><table><thead><tr><th>Date</th><th>Time</th>' + (classes.length === 1 ? '' : '<th>Class</th>') + '<th>Subject</th><th>Venue</th></tr></thead><tbody>';
@@ -1753,23 +1968,50 @@ const App = {
          tiles now read the SAME server-side aggregate (sc_fee_overview):
          collected → Fees Paid, outstanding → Fees Outstanding. The row-sum is
          only a last-resort fallback when the RPC is not installed. */
-      let feesPaid = null, feesPaidFromEngine = false;
+      /* V12.62 (item 2) — ONE call, ONE aggregate object. These two tiles used
+         to make two independent rpc() round-trips; if the second failed or the
+         data moved in between, "paid" and "outstanding" could disagree, and a
+         bursar reading both tiles sees exactly the "both went up" symptom.
+         Now a single snapshot feeds both, so they are arithmetically linked:
+             outstanding = net_bill + arrears − collected
+         and both come from the same engine as the Fees page. */
+      let feesPaid = null, feesOwed = null, feeSrc = null, ovSnap = null;
       try {
-        const ovPaid = await supabase.rpc('sc_fee_overview', { p_class: null, p_term: null, p_session: null });
-        if (!ovPaid.error && ovPaid.data && ovPaid.data.ok !== false) {
-          feesPaid = Number(ovPaid.data.collected || 0);
-          feesPaidFromEngine = true;
-        }
+        const ov = await supabase.rpc('sc_fee_overview', { p_class: null, p_term: null, p_session: null });
+        if (!ov.error && ov.data && ov.data.ok !== false) { ovSnap = ov.data; feeSrc = 'engine'; }
       } catch (_) {}
-      if (feesPaid == null) feesPaid = (feeRows || []).reduce((a,b) => a + (Number(b.amount_paid) || 0), 0);
+      if (ovSnap) {
+        feesPaid = Number(ovSnap.collected || 0);
+        feesOwed = Number(ovSnap.outstanding || 0);
+      } else {
+        /* Consistent fallback — BOTH figures from the same per-student pass, so
+           they can never contradict each other even without the engine. */
+        const per = new Map();
+        (feeRows || []).forEach(r => {
+          if (!r || !r.student_id) return;
+          const t = Date.parse(r.created_at || '') || 0;
+          const prev = per.get(r.student_id) || { t: -1, paid: 0, bal: 0 };
+          per.set(r.student_id, {
+            t: Math.max(prev.t, t),
+            paid: prev.paid + (Number(r.amount_paid) || 0),
+            bal: t >= prev.t
+              ? (r.balance != null ? (Number(r.balance) || 0)
+                                   : Math.max(0, (Number(r.fee_total) || 0) - (Number(r.amount_paid) || 0)))
+              : prev.bal
+          });
+        });
+        feesPaid = 0; feesOwed = 0;
+        per.forEach(v => { feesPaid += v.paid; feesOwed += v.bal; });
+        feeSrc = 'rows';
+      }
       set('stat-students', studentCount);
       set('stat-staff', staffCount);
       set('stat-fees', feesPaid.toLocaleString());
       try {
         const tile = document.getElementById('stat-fees');
-        if (tile) tile.title = feesPaidFromEngine
-          ? 'Total collected this term, from the same fee engine as the Fees page.'
-          : 'Sum of the most recent 500 receipts (fee engine not installed).';
+        if (tile) tile.title = feeSrc === 'engine'
+          ? 'Total collected this term, from the same fee engine as the Fees page. Rises as money comes in.'
+          : 'Sum of recent receipts (fee engine not installed).';
       } catch (_) {}
       /* V7.8: the Notices tile showed the length of a 5-row PREVIEW list (max
          "5" forever). Real total count now. */
@@ -1780,30 +2022,26 @@ const App = {
          time a payment is recorded — the exact "paying fees increases
          outstanding" bug. The authoritative figure is the school-wide bill
          minus collections, computed server-side. */
-      let feesOwed = null;
-      try {
-        const ovr = await supabase.rpc('sc_fee_overview', { p_class: null, p_term: null, p_session: null });
-        if (!ovr.error && ovr.data && ovr.data.ok !== false) feesOwed = Number(ovr.data.outstanding || 0);
-      } catch (_) { /* fall through to the conservative estimate */ }
-      if (feesOwed == null) {
-        /* Fallback: one balance per STUDENT — the LAST snapshot of each
-           student's ledger, never the sum of every snapshot. */
-        const perStudent = new Map();
-        (feeRows || []).forEach(r => {
-          if (!r || !r.student_id) return;
-          const t = Date.parse(r.created_at || '') || 0;
-          const prev = perStudent.get(r.student_id);
-          if (!prev || t >= prev.t) {
-            perStudent.set(r.student_id, {
-              t: t,
-              bal: r.balance != null ? (Number(r.balance) || 0)
-                                     : Math.max(0, (Number(r.fee_total) || 0) - (Number(r.amount_paid) || 0))
-            });
-          }
-        });
-        feesOwed = [...perStudent.values()].reduce((a, x) => a + x.bal, 0);
-      }
       set('stat-outstanding', feesOwed.toLocaleString());
+      /* make it visible WHY these two numbers move in opposite directions */
+      try {
+        const t2 = document.getElementById('stat-outstanding');
+        if (t2) t2.title = feeSrc === 'engine'
+          ? 'Net bill + arrears − collected, from the same fee engine as the Fees page. Every payment lowers this.'
+          : 'Estimated from recent receipts (fee engine not installed).';
+        if (ovSnap) {
+          const note = document.getElementById('fee-reconcile-note');
+          if (note) {
+            const cur = ovSnap.currency || '₦';
+            const m = n => cur + Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+            note.innerHTML = 'Bill ' + m(ovSnap.net_bill) + ' + arrears ' + m(ovSnap.arrears) +
+              ' − collected ' + m(ovSnap.collected) + ' = <b>outstanding ' + m(ovSnap.outstanding) + '</b>' +
+              ' · ' + Number(ovSnap.collection_rate || 0) + '% collected · ' +
+              Number(ovSnap.fully_paid || 0) + ' fully paid, ' + Number(ovSnap.debtors || 0) + ' owing of ' + Number(ovSnap.students || 0);
+            note.style.display = '';
+          }
+        }
+      } catch (_) {}
       set('ov-staff-count', staffCount);
       set('ov-attendance', attendanceCount);
       set('ov-cbt-open', cbtCount);
@@ -2096,13 +2334,39 @@ const App = {
    and stale session-cache resurrection. */
 window.SCDelete={async byId(client,table,id){if(!client)return{ok:false,error:'Database not configured'};const{data,error}=await client.from(table).delete().eq('id',id).select('id');if(error)return{ok:false,error:error.message||String(error)};if(!data||!data.length)return{ok:false,error:'No row was deleted. It may already be removed or your role lacks permission.'};try{Object.keys(sessionStorage).filter(k=>k.startsWith('sc-table-cache:')).forEach(k=>sessionStorage.removeItem(k));}catch(_){}const v=await client.from(table).select('id').eq('id',id).maybeSingle();return v.data?{ok:false,error:'Delete verification failed; the row still exists.'}:{ok:true,deleted:data.length};}};
 
-/* ----- Modal helpers ----- */
+/* ----- Modal helpers -----
+   V12.71 (round-15 item 3) — openModal() USED TO FAIL SILENTLY.
+   It began `const b = document.getElementById('modal-backdrop'); if (!b) return;`
+   so on a page that had no modal markup every call did nothing at all: the
+   school pressed a button, the database was updated, and NOTHING appeared on
+   screen — no dialog, no error, no clue. Five pages were in that state
+   (profile, payment-history, midterm-reports, checkin-staff, cbt-multi), and
+   midterm-reports' "Publish all classes" summary was among the casualties.
+   Those pages now carry the markup, and this function no longer depends on
+   them: if the container is missing it BUILDS one, so a future page cannot
+   reintroduce the same silent failure. */
+function scEnsureModal(){
+  let b = document.getElementById('modal-backdrop');
+  if (b) return b;
+  b = document.createElement('div');
+  b.id = 'modal-backdrop';
+  b.className = 'modal-backdrop';
+  b.setAttribute('onclick', 'if(event.target===this)closeModal()');
+  b.innerHTML = '<div class="modal" onclick="event.stopPropagation()">'
+    + '<div class="modal-header"><h2 id="modal-title">Modal</h2>'
+    + '<button class="modal-close" onclick="closeModal()">\u00d7</button></div>'
+    + '<div id="modal-body" class="modal-body"></div>'
+    + '<div id="modal-footer" class="modal-footer"></div></div>';
+  document.body.appendChild(b);
+  return b;
+}
 function openModal(title, body, footer) {
-  const b = document.getElementById('modal-backdrop');
+  const b = scEnsureModal();
   if (!b) return;
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-body').innerHTML = body;
-  document.getElementById('modal-footer').innerHTML = footer || '<button class="btn btn-outline" onclick="closeModal()">Close</button>';
+  const set = (id, fn) => { const el = document.getElementById(id); if (el) fn(el); };
+  set('modal-title', el => el.textContent = title);
+  set('modal-body', el => el.innerHTML = body);
+  set('modal-footer', el => el.innerHTML = footer || '<button class="btn btn-outline" onclick="closeModal()">Close</button>');
   b.classList.add('show');
   try { if (window.App) App.dedupeAllSelects(); } catch (_) {}
 }
@@ -2190,7 +2454,7 @@ else App.init();
     window.sb.rpc('sc_keep_alive',{src:'site-visit'}).then(function(r){
       if(!r.error){ localStorage.setItem(KEY,String(Date.now()));
         console.log('[School Connect] Supabase keep-alive heartbeat ok.'); }
-      else console.warn('[School Connect] keep-alive RPC missing — run database/keep-alive.sql:',r.error.message);
+      else console.warn('[School Connect] keep-alive RPC missing — run database/complete-schema.sql:',r.error.message);
     }).catch(function(){});
   }catch(_){/* never break the page for a heartbeat */}
 })();
