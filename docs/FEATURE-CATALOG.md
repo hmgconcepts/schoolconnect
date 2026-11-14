@@ -516,3 +516,153 @@ HMG Concepts Ecosystem product catalogue with official flyers and contact paths.
 - CBT V5.1 answer-key diagnosis/repair, pre-publish validation and missing-key fail-safe.
 - Printable report cards, class/subject broadsheets, receipts, IDs, certificates and admission documents.
 - Traditional static and optional Next.js modern wrapper; see the architecture assessment.
+
+---
+
+# V12.70 — the results, report-card and integrity layer
+
+This section explains, in plain language, every capability added or repaired in
+V12.70. Each entry says **what it does**, **who uses it**, **where it lives** and
+**what would go wrong without it** — so a school, a support engineer and a
+future developer all read the same account.
+
+## 1. Mark-integrity guards (result processing)
+
+**What it does.** Refuses a mark that can never be legitimate, and reports (but
+never deletes) a mark that is merely implausible.
+
+- `report_scores_score_not_negative` — a negative mark is impossible; the
+  database now rejects it outright.
+- `assessment_columns_max_positive` — an assessment cannot have a maximum of
+  zero or less. A zero maximum divides a percentage by zero; a negative
+  maximum inverts a ranking.
+- `sc_report_mark_audit(p_class, p_term, p_session)` — returns a JSON report of
+  every mark **above its assessment's maximum**, plus any negative marks and
+  impossible maxima still in the table. It names the learner, subject,
+  assessment, the mark, the maximum and the resulting percentage.
+
+**Who uses it.** The exam officer and anyone pressing **🔎 Audit / Clear
+Unwanted Scores** on the Report Cards page. The result appears at the top of
+that modal.
+
+**Where it lives.** `database/complete-schema.sql`
+(`-- V12.70 MARK-INTEGRITY GUARDS`), and `report-cards.html` → `RC._markIntegrityHtml()`.
+
+**Why it was needed.** Before V12.70 a mark of `9999` against a maximum of `10`
+was accepted silently. Rank is computed from those rows, so one mistyped digit
+inflated a total past 100% and permanently re-ordered the class — with no screen,
+audit or report objecting. Proven before the fix and after it by
+`tools/verification/tmp-mark-integrity.mjs` (18 checks).
+
+**Design decision — why above-maximum is reported, not blocked.** Importing a
+school's existing marks is a supported workflow, and some historical marks come
+from a different scale. Silently deleting them would be a worse defect than the
+one being fixed. The guards therefore hard-block only what can never be right
+(negative marks, non-positive maxima) and surface the rest for human correction.
+
+## 2. CBT column re-mapping without duplicates
+
+**What it does.** When an exam's destination report column changes, the score
+moves with it — exactly once.
+
+- `sc_cbt_report_column_changed()` plus trigger
+  `trg_cbt_report_column_moves_scores` fires on
+  `after update of report_column on cbt_exams`.
+- `sc_report_recolumn(p_exam_id, p_new_column, p_dry_run)` performs the same
+  move on demand and reports how many rows it moved.
+
+**Who uses it.** A tutor editing a CBT's report column in `cbt.html`, and an
+administrator running a repair. The editor now tells the tutor the outcome:
+*moved N scores, snapshots rebuilt*, or a warning that routes them to Report
+Cards.
+
+**Why it was needed.** The moving function existed but **nothing called it**.
+Editing the column left the score in the old place, and the next push added a
+second row — so the same CBT appeared twice on the midterm sheet. Proven by
+`tools/verification/tmp-cbt-remap.mjs` (21 checks).
+
+## 3. Positions switch that reaches the paper
+
+**What it does.** The school decides, per report kind and per term, whether a
+class position is printed; the printed sheet, the on-screen preview and the CSV
+export all obey that decision.
+
+- Stored in `sc_report_settings`; read by `sc_report_policy()`; written by
+  `sc_report_policy_save()`.
+- Four independent switches: position in class, per-subject position, letter
+  grade, automatic remark — plus the school's own wording for the label.
+- Defaults to **shown**, so a school that never opens the card sees no change.
+
+**Where it lives.** The ⚙️ card on `midterm-reports.html` and
+`report-cards.html`; the reader is `ReportPolicy` / `ReportEngine.loadPolicy`;
+the renderers are `MR.sheetBody()`, `MR.preview()`, `MR.exportCSV()` and
+`ReportEngine.renderStudent()`.
+
+**Why it was needed.** V12.66 shipped the whole policy — table, reader, writer
+and a settings card — but **neither page ever read it**. `midterm-reports.html`
+did not even load `report-engine.js`, so its card was dead on arrival: pressing
+*Load current setting* threw `ReportPolicy is not defined`. A school that had
+deliberately turned ranking off at midterm was still handing parents a rank.
+Proven by `tools/verification/tmp-midterm-policy.mjs` (43 checks).
+
+## 4. Report card generation crash (fixed)
+
+**What it does now.** Generates a report card.
+
+**What it did.** `ReportEngine.renderStudent()` read the policy variable `pol`
+in the subject-row builder 140 lines before the `const pol` that declared it. In
+JavaScript that is a temporal-dead-zone `ReferenceError`, thrown on **every**
+single-student report card that had any rows to print. The page caught it and
+showed *"Could not generate report card"*, so the visible symptom was simply
+that report cards would not generate, with no clue why.
+
+The policy read is now made once at the top of the function and used throughout.
+
+## 5. Mid-term page: no silent death
+
+**What it does.** Every action on `midterm-reports.html` — Generate, Preview,
+Publish, Publish all classes, Export CSV, Repair, Load family report — now
+checks for a configured database first and says *"Database not connected. Add the
+Supabase URL and anon key to assets/js/config.js, then reload this page."*
+
+**Why.** Previously only `init()` checked. Pressing Generate on a site whose
+`config.js` had not been filled in threw `sb is not defined` and left the screen
+frozen with no message a teacher could act on.
+
+## 6. Integrity audits that run on every build (items 4 and 5)
+
+Four detectors now run automatically. They exist because each defect class below
+had already shipped at least once.
+
+| Detector | What it catches | Scale |
+|---|---|---|
+| `tools/audit-42703.py` | a page querying a database column that does not exist — the silent cause of "voting shows 0%" and "birthday widget empty" | 178 files, 130 tables |
+| `tools/audit-v5.py` | per-feature regressions across V5→V12, pack objects, RLS shape, service-worker versions | 513 checks |
+| `tools/audit-every-page.py` | dead page links, missing assets, links to unshipped builder pages, unparsable inline JavaScript | 398 pages, 45,047 links, 3 deployments |
+| `tools/audit-repo-parity.py` | a deployment drifting away from the generator — including its documentation | 36 files × 2 deployments |
+| `tools/audit-duplicate-methods.py` | a controller defining the same method twice, so the later one silently wins | 248 files |
+
+**For a school this means:** a release either passes all of it or does not ship.
+**For a maintainer this means:** do not "fix" a failing audit by adding an
+exception. Every allow-list entry is a place where a real defect can hide.
+
+## 7. Term rollover — what follows a learner and what does not
+
+`sc_term_rollover(new_term, new_session, dry_run)` is the one action that moves
+the school into a new term. It is a **dry run by default**; nothing changes until
+you pass `dry_run: false`.
+
+**What it carries forward:** every learner's unpaid balance (recorded as an
+earlier-term debt, never merged into the new bill), a new invoice for each active
+learner from that class's published fee structure, and the calendar itself —
+exactly one current period, always.
+
+**What it deliberately does NOT carry forward:** marks, attendance and
+assessment columns. A learner must not be handed scores for a term they have not
+sat. Their history is not copied — it stays exactly where it is and remains
+**readable from the new term, and from every later term**. Proved by
+`tools/verification/tmp-term-carry.mjs` (15 checks), including that First Term
+marks are still intact two terms later and that the new term holds zero scores.
+
+**What never changes:** the learner's name, class, admission number, gender,
+date of birth and guardian email. Also proved.
