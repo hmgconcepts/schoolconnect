@@ -8,16 +8,16 @@
 <meta name="description" content="God of Seed Academy — Voting &amp; Polls. Comprehensive school management platform.">
 <meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
-<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="icon" type="image/png" href="assets/img/logo-512.jpg">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="assets/img/logo.png">
+<link rel="apple-touch-icon" href="assets/img/logo-512.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Voting &amp; Polls • God of Seed Academy">
 <meta property="og:description" content="God of Seed Academy — Free school management by HMG Concepts">
-<meta property="og:image" content="assets/img/logo.png">
+<meta property="og:image" content="assets/img/logo-512.jpg">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="assets/css/style.css">
@@ -93,7 +93,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 
 <div id="pwa-install-banner" class="pwa-install">
   <div class="pwa-install-header">
-    <img src="assets/img/logo.png" alt="" class="pwa-install-icon">
+    <img src="assets/img/logo-512.png" alt="" class="pwa-install-icon">
     <div style="flex:1">
       <div class="pwa-install-title">📲 Install School Connect</div>
       <div class="pwa-install-msg">Get push notifications for messages, broadcasts, polls and result slips — even when the app is closed.</div>
@@ -120,7 +120,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.png" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
+        <img src="assets/img/logo-512.png" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.png'">
         <div>
           <strong>God of Seed Academy</strong>
           <div style="font-size:0.7rem;color:var(--gray-500)">GOSA</div>
@@ -727,7 +727,7 @@ const VT={
     const rows=sorted.map((c,rank)=>{const pct=c.percent||0;const label=this.esc(c.label||c.name||('Candidate '+(rank+1)));const mine=myBallot.includes(String(c.id));
       return '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-weight:700;margin-bottom:3px"><span>'+(rank+1)+'. '+label+(closed&&rank===0&&(c.votes||0)>0&&!isTie?' 🏆 WINNER':(!closed&&rank===0&&(c.votes||0)>0?' 🥇 leading':''))+(mine?' <span style="background:#dbeafe;color:#1d4ed8;border-radius:8px;font-size:.68rem;padding:1px 8px">your vote</span>':'')+'</span><span style="color:var(--primary)">'+(c.votes||0)+' vote'+((c.votes||0)===1?'':'s')+' · '+pct+'%</span></div><div style="height:16px;background:#f1f5f9;border-radius:8px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,#4f46e5,#964eec);transition:width .5s"></div></div></div>';}).join('');
     const roleRows=Object.entries(agg.byRole||{}).map(([r,n])=>'<span class="badge" style="background:#f1f5f9;color:#334155;margin:2px">'+this.esc(r)+': '+n+'</span>').join(' ');
-    const legacyNote=(agg.serverTallied===false&&window.sb)?'<div class="card" style="margin-bottom:12px;background:#fffbeb;border-color:#fde68a;font-size:.85rem">⚠️ This database has not run the V11.9 voting pack yet — the tally below may only include YOUR ballot. Run <code>database/v11.9-voting-integrity.sql</code> once in Supabase for full results.</div>':'';
+    const legacyNote=(agg.serverTallied===false&&window.sb)?'<div class="card" style="margin-bottom:12px;background:#fffbeb;border-color:#fde68a;font-size:.85rem">⚠️ This database has not run the V11.9 voting pack yet — the tally below may only include YOUR ballot. Run <code>database/complete-schema.sql</code> once in Supabase for full results.</div>':'';
     document.getElementById('vt-results-body').innerHTML=legacyNote
       +'<div class="stats-grid" style="margin-bottom:14px">'
       +'<div class="stat-card"><div class="stat-value">'+totalVotes+'</div><div class="stat-label">Ballots cast</div></div>'
@@ -770,5 +770,8 @@ const VT={
     w.document.close(); }
 };
 document.addEventListener('DOMContentLoaded',()=>VT.refresh());
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.VT = VT;
 </script>
 </body></html>

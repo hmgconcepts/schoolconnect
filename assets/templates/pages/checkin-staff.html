@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>⏰ Staff Attendance & Check-In • School Portal</title>
 <meta name="description" content="On-premises geofenced attendance check-in for staff and teachers.">
-<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="icon" type="image/png" href="assets/img/logo-512.jpg">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
 :root{--primary:#4f46e5;--primary-dark:#3730a3;--primary-light:#818cf8;--font:'Plus Jakarta Sans',system-ui,sans-serif}
@@ -48,7 +48,7 @@ video{width:100%;height:100%;object-fit:cover}
 <div class="app-layout sidebar">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
+        <img src="assets/img/logo-512.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.png'">
         <div>
           <strong>School Connect Demo School</strong>
           <div style="font-size:0.7rem;color:var(--gray-500)">SCD</div>
@@ -761,6 +761,19 @@ const CK = {
 
 window.addEventListener('beforeunload', () => CK.stopCam());
 document.addEventListener('DOMContentLoaded', () => CK.init());
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.CK = CK;
 </script>
+<div id="modal-backdrop" class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="modal-title">Modal</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="modal-body" class="modal-body"></div>
+    <div id="modal-footer" class="modal-footer"></div>
+  </div>
+</div>
 </body>
 </html>

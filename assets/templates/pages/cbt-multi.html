@@ -521,6 +521,9 @@ const MM = {
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 MM.addSubject('English Language'); MM.addSubject('Mathematics');
 MM.lookups();
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.MM = MM;
 </script>
 <script>
 /* Role guard for non-shell pages */
@@ -539,4 +542,14 @@ MM.lookups();
   } catch(_) {}
 })();
 </script>
+<div id="modal-backdrop" class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="modal-title">Modal</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="modal-body" class="modal-body"></div>
+    <div id="modal-footer" class="modal-footer"></div>
+  </div>
+</div>
 </body></html>

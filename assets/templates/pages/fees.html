@@ -8,16 +8,16 @@
 <meta name="description" content="School Connect Demo School — Fees &amp; Payments. Comprehensive school management platform.">
 <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
-<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="icon" type="image/png" href="assets/img/logo-512.jpg">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="assets/img/logo.png">
+<link rel="apple-touch-icon" href="assets/img/logo-512.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Fees &amp; Payments • School Connect Demo School">
 <meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
-<meta property="og:image" content="assets/img/logo.png">
+<meta property="og:image" content="assets/img/logo-512.jpg">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="assets/css/style.css">
@@ -93,7 +93,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 
 <div id="pwa-install-banner" class="pwa-install">
   <div class="pwa-install-header">
-    <img src="assets/img/logo.png" alt="" class="pwa-install-icon">
+    <img src="assets/img/logo-512.png" alt="" class="pwa-install-icon">
     <div style="flex:1">
       <div class="pwa-install-title">📲 Install School Connect</div>
       <div class="pwa-install-msg">Get push notifications for messages, broadcasts, polls and result slips — even when the app is closed.</div>
@@ -120,7 +120,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher parent student">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
+        <img src="assets/img/logo-512.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.png'">
         <div>
           <strong>School Connect Demo School</strong>
           <div style="font-size:0.7rem;color:var(--gray-500)">SCD</div>
@@ -489,22 +489,136 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       <div id="fam-fees" style="display:none;margin-bottom:16px"></div>
       <div class="card" style="background:#eef2ff;border-color:#c7d2fe;margin-bottom:14px"><b>👀 See samples first:</b> <a href="samples/sample-report-card.html" target="_blank">Report Card</a> · <a href="samples/sample-class-broadsheet.html" target="_blank">Class Broadsheet</a> · <a href="samples/sample-subject-broadsheet.html" target="_blank">Subject Broadsheet</a> · <a href="samples/sample-e-receipt.html" target="_blank">Fee E-Receipt</a></div>
       
-      <!-- V10.9 (#1): FEE LEDGER DOCTOR — every recording error a bursar can
-           make, found in advance: duplicates, unlinked rows, zero/negative
-           amounts, future dates, overpayments, missing term/session, stale
-           snapshots. One click scans; Heal rewrites every stale snapshot. -->
-      <div class="card" style="margin-bottom:16px;border:2px solid #fbbf24" data-admin-only>
-        <h2 style="margin-top:0">🩺 Fee Ledger Doctor — find & fix recording errors</h2>
-        <p style="color:var(--gray-600);margin:6px 0 10px">Scans every payment row for the seven error patterns bursars actually make: <b>double entries</b>, <b>rows with no student linked</b>, <b>zero/negative amounts</b>, <b>future dates</b>, <b>overpayments beyond the bill</b>, <b>missing term/session</b> and <b>stale totals</b> from before the self-healing update. Deleting or editing any row is safe — the whole term recomputes automatically (V10.8).</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="FeeDoctor.run(false)">🔍 Scan the ledger</button>
-          <button class="btn btn-outline" style="border-color:#f59e0b;color:#b45309" onclick="FeeDoctor.run(true)">🧮 Scan + Heal snapshots</button>
+
+      <!-- ===================================================================
+           V12.62 (item 5) — FEE COLLECTION STATEMENT (print / PDF)
+           One printable document showing, for the whole school or one class:
+             A. every student who has FULLY paid,
+             B. every student who has NOT (part-paid and untouched),
+           and for each one, exactly how they paid — the dated instalments.
+           =================================================================== -->
+      <div class="card" id="fee-statement" style="margin-bottom:16px;border:2px solid #0ea5e9;scroll-margin-top:20px" data-admin-only>
+        <h2 style="margin-top:0">🖨️ Fee collection statement — fully paid vs outstanding (PDF)</h2>
+        <p style="color:var(--gray-700);font-size:.9rem;margin-top:0">
+          A printable statement for management, the PTA or an audit. It lists <b>every student who has paid in full</b>
+          and <b>every student who has not</b>, and shows the individual instalments that make up each student's payments.
+          Opens the browser's print dialog — choose <b>Save as PDF</b> to keep a copy.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select class="form-select" id="fs-class" style="max-width:220px"><option value="">ALL classes</option></select>
+          <select class="form-select" id="fs-scope" style="max-width:250px">
+            <option value="both">Both groups (fully paid + outstanding)</option>
+            <option value="paid">Fully paid only</option>
+            <option value="debtors">Outstanding only</option>
+          </select>
+          <label style="display:flex;align-items:center;gap:6px;font-size:.86rem"><input type="checkbox" id="fs-schedule" checked> Show each student's payment schedule</label>
+          <button class="btn btn-primary" onclick="FeeStatement.print()">🖨️ Print / Save as PDF</button>
+          <button class="btn btn-outline" onclick="FeeStatement.exportCSV()">⬇ CSV</button>
+        </div>
+        <div id="fs-out" style="margin-top:12px"></div>
+      </div>
+
+      <!-- ===================================================================
+           V12.62 (item 4) — ONE-CLICK FEE REPAIR
+           After a back-dated receipt is added, an amount corrected, or an old
+           debt folded into an earlier payment, every derived record can drift.
+           This button finds and fixes all of it in one transaction.
+           =================================================================== -->
+      <div class="card" style="margin-bottom:16px;border:2px solid #f59e0b;background:#fffbeb" data-admin-only>
+        <h2 style="margin-top:0">🛠️ One-click fee repair</h2>
+        <p style="color:var(--gray-700);font-size:.9rem;margin-top:0">
+          Use this after you <b>change an old receipt</b> (add a forgotten debt, correct an amount, fix a wrong term/date),
+          or whenever a balance looks wrong. It rebuilds every receipt snapshot, recomputes arrears and outstanding for
+          every student, re-syncs the portal-lock state, and reports anything it cannot fix safely — duplicates,
+          unlinked receipts, overpayments and missing fee structures.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select class="form-select" id="rep-class" style="max-width:220px"><option value="">ALL classes</option></select>
+          <button class="btn btn-outline" onclick="FeeRepair.run(true)">🔍 Check only (changes nothing)</button>
+          <button class="btn btn-primary" style="background:#b45309;border-color:#92400e" onclick="FeeRepair.run(false)">✅ Repair everything now</button>
+        </div>
+        <div id="rep-out" style="margin-top:12px"></div>
+      </div>
+
+
+      <div class="card" style="margin-bottom:16px;border:2px solid #0d9488;background:#f0fdfa" data-admin-only id="fee-invoice-card">
+        <h2 style="margin-top:0">📄 Invoices — record what each learner was billed</h2>
+        <p style="color:var(--gray-700);font-size:.9rem;margin-top:0">
+          A bill only exists once it has been raised. Before V12.67 this page <i>guessed</i> a learner's past bills
+          from the school calendar, which is how a parent who owed nothing came to be shown
+          <b>previous terms owing</b> on the dashboard. Invoices are now a real record: raise them once per term,
+          and the dashboard, this page, the receipts and the parent portal all read that one figure.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:10px">
+          <div class="form-group" style="margin:0;min-width:200px"><label>Class</label>
+            <select class="form-select" id="inv-class"><option value="">ALL classes</option></select></div>
+          <div class="form-group" style="margin:0;min-width:170px"><label>Term</label>
+            <select class="form-select" id="inv-term"><option value="">(current term)</option></select></div>
+          <button class="btn btn-primary" style="background:#0d9488;border-color:#0f766e" onclick="FeeInvoice.raise(false)">📄 Raise invoices for this term</button>
+          <button class="btn btn-outline" onclick="FeeInvoice.raise(true)"
+                  title="Only do this if these learners really were billed for those earlier terms.">📚 Include earlier terms…</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+          <button class="btn btn-outline" onclick="FeeInvoice.migrate(true)">🔍 Check stored receipt totals</button>
+          <button class="btn btn-outline" style="border-color:#f59e0b;color:#b45309" onclick="FeeInvoice.migrate(false)">🩹 Repair stored receipt totals</button>
+          <button class="btn btn-outline" onclick="FeeInvoice.opening(true)">🔍 Check opening balances</button>
+          <button class="btn btn-outline" style="border-color:#7c3aed;color:#7c3aed" onclick="FeeInvoice.opening(false)">➡️ Convert opening balances to invoices</button>
+          <button class="btn btn-outline" onclick="FeeInvoice.list()">📋 Show invoices</button>
+        </div>
+        <div id="inv-out"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;border:2px solid #0ea5e9;background:#f0f9ff" data-admin-only id="fee-truth-card">
+        <h2 style="margin-top:0">🧾 Fee Truth Sheet — one student, every number explained</h2>
+        <p style="color:var(--gray-700);font-size:.9rem;margin-top:0">
+          Every screen in School Connect now shows the <b>same five numbers</b> for a student: total fees this term,
+          paid, balance this term, arrears, and <b>total outstanding</b>. If a parent or the bursar ever questions a
+          figure, open this sheet: it prints the arithmetic line by line, names <i>why</i> the bill is what it is, lists
+          every receipt and says which ones count for this term. Print it and hand it over.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:10px">
+          <div class="form-group" style="margin:0;min-width:280px"><label>Student</label>
+            <select class="form-select" id="ft-student"><option value="">Select a student…</option></select></div>
+          <button class="btn btn-primary" onclick="FeeTruth.load()">Open truth sheet</button>
+          <button class="btn btn-outline" onclick="FeeTruth.print()">🖨 Print / PDF</button>
+          <button class="btn btn-outline" style="border-color:#86efac;color:#166534" onclick="FeeTruth.reconcile()">🔎 Prove every screen agrees</button>
+        </div>
+        <div id="ft-out"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;border:2px solid #7c3aed;background:#faf5ff" data-admin-only id="fee-doctor-card">
+        <h2 style="margin-top:0">🩺 Fee Doctor — find every error before a parent does</h2>
+        <p style="color:var(--gray-700);font-size:.9rem;margin-top:0">
+          Fourteen checks covering everything that can make a balance wrong: receipts with no term, receipts attached to
+          no student, zero or negative amounts, double entries, learners paying against no bill, learners with
+          <b>no fee structure at all</b> (a zero bill that is not a zero debt), overpayments, opening balances, future-dated
+          receipts, CBT scores counted in two report columns, aid that names nobody, undated academic periods, and
+          conflicting class fee structures. Each finding names the student, says what it means, and tells you what to do.
+          Fixable problems are repaired; money records are <b>never</b> deleted by a tool.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select class="form-select" id="fdx-class" style="max-width:220px"><option value="">ALL classes</option></select>
+          <button class="btn btn-outline" onclick="FeeDoctor.run(false)">🔍 Check only (changes nothing)</button>
+          <button class="btn btn-primary" style="background:#6d28d9;border-color:#5b21b6" onclick="FeeDoctor.run(true)">🩹 Fix everything fixable</button>
         </div>
         <div id="fee-doctor-out" style="margin-top:12px"></div>
       </div>
 
+      <div class="card" style="margin-bottom:16px;border:2px solid #fca5a5" data-admin-only><h2 style="margin-top:0">🔎 Bill coverage audit — where does every “Total fees this term” come from? (V12.68)</h2>
+        <p style="color:var(--gray-600);font-size:.9rem">One question, answered for the whole school at once: for the
+        <b>current term</b>, how many learners are billed from the exact term price list, from the “Current Term” label, from
+        another term of the same session, from the latest structure, from an invoice — and how many have <b>no bill at all</b>.
+        A learner with no bill is reported as <b>unknown, never as ₦0</b>, and the audit names the reason and the page that fixes it.
+        This is the check that proves the Round-9 “₦0 total fees” fault is gone for every learner, not just the two reported.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+          <div class="form-group" style="margin:0"><label>Class</label><select class="form-select" id="fba-class"><option value="">ALL classes</option></select></div>
+          <button class="btn btn-primary" onclick="FeeBillAudit.run()">🔎 Run the audit</button>
+        </div>
+        <div id="fba-out" style="margin-top:12px"></div>
+      </div>
+
       <div class="card" style="margin-bottom:16px;border:2px solid #c7d2fe" data-admin-only><h2 style="margin-top:0">📑 Master Financial Records — export by class (V10.1)</h2>
-        <p style="color:var(--gray-600);font-size:.9rem">One row per student: current-term bill, scholarship/aid, paid so far, balance, previous-term arrears and TOTAL outstanding — computed live by the same engine that powers the dashboards. Print/save as PDF or download CSV. Needs <code>database/v10.1-staffpay-attendance-vetting.sql</code>.</p>
+        <p style="color:var(--gray-600);font-size:.9rem">One row per student: current-term bill, scholarship/aid, paid so far, balance, previous-term arrears and TOTAL outstanding — computed live by the same engine that powers the dashboards. Print/save as PDF or download CSV. Needs <code>database/complete-schema.sql</code>.</p>
         <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap">
           <div class="form-group" style="margin:0"><label>Class</label><select class="form-select" id="fm-class"><option value="">ALL classes</option></select></div>
           <button class="btn btn-primary" onclick="FM.load()">📊 Build master sheet</button>
@@ -527,6 +641,26 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
         
         <p style="margin:10px 0 0;font-size:.85rem;color:var(--gray-500)">Tip: click the <strong>ℹ️ Help</strong> button in the top bar, or the 💬 assistant, for the full explanation of any page.</p>
       </div></div>
+      <div class="card" style="margin-bottom:16px;border:2px solid #f59e0b;background:#fffbeb" data-admin-only id="fee-reports-card">
+        <h2 style="margin-top:0">📊 Financial Reports — what a board actually asks for</h2>
+        <p style="color:var(--gray-700);font-size:.9rem;margin-top:0">
+          A single “total outstanding” figure is the least useful number a school holds, because it merges three
+          different situations: money <b>not yet due</b>, money <b>just overdue</b>, and money that is
+          <b>never coming</b>. This panel ages the debt into 30-day bands so you can act on it, shows the
+          collection rate per class, and keeps a permanent register of every credit, waiver and write-off with the
+          reason and the person who approved it.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:10px">
+          <button class="btn btn-primary" id="fr-load">🔄 Build the reports</button>
+          <button class="btn" id="fr-csv" disabled>⬇️ Download arrears CSV</button>
+          <button class="btn" id="fr-recon">🏦 Month-end cash &amp; bank reconciliation</button>
+          <label style="display:flex;align-items:center;gap:6px;font-size:.88rem">
+            <input type="checkbox" id="fr-only-overdue" checked> Show only money already overdue
+          </label>
+          <span id="fr-status" style="font-size:.85rem;color:var(--gray-500)"></span>
+        </div>
+        <div id="fr-out"><div class="notice">Press <b>Build the reports</b> to age the debt and total the collections.</div></div>
+      </div>
       <div class="card" style="margin-bottom:16px;border:2px solid #a7f3d0" data-admin-only id="fee-segment-card">
         <h2 style="margin-top:0">🎯 Paid vs Debtors — one-click segmentation</h2>
         <p style="color:var(--gray-600);font-size:.9rem;margin-top:0">Every figure below comes from the same engine as the dashboard's <b>💰 School Fees — Current Term</b> widget (<code>sc_student_fee_state</code>), so the two pages can never disagree. Pick a class and filter; then lock portal access for the debtors in one click.</p>
@@ -601,7 +735,64 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <script>
 const FeeDaily={rows:[],esc:s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'),today(){return new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Lagos'});},money(n){return((window.SCHOOL&&SCHOOL.currency)||'₦')+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2});},async fetchDate(date){const all=[];for(let from=0;;from+=1000){const r=await sb.from('fee_payments').select('*').eq('payment_date',date).order('created_at',{ascending:false}).range(from,from+999);if(r.error)throw r.error;all.push(...(r.data||[]));if(!r.data||r.data.length<1000)break;}return all;},async sumRange(from,to){let total=0,count=0;for(let start=0;;start+=1000){const r=await sb.from('fee_payments').select('amount_paid').gte('payment_date',from).lte('payment_date',to).range(start,start+999);if(r.error)throw r.error;(r.data||[]).forEach(x=>{total+=Number(x.amount_paid||0);count++;});if(!r.data||r.data.length<1000)break;}return{total,count};},async load(){if(!window.sb)return;const input=document.getElementById('fd-date'),date=input.value||this.today();input.value=date;try{const rows=await this.fetchDate(date);this.rows=rows;const ids=[...new Set(rows.map(x=>x.student_id).filter(Boolean))],students={};if(ids.length){const r=await sb.from('students').select('id,full_name,admission_no,class').in('id',ids);(r.data||[]).forEach(x=>students[x.id]=x);}const d=new Date(date+'T12:00:00'),yd=new Date(d);yd.setDate(d.getDate()-1);const yesterday=yd.toLocaleDateString('en-CA',{timeZone:'Africa/Lagos'}),monthStart=date.slice(0,7)+'-01',[prev,month]=await Promise.all([this.sumRange(yesterday,yesterday),this.sumRange(monthStart,date)]),total=rows.reduce((a,x)=>a+Number(x.amount_paid||0),0),methods={},classes={},collectors={};rows.forEach(x=>{methods[x.method||'unspecified']=(methods[x.method||'unspecified']||0)+Number(x.amount_paid||0);const st=students[x.student_id]||{},cl=st.class||'Unassigned';classes[cl]=(classes[cl]||0)+Number(x.amount_paid||0);const by=x.received_by_name||'Not recorded';collectors[by]=(collectors[by]||0)+Number(x.amount_paid||0);});const breakdown=(title,obj)=>'<div><h4>'+title+'</h4><div class="table-wrap"><table><tbody>'+Object.entries(obj).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<tr><td>'+this.esc(k)+'</td><td><b>'+this.money(v)+'</b></td></tr>').join('')+'</tbody></table></div></div>';document.getElementById('fd-out').innerHTML='<div class="stats-grid"><div class="stat-card"><div class="stat-value">'+this.money(total)+'</div><div class="stat-label">Selected day total</div></div><div class="stat-card"><div class="stat-value">'+rows.length+'</div><div class="stat-label">Transactions</div></div><div class="stat-card"><div class="stat-value">'+this.money(rows.length?total/rows.length:0)+'</div><div class="stat-label">Average receipt</div></div><div class="stat-card"><div class="stat-value">'+this.money(prev.total)+'</div><div class="stat-label">Previous day</div></div><div class="stat-card"><div class="stat-value">'+this.money(month.total)+'</div><div class="stat-label">Month-to-date</div></div></div><div class="grid grid-3">'+breakdown('By payment method',methods)+breakdown('By class',classes)+breakdown('By collector',collectors)+'</div><h4>Transactions for '+this.esc(date)+'</h4><div class="table-wrap"><table><thead><tr><th>Time</th><th>Student</th><th>Class</th><th>Amount</th><th>Method</th><th>Reference</th><th>Collector</th></tr></thead><tbody>'+(rows.length?rows.map(x=>{const st=students[x.student_id]||{};return'<tr><td>'+this.esc(String(x.created_at||'').slice(11,16))+'</td><td>'+this.esc(st.full_name||x.student_name||'')+'<br><small>'+this.esc(st.admission_no||'')+'</small></td><td>'+this.esc(st.class||'')+'</td><td><b>'+this.money(x.amount_paid)+'</b></td><td>'+this.esc(x.method||'')+'</td><td>'+this.esc(x.reference||'')+'</td><td>'+this.esc(x.received_by_name||'')+'</td></tr>';}).join(''):'<tr><td colspan="7">No fees recorded on this date.</td></tr>')+'</tbody></table></div>';}catch(e){document.getElementById('fd-out').innerHTML='<div class="notice notice-error">'+this.esc(e.message||e)+'. Run the latest complete-schema.sql if payment_date is missing.</div>'; }},exportDay(){if(!this.rows.length){toast('No daily rows to export.','warning');return;}const keys=['payment_date','created_at','student_id','student_name','amount_paid','method','reference','term','session','received_by_name'],csv=[keys.join(',')].concat(this.rows.map(r=>keys.map(k=>'"'+String(r[k]??'').replace(/"/g,'""')+'"').join(','))).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='daily-fees-'+document.getElementById('fd-date').value+'.csv';a.click();}};
 document.addEventListener('DOMContentLoaded',()=>FeeDaily.load());
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.FeeDaily = FeeDaily;
 </script>
+<script>
+/* ===== V12.68 — BILL COVERAGE AUDIT =====
+   The bursar's one-glance answer to "why does this learner show ₦0?".
+   Reads sc_fee_bill_audit, which walks every active learner through the SAME
+   billing engine the dashboard uses — so the audit can never disagree with the
+   screens it is auditing. */
+const FeeBillAudit = {
+  esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));},
+  money(n){return ((window.SCHOOL&&SCHOOL.currency)||'₦')+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2});},
+  async fillClasses(){
+    try{const {data}=await sb.from('students').select('class').not('class','is',null).order('class');
+      const set=[...new Set((data||[]).map(x=>x.class).filter(Boolean))];
+      for(const id of ['fba-class']){const el=document.getElementById(id);if(!el)return;
+        set.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;el.appendChild(o);});}
+    }catch(_){}
+  },
+  async run(){
+    const box=document.getElementById('fba-out');if(!box)return;
+    const cls=((document.getElementById('fba-class')||{}).value||'');
+    box.innerHTML='<span class="pulse">Auditing every learner…</span>';
+    const r=await sb.rpc('sc_fee_bill_audit',{p_class:cls||null});
+    if(r.error){box.innerHTML='<div class="notice notice-error">'+this.esc(r.error.message)+'. This needs the V12.68 database pack (database/complete-schema.sql).</div>';return;}
+    const d=r.data||{};
+    if(d.ok===false){box.innerHTML='<div class="notice notice-error">'+this.esc(d.error||'Could not run the audit')+'</div>';return;}
+    const WHY={invoice:['Invoice raised','Authoritative — nothing to do.'],
+      structure:['Class fee structure','Billed from the published price list.'],
+      override:['Personal total','The bursar set this learner’s own total.'],
+      no_structure_this_term:['No structure FOR THIS TERM','The class has fees, but none for this term. Publish it.'],
+      no_structure:['No structure for this CLASS','Check the class spelling on the student record, then publish.'],
+      no_structures_at_all:['NO fee structure AT ALL','Open 💳 Class Fee Structure and enter the fees — once.']};
+    const rows=Object.entries(d.by_status||{}).sort((a,b)=>b[1]-a[1]);
+    const total=Number(d.students||0), unknown=Number(d.bill_unknown||0);
+    let h='<div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px">'
+      +'<div><div style="font-size:1.5rem;font-weight:900">'+total+'</div><div style="font-size:.7rem;text-transform:uppercase;color:var(--gray-500)">Active learners</div></div>'
+      +'<div><div style="font-size:1.5rem;font-weight:900;color:#15803d">'+Number(d.bill_known||0)+'</div><div style="font-size:.7rem;text-transform:uppercase;color:var(--gray-500)">Billed</div></div>'
+      +'<div><div style="font-size:1.5rem;font-weight:900;color:'+(unknown>0?'#b91c1c':'#15803d')+'">'+unknown+'</div><div style="font-size:.7rem;text-transform:uppercase;color:var(--gray-500)">Bill unknown (not ₦0)</div></div>'
+      +'<div><div style="font-size:1.5rem;font-weight:900">'+this.esc(d.term||'')+'</div><div style="font-size:.7rem;text-transform:uppercase;color:var(--gray-500)">Term · resolved by '+this.esc(d.resolved_by||'—')+'</div></div>'
+      +'</div>';
+    h+='<div class="table-wrap"><table><thead><tr><th style="text-align:left">How the bill was found</th><th>Learners</th><th style="text-align:left">What it means</th></tr></thead><tbody>'
+      +rows.map(([k,v])=>{const w=WHY[k]||[k,''];return '<tr><td style="text-align:left"><b>'+this.esc(w[0])+'</b> <small style="color:var(--gray-500)">'+this.esc(k)+'</small></td><td><b>'+v+'</b></td><td style="text-align:left;font-size:.82rem;color:var(--gray-600)">'+this.esc(w[1])+'</td></tr>';}).join('')
+      +'</tbody></table></div>';
+    const sm=d.samples||[];
+    if(sm.length){
+      h+='<h4 style="margin:12px 0 4px">Learners whose bill is unknown — fix these</h4><div class="table-wrap"><table><thead><tr><th style="text-align:left">Learner</th><th>Class</th><th>Admission no</th><th style="text-align:left">Why</th></tr></thead><tbody>'
+        +sm.map(x=>'<tr><td style="text-align:left"><b>'+this.esc(x.student)+'</b></td><td>'+this.esc(x.class||'')+'</td><td>'+this.esc(x.admission_no||'')+'</td><td style="text-align:left;font-size:.8rem;color:var(--gray-600)">'+this.esc(x.note||x.match_status||'')+'</td></tr>').join('')
+        +'</tbody></table></div>';
+    } else h+='<p style="color:#15803d;font-weight:700;margin:10px 0 0">✅ Every active learner has a bill from a published source. No learner is silently showing ₦0.</p>';
+    box.innerHTML=h;
+  }
+};
+window.FeeBillAudit = FeeBillAudit;
+document.addEventListener('DOMContentLoaded',()=>FeeBillAudit.fillClasses());
+</script>
+
 <script>
 /* ===== FAM — V9.4 (#1): Family fee panel for parents & students =====
    Bold current-term totals per child (sc_student_fee_state), the child's FULL
@@ -634,6 +825,21 @@ const FAM={
         h+='<div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">💰 '+this.esc(s.full_name)+' · '+this.esc(s.class||'')+' <small style="color:var(--gray-500)">'+this.esc(s.admission_no||'')+'</small></h3>';
         if(f.ok){
           const owing=Number(f.total_due||0);
+          /* V12.68 (B9) — same provenance sentence as the dashboard card, so a
+             family that compares the two screens never sees a different story. */
+          const mk_=String(f.match_status||''), mb_=String(f.matched_by||''), rb_=String(f.resolved_by||'');
+          const UNK_={no_structures_at_all:'No class fee structure exists on this platform yet — the school must enter it once on 💳 Class Fee Structure.',
+            no_structure_this_term:'This class has a fee structure, but none for '+(f.term||'this term')+'. The bill is unknown, not zero.',
+            no_structure:'No fee structure has ever been published for this class.'};
+          if(f.bill_known===false){
+            h+='<div style="border-left:4px solid #f59e0b;background:#fffbeb;padding:8px 11px;border-radius:8px;font-size:.82rem;color:#78350f">'
+              +'<b>⚠️ '+(UNK_[mk_]||'The bill for this term has not been published yet.')+'</b> The figures below are your payment record, not a statement that nothing is owed.</div>';
+          } else if(mb_ && mb_!=='invoice'){
+            const soft_=(mb_==='session_other_term'||mb_==='latest_structure');
+            const rung_={exact_term:'the fee published for this exact term',current_term_label:'the fee saved as “Current Term”',session_other_term:'another term of the same session',latest_structure:'the most recent published class fee',override:'a personal total set by the bursar'}[mb_]||'';
+            if(rung_) h+='<div style="border-left:4px solid '+(soft_?'#f59e0b':'#16a34a')+';background:'+(soft_?'#fffbeb':'#f0fdf4')+';padding:6px 10px;border-radius:8px;font-size:.78rem;color:#334155">'
+              +(soft_?'⚠️ ':'✅ ')+'Total fees this term comes from '+rung_+'.'+(rb_?' <span style="color:var(--gray-500)">Term resolved by: '+this.esc(rb_)+'</span>':'')+'</div>';
+          }
           h+='<div style="display:flex;gap:18px;flex-wrap:wrap;margin:6px 0 10px">'
             +'<div><div style="font-size:1.6rem;font-weight:900">'+this.money(cur,f.bill)+'</div><div style="font-size:.72rem;text-transform:uppercase;color:var(--gray-500)">Total fees · '+this.esc(f.term||'')+'</div></div>'
             +'<div><div style="font-size:1.6rem;font-weight:900;color:#15803d">'+this.money(cur,f.paid)+'</div><div style="font-size:.72rem;text-transform:uppercase;color:var(--gray-500)">Paid this term</div></div>'
@@ -685,6 +891,413 @@ const FAM={
   }
 };
 document.addEventListener('DOMContentLoaded',()=>FAM.init());FAM.init();
+/* =====================================================================
+   V12.62 (item 5) — FeeStatement: printable fully-paid vs outstanding report.
+   Data comes from sc_fee_roster (the same engine as every other screen) plus
+   the individual receipts, so the statement can never disagree with the pages.
+   ===================================================================== */
+const FeeStatement={
+  rows:[], pays:{}, ctx:{},
+  esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));},
+  money(n){return((window.SCHOOL&&SCHOOL.currency)||'₦')+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});},
+  async init(){
+    try{
+      const {data}=await sb.from('students').select('class').limit(20000);
+      const cls=[...new Set((data||[]).map(x=>String(x.class||'').trim()).filter(Boolean))].sort();
+      const el=document.getElementById('fs-class');
+      if(el)cls.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;el.appendChild(o);});
+    }catch(_){}
+  },
+  async load(){
+    const cls=(document.getElementById('fs-class')||{}).value||'';
+    const r=await sb.rpc('sc_fee_roster',{p_class:cls||null,p_term:null,p_session:null,p_filter:'all'});
+    if(r.error) throw r.error;
+    const d=r.data||{};
+    if(d.ok===false) throw new Error(d.error||'Could not load the fee roster');
+    this.rows=d.rows||[]; this.ctx={cls:cls,term:d.term,session:d.session,summary:d};
+    /* every receipt, so each student's schedule can be printed */
+    const ids=this.rows.map(x=>x.student_id).filter(Boolean);
+    this.pays={};
+    for(let i=0;i<ids.length;i+=200){
+      const pr=await sb.from('fee_payments')
+        .select('student_id,amount_paid,method,reference,term,session,payment_date,created_at')
+        .in('student_id',ids.slice(i,i+200)).order('payment_date',{ascending:true});
+      (pr.data||[]).forEach(p=>{ (this.pays[p.student_id]=this.pays[p.student_id]||[]).push(p); });
+    }
+    return this.ctx;
+  },
+  grouped(){
+    const paid=this.rows.filter(x=>Number(x.total_due)<=0.005);
+    const owing=this.rows.filter(x=>Number(x.total_due)>0.005);
+    const untouched=owing.filter(x=>Number(x.paid)<=0.005);
+    const partial=owing.filter(x=>Number(x.paid)>0.005);
+    return {paid, owing, untouched, partial};
+  },
+  async preview(){
+    const box=document.getElementById('fs-out'); if(!box) return;
+    box.innerHTML='<span class="pulse">Building the statement…</span>';
+    try{
+      await this.load();
+      const g=this.grouped(), d=this.ctx.summary||{};
+      const sch=!!(document.getElementById('fs-schedule')||{}).checked;
+      box.innerHTML='<div class="notice notice-success">✅ Statement ready — <b>'+g.paid.length+'</b> fully paid · <b>'+
+        g.partial.length+'</b> part-paid · <b>'+g.untouched.length+'</b> not yet paid · collected <b>'+this.money(d.collected)+
+        '</b> of <b>'+this.money(d.net_bill)+'</b> ('+Number(d.collection_rate||0)+'%). Press <b>Print / Save as PDF</b>.'+
+        (sch?' Payment schedules included.':'')+'</div>';
+    }catch(e){
+      box.innerHTML='<div class="notice notice-error">'+this.esc(e.message||e)+'</div>';
+    }
+  },
+  async print(){
+    const btn=null;
+    try{ await this.load(); }catch(e){ toast('Statement failed: '+(e.message||e),'danger',8000); return; }
+    const g=this.grouped(), d=this.ctx.summary||{};
+    const scope=(document.getElementById('fs-scope')||{}).value||'both';
+    const sch=!!(document.getElementById('fs-schedule')||{}).checked;
+    const sc=window.SCHOOL||{}, cur=sc.currency||'₦';
+    const now=new Date();
+    const fdate=v=>{ if(!v)return '—'; const x=new Date(String(v).length===10?String(v)+'T00:00:00':v); return isNaN(x)?String(v):x.toLocaleDateString('en-GB'); };
+
+    const head='<h1 style="margin:0;font-size:17pt">'+this.esc(sc.name||'School')+'</h1>'+
+      '<p style="margin:2px 0;font-size:8.5pt;color:#475569">'+this.esc(sc.address||'')+
+      (sc.phone?' · '+this.esc(sc.phone):'')+(sc.email?' · '+this.esc(sc.email):'')+'</p>'+
+      '<h2 style="margin:12px 0 2px;font-size:13pt;letter-spacing:.04em">FEE COLLECTION STATEMENT</h2>'+
+      '<p style="margin:0;font-size:9pt;color:#334155">'+this.esc(this.ctx.term||'')+' '+this.esc(this.ctx.session||'')+
+      ' · '+(this.ctx.cls?this.esc(this.ctx.cls):'Whole school')+' · generated '+now.toLocaleString()+'</p>';
+
+    /* summary block — the same reconciliation as every screen */
+    const sum='<table style="width:100%;border-collapse:collapse;margin:10px 0 14px;font-size:9.5pt">'+
+      '<tr>'+
+      this.cell('Students',Number(d.students||0))+
+      this.cell('Fully paid',g.paid.length)+
+      this.cell('Part-paid',g.partial.length)+
+      this.cell('Not paid',g.untouched.length)+
+      '</tr><tr>'+
+      this.cell('Net bill',this.money(d.net_bill))+
+      this.cell('Collected',this.money(d.collected))+
+      this.cell('Arrears',this.money(d.arrears))+
+      this.cell('Outstanding',this.money(d.outstanding))+
+      '</tr></table>';
+
+    const sched=(x)=>{
+      if(!sch) return '';
+      const ps=this.pays[x.student_id]||[];
+      if(!ps.length) return '';
+      return '<div style="font-size:7.6pt;color:#475569;padding:1px 0 4px 14px">Payments: '+
+        ps.map(p=>fdate(p.payment_date||p.created_at)+' '+this.money(p.amount_paid)+(p.method?' ('+this.esc(p.method)+')':'')).join(' &nbsp;·&nbsp; ')+'</div>';
+    };
+    const table=(list,title,cols,rowFn)=> list.length?(
+      '<h3 style="margin:14px 0 4px;font-size:10.5pt;border-bottom:2px solid #0f172a;padding-bottom:2px">'+title+' ('+list.length+')</h3>'+
+      '<table style="width:100%;border-collapse:collapse;font-size:8.6pt">'+
+      '<thead><tr>'+cols.map(c=>'<th style="border:1px solid #94a3b8;background:#e2e8f0;padding:3px 5px;text-align:left">'+c+'</th>').join('')+'</tr></thead><tbody>'+
+      list.map((x,i)=>'<tr style="'+(i%2?'background:#f8fafc':'')+'">'+rowFn(x,i)+'</tr>'+sched(x)).join('')+
+      '</tbody></table>') : '<p style="font-size:9pt;color:#166534">None.</p>';
+
+    const td=(v,al)=>'<td style="border:1px solid #cbd5e1;padding:2px 5px;'+(al?'text-align:'+al:'')+'">'+v+'</td>';
+    const paidTbl=table(g.paid,'A. FULLY PAID',
+      ['#','Student','Adm. No','Class','Bill','Paid','Instalments','Cleared on'],
+      (x,i)=>td(i+1)+td('<b>'+this.esc(x.student)+'</b>')+td(this.esc(x.admission_no||''))+td(this.esc(x.class||''))+
+        td(this.money(x.bill),'right')+td('<b>'+this.money(x.paid)+'</b>','right')+
+        td(Number(x.receipts||0),'center')+td(fdate(x.last_payment),'right'));
+
+    const owingTbl=table(g.owing,'B. NOT COMPLETED',
+      ['#','Student','Adm. No','Class','Bill','Paid','This-term balance','Arrears','TOTAL due'],
+      (x,i)=>td(i+1)+td('<b>'+this.esc(x.student)+'</b>')+td(this.esc(x.admission_no||''))+td(this.esc(x.class||''))+
+        td(this.money(x.bill),'right')+td(this.money(x.paid),'right')+
+        td(this.money(x.balance),'right')+td(Number(x.arrears)>0.005?'<b style="color:#b91c1c">'+this.money(x.arrears)+'</b>':'', 'right')+
+        td('<b>'+this.money(x.total_due)+'</b>','right'));
+
+    const foot='<p style="margin-top:16px;font-size:8pt;color:#475569;border-top:1px solid #cbd5e1;padding-top:6px">'+
+      'Prepared by the Bursary · '+this.esc(sc.name||'')+' · All figures computed by the School Connect fee engine ('+this.esc(this.ctx.term||'')+' '+this.esc(this.ctx.session||'')+'). '+
+      'Signed: ______________________ &nbsp;&nbsp; Date: '+now.toLocaleDateString('en-GB')+'</p>';
+
+    const body='<!doctype html><html><head><meta charset="utf-8"><title>Fee Collection Statement — '+this.esc(this.ctx.term||'')+'</title>'+
+      '<style>@page{size:A4 portrait;margin:12mm}'+
+      'body{font-family:"Segoe UI",system-ui,Arial,sans-serif;color:#0f172a;margin:0}'+
+      'table{page-break-inside:auto}tr{page-break-inside:avoid;page-break-after:auto}'+
+      'thead{display:table-header-group}h3{page-break-after:avoid}'+
+      '@media print{.no-print{display:none}}</style></head><body>'+
+      head+sum+
+      ((scope==='both'||scope==='paid') ? paidTbl : '')+
+      ((scope==='both'||scope==='debtors') ? owingTbl : '')+
+      foot+'</body></html>';
+
+    const w=window.open('','_blank');
+    if(!w){ toast('Allow pop-ups to print the statement.','warning',7000); return; }
+    w.document.open(); w.document.write(body); w.document.close();
+    setTimeout(()=>{ try{ w.focus(); w.print(); }catch(_){} }, 600);
+    try{ if(window.App&&App.logActivity) App.logActivity('fee-statement','fees',(this.ctx.cls||'all')+':'+g.paid.length+'/'+g.owing.length); }catch(_){}
+  },
+  cell(label,value){
+    return '<td style="border:1px solid #94a3b8;padding:4px 7px"><div style="font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;color:#64748b">'+label+
+      '</div><div style="font-size:11pt;font-weight:800">'+value+'</div></td>';
+  },
+  async exportCSV(){
+    try{ await this.load(); }catch(e){ toast('CSV failed: '+(e.message||e),'danger',7000); return; }
+    const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+    const lines=[['Group','Student','Admission No','Class','Bill','Paid','Balance','Arrears','Total Due','Status','Receipts','Last Payment','Payment Schedule']];
+    const g=this.grouped();
+    const add=(grp,list)=>list.forEach(x=>{
+      const ps=(this.pays[x.student_id]||[]).map(p=>(p.payment_date||p.created_at||'')+' '+p.amount_paid).join(' | ');
+      lines.push([grp,x.student,x.admission_no,x.class,x.bill,x.paid,x.balance,x.arrears,x.total_due,x.status,x.receipts,x.last_payment,ps]);
+    });
+    add('FULLY PAID',g.paid); add('PART-PAID',g.partial); add('NOT PAID',g.untouched);
+    const csv=lines.map(r=>r.map(q).join(',')).join('\n');
+    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='fee-collection-statement-'+(this.ctx.cls||'whole-school').replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-'+new Date().toISOString().slice(0,10)+'.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),8000);
+    toast('CSV exported — '+this.rows.length+' students.','success',6000);
+  }
+};
+if(document.getElementById('fs-class')) document.addEventListener('DOMContentLoaded',()=>FeeStatement.init());
+document.addEventListener('DOMContentLoaded',()=>{ if(document.getElementById('fs-out')) setTimeout(()=>FeeStatement.preview(),900); });
+['fs-class','fs-scope','fs-schedule'].forEach(id=>document.addEventListener('DOMContentLoaded',()=>{
+  const e=document.getElementById(id); if(e) e.addEventListener('change',()=>FeeStatement.preview());
+}));
+
+/* =====================================================================
+   V12.62 (item 4) — FeeRepair: the one-click fix for every derived record.
+   ===================================================================== */
+const FeeRepair={
+  esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));},
+  money(n){return((window.SCHOOL&&SCHOOL.currency)||'₦')+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2});},
+  async init(){
+    try{
+      const {data}=await sb.from('students').select('class').limit(20000);
+      const cls=[...new Set((data||[]).map(x=>String(x.class||'').trim()).filter(Boolean))].sort();
+      const el=document.getElementById('rep-class');
+      if(el)(data||[]).length&&cls.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;el.appendChild(o);});
+    }catch(_){}
+  },
+  async run(dry){
+    const box=document.getElementById('rep-out'); if(!box) return;
+    const cls=(document.getElementById('rep-class')||{}).value||'';
+    if(!dry && !confirm('Rebuild the fee ledger for '+(cls||'the whole school')+'?\n\nEvery receipt snapshot, arrears figure and lock state will be recomputed from the fee engine. Nothing is deleted. This is safe to run more than once.')) return;
+    box.innerHTML='<span class="pulse">'+(dry?'Checking':'Repairing')+' every student…</span>';
+    try{
+      const r=await sb.rpc('sc_fee_repair_all',{p_dry_run:!!dry,p_class:cls||null,p_student:null});
+      if(r.error) throw r.error;
+      const d=r.data||{};
+      if(d.ok===false) throw new Error(d.error||'Repair failed');
+      const c=d.counts||{};
+      const items=[
+        ['Receipts with no term/session',c.missing_period,'repaired automatically — they were invisible to every total'],
+        ['Unlinked receipts (no student)',c.unlinked_receipts,'needs you: pick the student on that row'],
+        ['Zero / negative amounts',c.non_positive,'needs you: verify in the cash book'],
+        ['Duplicate receipt groups',c.duplicate_groups,'needs you: delete the double entry'],
+        ['Students billed ₦0 but paying',c.no_fee_structure,'needs you: set the class fee structure'],
+        ['Students who overpaid',c.overpaid,'a credit is due — verify the amounts'],
+        ['Students with an opening balance',c.with_opening_arrears,'carried over from the paper ledger']
+      ];
+      let h='<div class="notice '+(dry?'':'notice-success')+'" style="margin-bottom:10px">'+
+        (dry?'Read-only check complete — nothing has been changed.':(this.esc(d.note||'Ledger rebuilt.')))+
+        '<br><b>'+Number(d.students_scanned||0)+'</b> student(s) checked'+
+        (dry?'':' · <b>'+Number(d.students_rebuilt||0)+'</b> rebuilt · total outstanding now <b>'+this.money(d.outstanding_after)+'</b>')+
+        '</div>';
+      h+='<div class="table-wrap"><table><thead><tr><th>What was checked</th><th>Found</th><th>What it means</th></tr></thead><tbody>';
+      items.forEach(([label,n,note])=>{
+        const bad=Number(n||0)>0;
+        h+='<tr><td>'+label+'</td><td><b style="color:'+(bad?'#b45309':'#166534')+'">'+Number(n||0)+'</b></td><td style="font-size:.84rem;color:var(--gray-600)">'+note+'</td></tr>';
+      });
+      h+='</tbody></table></div>';
+      const f=d.findings||[];
+      if(f.length){
+        h+='<details style="margin-top:10px"'+(f.length<6?' open':'')+'><summary style="cursor:pointer;font-weight:700;font-size:.88rem">📋 Every finding ('+f.length+')</summary>'+
+           '<div class="table-wrap" style="margin-top:8px"><table><thead><tr><th>Student</th><th>Kind</th><th>What we found</th><th>What to do</th></tr></thead><tbody>'+
+           f.slice(0,200).map(x=>'<tr><td><b>'+this.esc(x.student||('×'+x.count))+'</b></td><td><span class="badge">'+this.esc(x.kind)+'</span></td><td style="font-size:.82rem">'+this.esc(x.issue||'')+'</td><td style="font-size:.82rem;color:var(--gray-600)">'+this.esc(x.fix||'')+'</td></tr>').join('')+
+           '</tbody></table></div></details>';
+      } else {
+        h+='<p style="color:#166534;font-weight:700;margin-top:10px">✅ No problems found — every receipt, snapshot and balance is consistent.</p>';
+      }
+      box.innerHTML=h;
+      if(!dry){
+        toast('Ledger repaired for '+Number(d.students_rebuilt||0)+' student(s).','success',8000);
+        try{ FeeSegment.load(); }catch(_){}
+        try{ if(window.App&&App.loadDashFees) App.loadDashFees(); }catch(_){}
+      }
+    }catch(e){
+      const msg=String(e.message||e);
+      box.innerHTML='<div class="notice notice-error">'+(/sc_fee_repair_all|schema cache|function/i.test(msg)
+        ? 'The one-click repair needs the V12.62 database pack — run <code>database/complete-schema.sql</code> in Supabase, then reload.'
+        : this.esc(msg))+'</div>';
+    }
+  }
+};
+if(document.getElementById('rep-class')) document.addEventListener('DOMContentLoaded',()=>FeeRepair.init());
+
+
+/* =====================================================================
+   V12.66 — FeeTruth: the printable, line-by-line account for one student.
+   Reads sc_fee_truth_sheet, which itself reads sc_fee_ledger_for — the SAME
+   function the dashboard card and this page use. There is no second engine.
+   ===================================================================== */
+const FeeTruth={
+  esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));},
+  money(n){return((window.SCHOOL&&SCHOOL.currency)||'₦')+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});},
+  _last:null,
+  async init(){
+    try{
+      const {data}=await sb.from('students').select('id,full_name,admission_no,class').order('class').limit(20000);
+      const el=document.getElementById('ft-student'); if(!el) return;
+      (data||[]).forEach(s=>{const o=document.createElement('option');o.value=s.id;
+        o.textContent=(s.full_name||'')+' · '+(s.class||'')+(s.admission_no?' · '+s.admission_no:'');el.appendChild(o);});
+    }catch(_){}
+  },
+  async load(){
+    const box=document.getElementById('ft-out'); if(!box) return;
+    const id=(document.getElementById('ft-student')||{}).value||'';
+    if(!id){box.innerHTML='<div class="notice notice-warning">Choose a student first.</div>';return;}
+    box.innerHTML='<span class="pulse">Building the account…</span>';
+    const r=await sb.rpc('sc_fee_truth_sheet',{p_student:id});
+    if(r.error){box.innerHTML='<div class="notice notice-error">'+this.esc(r.error.message)+'</div>';return;}
+    const d=r.data||{};
+    if(d.ok===false){box.innerHTML='<div class="notice notice-error">'+this.esc(d.error||'Could not load')+'</div>';return;}
+    this._last=d;
+    const h=(d.headline||{}), st=d.student||{}, per=d.period||{}, cur=(window.SCHOOL&&SCHOOL.currency)||'₦';
+    const m=n=>cur+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+    const out=Number(h.total_outstanding||0)>0;
+
+    let html='<div id="ft-print">';
+    html+='<h3 style="margin:6px 0 2px">'+this.esc(st.name||'')+' <small style="color:var(--gray-500);font-weight:500">'
+        + this.esc(st.class||'')+(st.arm?' · '+this.esc(st.arm):'')+(st.admission_no?' · '+this.esc(st.admission_no):'')+'</small></h3>';
+    html+='<p style="margin:0 0 10px;color:var(--gray-600);font-size:.86rem">'+this.esc(per.term||'')+' '+this.esc(per.session||'')
+        + ' · generated '+new Date().toLocaleString()+'</p>';
+
+    /* V12.68 — where the term came from and which price list was matched */
+    const pv=d.provenance||{};
+    if(pv.headline){
+      const soft=(pv.tone&&pv.tone!=='ok');
+      html+='<div style="border-left:4px solid '+(pv.tone==='ok'?'#16a34a':(pv.tone==='warn'?'#f59e0b':'#dc2626'))+';background:'
+        +(pv.tone==='ok'?'#f0fdf4':(pv.tone==='warn'?'#fffbeb':'#fef2f2'))+';padding:7px 11px;border-radius:8px;font-size:.8rem;color:#334155;margin-bottom:10px">'
+        +(pv.tone==='ok'?'✅ ':soft?'⚠️ ':'ℹ️ ')+this.esc(pv.headline)
+        +(pv.rung?' <code style="font-size:.74rem;color:#64748b">'+this.esc(pv.rung)+'</code>':'')
+        +(pv.fix?'<div style="margin-top:3px;color:#78350f">'+this.esc(pv.fix)+'</div>':'')+'</div>';
+    }
+    /* the five numbers, in the order every screen shows them */
+    /* V12.69 — build the tile list BEFORE mapping it. The opening-balance tile
+       is conditional, so the array must be assembled first: appending the map
+       straight onto a ternary only maps the final array literal and leaves the
+       opening tile as raw "label,value,colour" text. */
+    const tiles=[];
+    if(Number(h.opening_arrears||0)>0) tiles.push(['Opening balance (before School Connect)',m(h.opening_arrears),'#b45309']);
+    tiles.push(['Total fees this term',(h.bill_known===false?'not published':m(h.net_bill)),(h.bill_known===false?'#b45309':'#0f172a')]);
+    tiles.push(['Paid (all receipts)',m(h.paid_this_term),'#15803d']);
+    tiles.push(['Balance this term',m(h.balance_this_term),Number(h.balance_this_term)>0?'#b91c1c':'#15803d']);
+    tiles.push(['Previous terms owing',Number(h.arrears||0)>0?m(h.arrears):'—',Number(h.arrears)>0?'#b91c1c':'#64748b']);
+    tiles.push(['TOTAL OUTSTANDING',m(h.total_outstanding),out?'#b91c1c':'#15803d']);
+    html+='<div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:12px">'
+      +tiles.map(([l,v,c])=>'<div><div style="font-size:1.35rem;font-weight:900;color:'+c+'">'+v+'</div>'
+        +'<div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-500)">'+l+'</div></div>').join('')
+      +'</div>';
+
+    /* the arithmetic — four labelled lines that add up */
+    const ar=d.arithmetic||[];
+    if(ar.length){
+      html+='<div class="table-wrap"><table style="font-size:.88rem"><thead><tr><th style="text-align:left">The calculation</th><th>Amount</th><th style="text-align:left">Why</th></tr></thead><tbody>'
+        + ar.map((x,i)=>{const last=i===ar.length-1;
+            return '<tr'+(last?' style="background:#f8fafc;font-weight:800"':'')+'>'
+              +'<td style="text-align:left">'+this.esc(x.line)+'</td>'
+              +'<td style="color:'+(Number(x.amount)<0?'#15803d':'#0f172a')+'">'+(Number(x.amount)<0?'−':'')+this.money(Math.abs(Number(x.amount)||0))+'</td>'
+              +'<td style="text-align:left;font-size:.8rem;color:var(--gray-600)">'+this.esc(x.note||'')+'</td></tr>';}).join('')
+        +'</tbody></table></div>';
+    } else if(h.bill_working){ html+='<div class="notice">'+this.esc(h.bill_working)+'</div>'; }
+
+    /* the bill breakdown */
+    const bk=d.bill_breakdown||[];
+    if(bk.length){
+      html+='<details style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;font-size:.86rem">📋 What the bill is made of</summary>'
+        +'<div class="table-wrap" style="margin-top:6px"><table style="font-size:.85rem"><tbody>'
+        + bk.map(x=>'<tr><td>'+this.esc(x.item)+'</td><td style="text-align:right"><b>'+this.money(x.amount)+'</b></td></tr>').join('')
+        +'</tbody></table></div></details>';
+    }
+
+    /* which earlier terms are owing */
+    const ad=d.arrears_detail||[];
+    if(ad.length){
+      html+='<details style="margin-top:8px" open><summary style="cursor:pointer;font-weight:700;font-size:.86rem;color:#b91c1c">🧮 Earlier terms still owing ('+ad.length+')</summary>'
+        +'<div class="table-wrap" style="margin-top:6px"><table style="font-size:.85rem"><thead><tr><th style="text-align:left">Term</th><th>Session</th><th>Billed</th><th>Paid</th><th>Owing</th><th>Basis</th></tr></thead><tbody>'
+        + ad.map(x=>'<tr><td style="text-align:left">'+this.esc(x.term||'—')+(x.opening?' <span style="font-size:.72rem;color:#7c3aed">(before School Connect)</span>':'')+'</td>'
+            +'<td>'+this.esc(x.session||'—')+'</td>'
+            +'<td>'+this.money(x.bill)+'</td><td>'+this.money(x.paid)+'</td>'
+            +'<td><b style="color:#b91c1c">'+this.money(x.owing)+'</b></td>'
+            +'<td style="font-size:.78rem;color:var(--gray-600)">'+this.esc(x.source==='receipt'?'from the receipt records':'class fee structure')+'</td></tr>').join('')
+        +'</tbody></table></div></details>';
+    }
+
+    /* the checks — anything the bursar must know */
+    const ck=d.checks||[];
+    if(ck.length){
+      html+='<div class="notice notice-warning" style="margin-top:10px;font-size:.85rem"><b>⚠️ Worth knowing</b><ul style="margin:6px 0 0 18px">'
+        + ck.map(x=>'<li>'+this.esc(x.detail||x.check)+'</li>').join('')+'</ul></div>';
+    }
+
+    /* every receipt, and whether it counts for this term */
+    const rs=d.receipts||[];
+    if(rs.length){
+      const counted=rs.filter(x=>x.for_this_term), other=rs.filter(x=>!x.for_this_term);
+      html+='<details style="margin-top:10px"><summary style="cursor:pointer;font-weight:700;font-size:.86rem">🧾 All receipts ('+rs.length+') — '
+        + counted.length+' for this term, '+other.length+' for other terms</summary>'
+        +'<div class="table-wrap" style="margin-top:6px"><table style="font-size:.82rem"><thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Term</th><th>Reference</th><th>Counts?</th></tr></thead><tbody>'
+        + rs.map(x=>'<tr><td>'+this.esc(String(x.date||'').slice(0,10))+'</td>'
+            +'<td style="text-align:right"><b style="color:#15803d">'+this.money(x.amount)+'</b></td>'
+            +'<td>'+this.esc(x.method||'—')+'</td>'
+            +'<td>'+this.esc((x.term||'—')+(x.session?' · '+x.session:''))+'</td>'
+            +'<td>'+this.esc(x.reference||'—')+'</td>'
+            +'<td>'+(x.for_this_term?'<b style="color:#15803d">this term</b>':'<span style="color:var(--gray-500)">other term</span>')+'</td></tr>').join('')
+        +'</tbody></table></div></details>';
+    }
+    html+='<p style="font-size:.75rem;color:var(--gray-500);margin-top:10px">Every figure here comes from the same server-side engine that prints the dashboard card and this page. They cannot disagree.</p>';
+    html+='</div>';
+    box.innerHTML=html;
+  },
+  print(){
+    if(!this._last){toast('Open a truth sheet first.','warning');return;}
+    const el=document.getElementById('ft-print'); if(!el) return;
+    const sc=window.SCHOOL||{};
+    const w=window.open('','_blank'); if(!w){toast('Allow popups to print.','warning');return;}
+    w.document.write('<html><head><title>Fee Statement — '+this.esc((this._last.student||{}).name||'')+'</title>'
+      +'<style>@page{size:A4;margin:14mm}body{font-family:Georgia,serif;color:#111;font-size:12px}'
+      +'h1{text-align:center;font-size:18px;margin:0}h2{text-align:center;font-size:13px;font-weight:400;color:#555;margin:2px 0 14px}'
+      +'table{width:100%;border-collapse:collapse;margin:8px 0}th,td{border:1px solid #999;padding:5px 7px;font-size:11px}'
+      +'th{background:#e2e8f0}.sig{margin-top:34px;display:flex;justify-content:space-between;font-size:11px}'
+      +'.sig div{width:44%;border-top:1px solid #111;padding-top:6px;text-align:center}</style></head><body>'
+      +'<h1>'+this.esc(sc.name||'School')+'</h1><h2>FEE STATEMENT · '+this.esc((this._last.student||{}).name||'')+' · '
+      +this.esc((this._last.period||{}).term||'')+' '+this.esc((this._last.period||{}).session||'')+'</h2>'
+      +el.innerHTML
+      +'<div class="sig"><div>Bursar / Accounts</div><div>Parent / Guardian</div></div>'
+      +'<p style="text-align:center;font-size:9px;color:#777;margin-top:16px">Generated by School Connect · '
+      +new Date().toLocaleString()+' · This statement is produced from the school\'s own ledger.</p>'
+      +'<script>window.onload=()=>window.print()<\/script></body></html>');
+    w.document.close();
+  },
+  async reconcile(){
+    const box=document.getElementById('ft-out'); if(!box) return;
+    box.innerHTML='<span class="pulse">Checking every student on every reader…</span>';
+    const r=await sb.rpc('sc_fee_reconcile',{p_student:null});
+    if(r.error){box.innerHTML='<div class="notice notice-error">'+this.esc(r.error.message)+'</div>';return;}
+    const d=r.data||{};
+    if(d.ok===false){box.innerHTML='<div class="notice notice-error">'+this.esc(d.error||'Failed')+'</div>';return;}
+    let h='<div class="notice '+(d.clean?'notice-success':'notice-error')+'"><b>'+(d.clean?'✅ ':'⚠️ ')
+      +Number(d.students||0)+' student(s) checked · '+Number(d.mismatches||0)+' discrepancy(ies)</b><br>'+this.esc(d.message||'')+'</div>';
+    const f=d.findings||[];
+    if(f.length){
+      h+='<div class="table-wrap" style="margin-top:10px"><table style="font-size:.84rem"><thead><tr><th>Student</th><th>Class</th><th>Field</th><th>Ledger</th><th>Account</th><th>Family card</th><th>What to do</th></tr></thead><tbody>'
+        + f.slice(0,200).map(x=>'<tr><td><b>'+this.esc(x.student||'')+'</b><br><small>'+this.esc(x.admission_no||'')+'</small></td>'
+          +'<td>'+this.esc(x.class||'')+'</td><td><span class="badge">'+this.esc(x.field||'')+'</span></td>'
+          +'<td>'+this.money(x.ledger)+'</td><td>'+this.money(x.account)+'</td>'
+          +'<td>'+this.money(x.family!=null?x.family:x.account)+'</td>'
+          +'<td style="font-size:.8rem">'+this.esc(x.fix||'')+'</td></tr>').join('')
+        +'</tbody></table></div>';
+    }
+    box.innerHTML=h;
+  }
+};
+if(document.getElementById('ft-student')) document.addEventListener('DOMContentLoaded',()=>FeeTruth.init());
+
+
+
 /* ===== FM — V10.1 (#7): Master financial records export ===== */
 const FM={rows:[],ctx:{},
   esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));},
@@ -694,7 +1307,7 @@ const FM={rows:[],ctx:{},
     const cls=(document.getElementById('fm-class')||{}).value||'';
     const box=document.getElementById('fm-out');box.innerHTML='<span class="pulse">Computing every student\'s financial state…</span>';
     const r=await sb.rpc('sc_class_fee_master',{p_class:cls});
-    if(r.error){box.innerHTML='<div class="notice notice-error">'+this.esc(/could not find|does not exist|schema cache/i.test(r.error.message||'')?'Run database/v10.1-staffpay-attendance-vetting.sql once, then rebuild.':r.error.message)+'</div>';return;}
+    if(r.error){box.innerHTML='<div class="notice notice-error">'+this.esc(/could not find|does not exist|schema cache/i.test(r.error.message||'')?'Run database/complete-schema.sql once, then rebuild.':r.error.message)+'</div>';return;}
     const d=r.data||{};if(d.ok===false){box.innerHTML='<div class="notice notice-error">'+this.esc(d.error||'Failed')+'</div>';return;}
     this.rows=d.rows||[];this.ctx={cls:cls,term:d.term,session:d.session};
     if(!this.rows.length){box.innerHTML='<p style="color:var(--gray-500)">No students found'+(cls?' in '+this.esc(cls):'')+'.</p>';return;}
@@ -714,6 +1327,18 @@ const FM={rows:[],ctx:{},
     const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='master-financial-records'+(this.ctx.cls?'-'+this.ctx.cls.replace(/\s+/g,'_'):'')+'.csv';a.click();}
 };
 document.addEventListener('DOMContentLoaded',()=>FM.init());FM.init();
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.FAM = FAM;
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.FM = FM;
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.FeeRepair = FeeRepair;
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.FeeStatement = FeeStatement;
 </script>
 <script>
 /* V10.9 (#1): FEE LEDGER DOCTOR UI — renders the sc_fee_ledger_doctor scan,
@@ -789,7 +1414,7 @@ const FeeSegment={
           '<td>'+money(x.bill)+'</td>'+
           '<td style="color:#166534;font-weight:700">'+money(x.paid)+'</td>'+
           '<td>'+money(x.balance)+'</td>'+
-          '<td style="color:'+(Number(x.arrears)>0?'#b91c1c':'#475569')+'">'+money(x.arrears)+'</td>'+
+          '<td style="color:#b91c1c;font-weight:'+(Number(x.arrears)>0.005?'800':'400')+'">'+(Number(x.arrears)>0.005?money(x.arrears):'')+'</td>'+
           '<td><b style="color:'+(Number(x.total_due)>0?'#b91c1c':'#166534')+'">'+money(x.total_due)+'</b></td>'+
           '<td>'+this.badge(x.status)+'</td>'+
           '<td>'+(x.portal_locked?'<span style="color:#b91c1c;font-weight:800">🔒 locked</span>':'<span style="color:#166534">open</span>')+'</td>'+
@@ -798,7 +1423,7 @@ const FeeSegment={
     }catch(e){
       const msg=String(e.message||e);
       box.innerHTML='<div class="notice notice-error">'+(/could not find the function|does not exist|schema cache/i.test(msg)
-        ? 'Run <code>database/v12.60-expert-fix-pack.sql</code> in Supabase to enable fee segmentation.'
+        ? 'Run <code>database/complete-schema.sql</code> in Supabase to enable fee segmentation.'
         : this.esc(msg))+'</div>';
     }
   },
@@ -854,17 +1479,24 @@ const FeeSegment={
 document.addEventListener('DOMContentLoaded',function(){ try{ FeeSegment.init(); }catch(_){ } });
 const FeeDoctor={
   esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));},
+  /* V12.66 — prefer the 14-check doctor; fall back to the 7-check one on a
+     database that has not been updated yet, so the button never dies. */
   async run(heal){
     const box=document.getElementById('fee-doctor-out'); if(!box||!window.sb)return;
+    const wantFix=!!heal;
+    if(wantFix && !confirm('Repair everything that can be repaired safely?\n\nThis stamps missing terms on receipts and rebuilds the affected ledgers. No money record is ever deleted, and it is safe to run more than once.')) return;
     box.innerHTML='<span class="pulse">Scanning the whole ledger…</span>';
-    const r=await sb.rpc('sc_fee_ledger_doctor',{p_heal:!!heal});
+    const cls=(document.getElementById('fdx-class')||{}).value||'';
+    const v2=await sb.rpc('sc_fee_doctor_v2',{p_class:cls||null,p_student:null,p_dry_run:!heal});
+    if(!v2.error && v2.data && v2.data.ok!==false){ return this.renderV2(v2.data,heal,box); }
+    const r=await sb.rpc('sc_fee_ledger_doctor',{p_heal:wantFix});
     if(r.error||!r.data||r.data.ok===false){
       const msg=(r.data&&r.data.error)||(r.error&&r.error.message)||'Scan failed';
-      box.innerHTML='<p style="color:#b91c1c">'+(/sc_fee_ledger_doctor|schema cache|function/i.test(String(msg))?'The Fee Doctor needs a one-time database update — run database/v10.9b-fee-doctor.sql (or the latest complete-schema.sql) in Supabase.':this.esc(msg))+'</p>';
+      box.innerHTML='<p style="color:#b91c1c">'+(/sc_fee_ledger_doctor|schema cache|function/i.test(String(msg))?'The Fee Doctor needs a one-time database update — run database/complete-schema.sql (or the latest complete-schema.sql) in Supabase.':this.esc(msg))+'</p>';
       return;
     }
     const d=r.data, issues=d.issues||[];
-    const KINDS={duplicate:['👯 Possible double entries','#fef2f2','#dc2626'],unlinked:['🔗 Payments with no student linked','#fff7ed','#ea580c'],non_positive:['0️⃣ Zero / negative amounts','#fef2f2','#dc2626'],future_dated:['📅 Future-dated payments','#fefce8','#ca8a04'],overpayment:['💸 Paid beyond the bill','#fdf2f8','#be185d'],no_period:['🗓 Missing term/session','#eff6ff','#2563eb'],stale_snapshot:['🧮 Stale totals (run Heal)','#f5f3ff','#7c3aed']};
+    const KINDS=FeeDoctor.KINDS;
     if(!issues.length){box.innerHTML='<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:12px 14px;color:#166534;font-weight:700">✅ Ledger clean — no duplicates, no unlinked rows, no overpayments, no stale totals.'+(heal?' Snapshots re-verified for '+(d.healed_terms||0)+' student-term(s).':'')+'</div>';return;}
     const groups={};issues.forEach(i=>{(groups[i.kind]=groups[i.kind]||[]).push(i);});
     box.innerHTML=(heal?'<p style="color:#166534;font-weight:700">🧮 Healed snapshots across '+(d.healed_terms||0)+' student-term(s). Remaining findings need a human decision:</p>':'')+
@@ -878,4 +1510,424 @@ const FeeDoctor={
     if(window.App&&App.logActivity)App.logActivity(heal?'fee-doctor-heal':'fee-doctor-scan','fee_payments',String(issues.length)+' finding(s)');
   }
 };
+
+FeeDoctor.LABELS = {
+  bill_unknown:['Learners with NO fee structure','Their bill shows zero — which is NOT a zero debt.'],
+  unlinked_receipt:['Receipts attached to no student','Money was taken but belongs to nobody.'],
+  duplicate_receipt:['Possible double entries','Same student, amount, date and reference twice.'],
+  non_positive_amount:['Zero or negative amounts','Phantom rows that distort counts and averages.'],
+  missing_period:['Receipts with no term/session','They were counted in NO total — balances understated.'],
+  overpaid:['Overpayments','Paid more than owed — a credit or refund is due.'],
+  report_double_count:['CBT scores in two columns','A single score added to the report total twice.'],
+  undated_period:['Academic periods with no dates','Arrears for those terms cannot be proven, so are NOT charged.'],
+  zero_class_fee:['Class fees that bill zero','Every learner in that class looks fully paid.'],
+  structure_conflict:['Conflicting class fee structures','More than one active structure for a class/term.'],
+  orphan_aid:['Aid naming nobody','An approved bursary applied to no learner.'],
+  future_dated:['Future-dated receipts','They count, but the day book will look wrong.'],
+  opening_balance:['Opening balances','Carried from the paper ledger. Nothing to fix.'],
+  stale_snapshots:['Stale report snapshots','A report sheet disagrees with its own marks.']
+};
+FeeDoctor.KINDS = {duplicate:['👯 Possible double entries','#fef2f2','#dc2626'],unlinked:['🔗 Payments with no student linked','#fff7ed','#ea580c'],non_positive:['0️⃣ Zero / negative amounts','#fef2f2','#dc2626'],future_dated:['📅 Future-dated payments','#fefce8','#ca8a04'],overpayment:['💸 Paid beyond the bill','#fdf2f8','#be185d'],no_period:['🗓 Missing term/session','#eff6ff','#2563eb'],stale_snapshot:['🧮 Stale totals (run Heal)','#f5f3ff','#7c3aed']};
+FeeDoctor.money = function(n){ return ((window.SCHOOL&&SCHOOL.currency)||'₦')+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); };
+FeeDoctor.renderV2 = function(d, heal, box){
+  const c = d.counts||{}, fx = d.fixed||{};
+  const keys = Object.keys(this.LABELS);
+  let any = 0;
+  let h = '<div class="notice ' + (heal?'notice-success':'notice-info') + '" style="margin-bottom:10px"><b>'
+        + (heal?'Diagnosis complete — fixable items repaired.':'Read-only check — nothing was changed.') + '</b><br>'
+        + Number(d.students||0) + ' student(s) examined · outstanding <b>' + this.money(d.outstanding) + '</b>'
+        + ' · collected <b>' + this.money(d.collected) + '</b>'
+        + (heal ? '<br>Repaired: ' + Number(fx.missing_period||0) + ' receipt term(s) stamped · '
+                + Number(fx.snapshots||0) + ' snapshot(s) rebuilt' : '')
+        + '</div>';
+  h += '<div class="table-wrap"><table><thead><tr><th style="text-align:left">Check</th><th>Found</th>'
+     + '<th style="text-align:left">What it means for the money</th></tr></thead><tbody>';
+  keys.forEach(k => {
+    const v = Number(c[k]||0); if (v > 0) any++;
+    const lab = this.LABELS[k];
+    h += '<tr' + (v>0?' style="background:#fffbeb"':'') + '><td style="text-align:left">' + lab[0] + '</td>'
+       + '<td><b style="color:' + (v>0?'#b45309':'#166534') + '">' + v + '</b></td>'
+       + '<td style="text-align:left;font-size:.84rem;color:var(--gray-600)">' + lab[1] + '</td></tr>';
+  });
+  h += '</tbody></table></div>';
+  if (!any) h += '<p style="color:#166534;font-weight:700;margin-top:10px">✅ Every one of the fourteen checks passed.</p>';
+  const findings = (d.findings||[]).filter(x => !/_detail$/.test(x.kind||''));
+  if (findings.length) {
+    h += '<details style="margin-top:10px" open><summary style="cursor:pointer;font-weight:700;font-size:.88rem">'
+       + '📋 Findings that need a decision (' + findings.length + ')</summary>'
+       + '<div class="table-wrap" style="margin-top:8px"><table><thead><tr><th>Student</th><th>Check</th>'
+       + '<th style="text-align:left">What we found</th><th style="text-align:left">What to do</th></tr></thead><tbody>'
+       + findings.slice(0,200).map(x => '<tr><td><b>' + this.esc(x.student || ('×'+(x.count||1))) + '</b>'
+           + (x.class?'<br><small>' + this.esc(x.class) + '</small>':'') + '</td>'
+           + '<td><span class="badge">' + this.esc(x.kind||'') + '</span></td>'
+           + '<td style="text-align:left;font-size:.82rem">' + this.esc(x.issue||'') + '</td>'
+           + '<td style="text-align:left;font-size:.82rem;color:var(--gray-600)">' + this.esc(x.fix||'') + '</td></tr>').join('')
+       + '</tbody></table></div></details>';
+  }
+  const detail = (d.findings||[]).filter(x => /_detail$/.test(x.kind||''));
+  if (detail.length) {
+    h += '<details style="margin-top:8px"><summary style="cursor:pointer;font-weight:700;font-size:.88rem">'
+       + '🔍 Affected rows (' + detail.length + ')</summary>'
+       + '<div class="table-wrap" style="margin-top:8px"><table style="font-size:.84rem"><thead><tr><th>Student</th>'
+       + '<th>Detail</th><th>Amount</th><th style="text-align:left">What to do</th></tr></thead><tbody>'
+       + detail.slice(0,300).map(x => '<tr><td><b>' + this.esc(x.student||'') + '</b>'
+           + (x.class?'<br><small>' + this.esc(x.class) + '</small>':'') + '</td>'
+           + '<td>' + this.esc(x.day || x.references || '') + '</td>'
+           + '<td>' + (x.amount!=null ? this.money(x.amount) : '—') + '</td>'
+           + '<td style="text-align:left;font-size:.8rem;color:var(--gray-600)">' + this.esc(x.fix||'') + '</td></tr>').join('')
+       + '</tbody></table></div></details>';
+  }
+  h += '<p style="font-size:.82rem;color:var(--gray-500)">Fix a row in the table below (Edit/Delete) — the student\'s whole term recomputes automatically. Re-scan afterwards.</p>';
+  box.innerHTML = h;
+  if (window.App && App.logActivity) App.logActivity(heal?'fee-doctor-v2-heal':'fee-doctor-v2-scan','fee_payments', String(findings.length)+' finding(s)');
+};
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.FeeDoctor = FeeDoctor;
+
+/* =====================================================================
+   V12.67 — FeeInvoice: raise invoices, so a bill is RECORDED not inferred.
+   ===================================================================== */
+const FeeInvoice={
+  esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));},
+  money(n){return((window.SCHOOL&&SCHOOL.currency)||'₦')+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});},
+  out(h){const b=document.getElementById('inv-out'); if(b) b.innerHTML=h;},
+  async init(){
+    try{
+      const {data}=await sb.from('students').select('class').limit(20000);
+      const cls=[...new Set((data||[]).map(x=>String(x.class||'').trim()).filter(Boolean))].sort();
+      const el=document.getElementById('inv-class');
+      if(el) cls.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;el.appendChild(o);});
+      const {data:ap}=await sb.from('academic_periods').select('term,session,is_current').limit(200);
+      const tEl=document.getElementById('inv-term');
+      if(tEl) [...new Set((ap||[]).map(x=>x.term).filter(Boolean))].forEach(t=>{
+        const o=document.createElement('option');o.value=t;o.textContent=t;tEl.appendChild(o);});
+    }catch(_){}
+  },
+  async raise(priorTerms){
+    const cls=(document.getElementById('inv-class')||{}).value||'';
+    const term=(document.getElementById('inv-term')||{}).value||'';
+    if(priorTerms && !confirm(
+      'Raise invoices for EARLIER terms as well?\n\n'+
+      'Only continue if these learners really were billed for those terms. '+
+      'Each earlier term becomes a real invoice, which will then appear as previous-terms-owing. '+
+      'If in doubt, cancel: raising this term alone is the safe choice.')) return;
+    this.out('<span class="pulse">Raising invoices…</span>');
+    try{
+      const r=await sb.rpc('sc_fee_invoice_sync_all',{p_class:cls||null,p_term:term||null,p_session:null,p_prior_terms:!!priorTerms});
+      if(r.error) throw r.error;
+      const d=r.data||{}; if(d.ok===false) throw new Error(d.error||'Failed');
+      let h='<div class="notice notice-success"><b>✅ '+Number(d.raised||0)+' invoice(s) raised for '+this.esc(d.term||'')+' '+this.esc(d.session||'')+'.</b><br>'
+        + this.esc(d.message||'')+'</div>';
+      if(Number(d.kept_overrides||0)>0)
+        h+='<div class="notice" style="margin-top:8px">'+Number(d.kept_overrides)+' learner(s) have a figure set by hand for this term; the class structure did not replace it.</div>';
+      if(Number(d.unbilled||0)>0){
+        h+='<div class="notice notice-warning" style="margin-top:8px"><b>'+Number(d.unbilled)+' learner(s) could not be invoiced</b> — no fee structure exists for their class this term, so no bill was invented.<ul style="margin:6px 0 0 18px;font-size:.86rem">'
+          + (d.skipped||[]).slice(0,20).map(x=>'<li><b>'+this.esc(x.student||'')+'</b> · '+this.esc(x.class||'')+' — '+this.esc(x.reason||'')+'</li>').join('')
+          + '</ul></div>';
+      }
+      h+='<p style="font-size:.83rem;color:var(--gray-600);margin-top:10px">The dashboard, this table, every receipt and the parent portal now read these invoices. Re-running is safe — it updates, never duplicates.</p>';
+      this.out(h);
+      try{ FeeSegment.load(); }catch(_){}
+      try{ if(window.App&&App.loadDashFees) App.loadDashFees(); }catch(_){}
+    }catch(e){
+      const m=String(e.message||e);
+      this.out('<div class="notice notice-error">'+(/sc_fee_invoice|schema cache|does not exist/i.test(m)
+        ? 'Invoicing needs the V12.67 database pack — run <code>database/complete-schema.sql</code> in Supabase, then reload.'
+        : this.esc(m))+'</div>');
+    }
+  },
+  async migrate(dry){
+    this.out('<span class="pulse">Reading every stored receipt total…</span>');
+    try{
+      const r=await sb.rpc('sc_fee_truth_migrate',{p_dry_run:!!dry});
+      if(r.error) throw r.error;
+      const d=r.data||{}; if(d.ok===false) throw new Error(d.error||'Failed');
+      let h='<div class="notice '+(Number(d.would_fix||0)>0?'notice-warning':'notice-success')+'"><b>'+this.esc(d.message||'')+'</b><br>'
+        + Number(d.scanned||0)+' receipt row(s) examined.</div>';
+      const s2=d.samples||[];
+      if(s2.length){
+        h+='<div class="table-wrap" style="margin-top:10px"><table style="font-size:.85rem"><thead><tr><th>Student</th><th>Term</th><th>Stored</th><th>Should be</th><th>Overstated by</th></tr></thead><tbody>'
+          + s2.map(x=>'<tr><td>'+this.esc(x.student||'')+'</td><td>'+this.esc((x.term||'')+' '+(x.session||''))+'</td>'
+            +'<td style="color:#b91c1c">'+this.money(x.stored)+'</td><td><b style="color:#15803d">'+this.money(x.correct)+'</b></td>'
+            +'<td>'+this.money(x.difference)+'</td></tr>').join('')
+          + '</tbody></table></div>'
+          + '<p style="font-size:.82rem;color:var(--gray-600);margin-top:8px">This is the compounding fault: each receipt stored the running total instead of the term bill. Repair rewrites each receipt with the bill for its term.</p>';
+      }
+      this.out(h);
+      if(!dry){ try{ FeeSegment.load(); }catch(_){} }
+    }catch(e){
+      this.out('<div class="notice notice-error">'+this.esc(e.message||e)+'</div>');
+    }
+  },
+  async opening(dry){
+    this.out('<span class="pulse">Reading opening balances…</span>');
+    try{
+      const r=await sb.rpc('sc_fee_opening_to_invoice',{p_dry_run:!!dry});
+      if(r.error) throw r.error;
+      const d=r.data||{}; if(d.ok===false) throw new Error(d.error||'Failed');
+      let h='<div class="notice '+(Number(d.count||0)>0?'notice-info':'notice-success')+'"><b>'+this.esc(d.message||'')+'</b></div>';
+      const st=d.students||[];
+      if(st.length){
+        h+='<div class="table-wrap" style="margin-top:10px"><table style="font-size:.85rem"><thead><tr><th>Student</th><th>Balance</th><th>Note</th></tr></thead><tbody>'
+          + st.slice(0,100).map(x=>'<tr><td>'+this.esc(x.student||'')+'</td><td><b>'+this.money(x.amount)+'</b></td><td>'+this.esc(x.note||'')+'</td></tr>').join('')
+          + '</tbody></table></div>';
+      }
+      this.out(h);
+      if(!dry){ try{ FeeSegment.load(); }catch(_){} }
+    }catch(e){
+      this.out('<div class="notice notice-error">'+this.esc(e.message||e)+'</div>');
+    }
+  },
+  async list(){
+    this.out('<span class="pulse">Loading invoices…</span>');
+    try{
+      const cls=(document.getElementById('inv-class')||{}).value||'';
+      let q=sb.from('sc_fee_invoice').select('student_id_ref,class,term,session,amount,aid,net_amount,source,note').order('session').order('term').limit(2000);
+      if(cls) q=q.ilike('class',cls);
+      const {data,error}=await q;
+      if(error) throw error;
+      if(!(data||[]).length){ this.out('<div class="notice">No invoices yet. Press <b>Raise invoices for this term</b>.</div>'); return; }
+      this.out('<div class="table-wrap"><table style="font-size:.85rem"><thead><tr><th>Adm. No</th><th>Class</th><th>Term</th><th>Session</th><th>Billed</th><th>Aid</th><th>Net bill</th><th>Source</th><th>Note</th></tr></thead><tbody>'
+        + data.map(x=>'<tr><td>'+this.esc(x.student_id_ref||'')+'</td><td>'+this.esc(x.class||'')+'</td><td>'+this.esc(x.term||'')+'</td><td>'+this.esc(x.session||'')+'</td>'
+          +'<td>'+this.money(x.amount)+'</td><td>'+(Number(x.aid)>0?'−'+this.money(x.aid):'—')+'</td>'
+          +'<td><b>'+this.money(x.net_amount)+'</b></td><td><span class="badge">'+this.esc(x.source||'')+'</span></td>'
+          +'<td style="font-size:.8rem;color:var(--gray-600)">'+this.esc(x.note||'')+'</td></tr>').join('')
+        + '</tbody></table></div><p style="font-size:.8rem;color:var(--gray-500);margin-top:8px">'+data.length+' invoice(s). One per learner per term.</p>');
+    }catch(e){
+      this.out('<div class="notice notice-error">'+this.esc(e.message||e)+'</div>');
+    }
+  }
+};
+if(document.getElementById('inv-class')) document.addEventListener('DOMContentLoaded',()=>FeeInvoice.init());
+window.FeeInvoice = FeeInvoice;
+
+/* V12.66: the printable fee statement + reconciliation. */
+window.FeeTruth = FeeTruth;
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.FeeSegment = FeeSegment;
+
+/* V12.71 (item 5): the reports a board asks for — aged arrears, collection
+   summary, and the adjustments register. Every figure comes from
+   sc_fee_aged_arrears / sc_fee_collection_summary / sc_fee_adjustments, which
+   re-read the invoice and payment ledgers on every call. Nothing is cached, so
+   this panel cannot disagree with the Fees table above it. */
+const FeeReports = {
+  _data: null,
+  esc: s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'),
+  money(n){ return ((window.SCHOOL && SCHOOL.currency) || '₦') + Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2}); },
+
+  async load(){
+    const out = document.getElementById('fr-out');
+    const st  = document.getElementById('fr-status');
+    if(!window.sb){ out.innerHTML = '<div class="notice notice-error">Not signed in.</div>'; return; }
+    out.innerHTML = '<div class="notice"><span class="pulse">Reading the invoice and payment ledgers…</span></div>';
+    try{
+      const [ag, cs, ad, cr] = await Promise.all([
+        sb.rpc('sc_fee_aged_arrears', { p_as_of: null, p_class: null, p_term: null, p_session: null }),
+        sb.rpc('sc_fee_collection_summary', { p_term: null, p_session: null }),
+        sb.rpc('sc_fee_adjustments', { p_term: null, p_session: null }),
+        sb.rpc('sc_fee_cash_reconciliation', { p_from: null, p_to: null })
+      ]);
+      for(const r of [ag, cs, ad, cr]){
+        if(r.error) throw r.error;
+        if(r.data && r.data.ok === false) throw new Error(r.data.error || 'Refused.');
+      }
+      this._data = { aged: ag.data, coll: cs.data, adj: ad.data, recon: cr.data };
+      if(st) st.textContent = 'Built ' + new Date().toLocaleTimeString() + ' · engine ' + ((ag.data && ag.data.engine) || 'v12.71');
+      document.getElementById('fr-csv').disabled = false;
+      this.render();
+    }catch(e){
+      const msg = String(e.message || e);
+      out.innerHTML = '<div class="notice notice-error"><b>The reports could not be built.</b><br>' + this.esc(msg)
+        + (/function|schema cache|does not exist/i.test(msg)
+            ? '<br>Run the latest <b>complete-schema.sql</b> — the financial report functions arrive with it.'
+            : '') + '</div>';
+    }
+  },
+
+  render(){
+    const d = this._data; if(!d) return;
+    const t = (d.aged && d.aged.totals) || {};
+    const g = (d.coll && d.coll.totals) || {};
+    const onlyOverdue = document.getElementById('fr-only-overdue');
+    const overdue = Number(t['0_30']||0) + Number(t['31_60']||0) + Number(t['61_90']||0) + Number(t['over_90']||0);
+
+    /* --- the four bands, each with the action it implies --- */
+    const band = (label, amount, meaning, colour) =>
+      '<div class="stat-card" style="border-left:4px solid ' + colour + '">'
+      + '<div class="stat-value">' + this.money(amount) + '</div>'
+      + '<div class="stat-label"><b>' + label + '</b><br><span style="font-size:.78rem;color:var(--gray-500)">' + meaning + '</span></div></div>';
+
+    let h = '<div class="stats-grid">'
+      + band('Not yet due', t.not_due, 'billed, but the family is not late', '#94a3b8')
+      + band('0–30 days overdue', t['0_30'], 'send the reminder now', '#fbbf24')
+      + band('31–60 days', t['31_60'], 'phone the family', '#f97316')
+      + band('61–90 days', t['61_90'], 'book a meeting', '#ef4444')
+      + band('Over 90 days', t['over_90'], 'written plan, or write it off', '#7f1d1d')
+      + '</div>';
+
+    h += '<div class="notice" style="font-size:.88rem">'
+      + '<b>' + this.money(overdue) + '</b> is money the school can already chase across <b>'
+      + (t.learners || 0) + ' learner(s)</b>. ' + this.esc((d.aged && d.aged.meaning) || '') + '</div>';
+
+    /* --- collection summary per class --- */
+    const coll = (d.coll && d.coll.rows) || [];
+    h += '<h4 style="margin:16px 0 6px">Collection by class</h4>';
+    if(!coll.length){
+      h += '<div class="notice">No invoices or payments are recorded yet, so there is nothing to summarise.</div>';
+    } else {
+      h += '<div class="table-wrap"><table style="font-size:.88rem"><thead><tr>'
+        + '<th style="text-align:left">Class</th><th>Invoices</th><th>Billed</th><th>Collected</th>'
+        + '<th>Outstanding</th><th>Collection rate</th></tr></thead><tbody>'
+        + coll.map(r => {
+            const rate = (r.rate == null) ? '—' : r.rate + '%';
+            const col = (r.rate != null && Number(r.rate) < 70) ? '#b91c1c' : (r.rate != null ? '#166534' : 'inherit');
+            return '<tr><td style="text-align:left"><b>' + this.esc(r.class || '(no class)') + '</b></td>'
+              + '<td>' + (r.invoices || 0) + '</td>'
+              + '<td>' + this.money(r.billed) + '</td>'
+              + '<td>' + this.money(r.collected) + '</td>'
+              + '<td>' + this.money(r.outstanding) + '</td>'
+              + '<td style="color:' + col + ';font-weight:600">' + rate + '</td></tr>';
+          }).join('')
+        + '<tr style="background:var(--gray-50,#f8fafc);font-weight:700"><td style="text-align:left">Whole school</td>'
+        + '<td></td><td>' + this.money(g.billed) + '</td><td>' + this.money(g.collected) + '</td>'
+        + '<td>' + this.money(g.outstanding) + '</td>'
+        + '<td>' + (g.rate == null ? '—' : g.rate + '%') + '</td></tr>'
+        + '</tbody></table></div>';
+      if(g.rate != null && Number(g.rate) < 70){
+        h += '<div class="notice" style="border-left:3px solid #f97316;font-size:.86rem;margin-top:8px">'
+          + 'A collection rate below 70% at this point in the term usually means invoices went out late, '
+          + 'or a class has no fee structure published. Check <b>Fee Doctor</b> above before chasing families.</div>';
+      }
+    }
+
+    /* --- the aged list itself --- */
+    let rows = (d.aged && d.aged.rows) || [];
+    if(onlyOverdue && onlyOverdue.checked) rows = rows.filter(r => r.band !== 'not_due');
+    h += '<h4 style="margin:16px 0 6px">Learners who owe money'
+       + (onlyOverdue && onlyOverdue.checked ? ' — overdue only' : ' — including money not yet due') + '</h4>';
+    if(!rows.length){
+      h += '<div class="notice notice-success" style="border-left:3px solid #16a34a">'
+         + (onlyOverdue && onlyOverdue.checked
+              ? 'Nothing is overdue. Every invoice is either paid or not yet payable.'
+              : 'No learner owes anything. Every invoice is fully paid.')
+         + '</div>';
+    } else {
+      const pill = b => ({
+        not_due:'background:#e2e8f0;color:#334155', '0_30':'background:#fef3c7;color:#92400e',
+        '31_60':'background:#ffedd5;color:#9a3412', '61_90':'background:#fee2e2;color:#991b1b',
+        over_90:'background:#7f1d1d;color:#fff'
+      }[b] || '');
+      const label = b => ({not_due:'not due','0_30':'0–30 days','31_60':'31–60 days',
+        '61_90':'61–90 days', over_90:'over 90 days'}[b] || b);
+      h += '<div class="table-wrap"><table style="font-size:.86rem"><thead><tr>'
+        + '<th style="text-align:left">Learner</th><th style="text-align:left">Class</th>'
+        + '<th>Outstanding</th><th>Days overdue</th><th>Age band</th></tr></thead><tbody>'
+        + rows.map(r => '<tr><td style="text-align:left"><b>' + this.esc(r.student || '')
+          + '</b><br><small>' + this.esc(r.admission_no || '') + '</small></td>'
+          + '<td style="text-align:left">' + this.esc(r.class || '') + '</td>'
+          + '<td><b>' + this.money(r.outstanding) + '</b></td>'
+          + '<td>' + (Number(r.days_overdue) || 0) + '</td>'
+          + '<td><span style="padding:2px 8px;border-radius:10px;font-size:.78rem;font-weight:600;' + pill(r.band) + '">'
+          + this.esc(label(r.band)) + '</span></td></tr>').join('')
+        + '</tbody></table></div>';
+    }
+
+    /* --- adjustments register --- */
+    const adj = (d.adj && d.adj.rows) || [];
+    h += '<h4 style="margin:16px 0 6px">Adjustments register — every credit, waiver and write-off</h4>';
+    if(!adj.length){
+      h += '<div class="notice" style="font-size:.86rem">No credit, waiver or write-off has been recorded. '
+         + 'When one is granted it appears here permanently, with the reason and the person who approved it — '
+         + 'this is the page a board reads when it questions a total.</div>';
+    } else {
+      h += '<div class="table-wrap"><table style="font-size:.84rem"><thead><tr>'
+        + '<th style="text-align:left">Learner</th><th style="text-align:left">Kind</th><th>Amount</th>'
+        + '<th style="text-align:left">Reason</th><th style="text-align:left">Approved by</th><th>When</th></tr></thead><tbody>'
+        + adj.map(a => '<tr><td style="text-align:left">' + this.esc(a.student || '')
+          + '<br><small>' + this.esc(a.admission_no || '') + '</small></td>'
+          + '<td style="text-align:left">' + this.esc(String(a.kind || '').replace('_',' ')) + '</td>'
+          + '<td>' + this.money(a.amount) + '</td>'
+          + '<td style="text-align:left">' + this.esc(a.reason || '') + '</td>'
+          + '<td style="text-align:left">' + this.esc(a.by || '') + '</td>'
+          + '<td>' + this.esc(a.at || '') + '</td></tr>').join('')
+        + '</tbody></table></div>';
+    }
+    /* --- month-end cash & bank reconciliation --- */
+    const rc = d.recon;
+    if(rc && rc.ok){
+      const rt = rc.totals || {};
+      h += '<h4 style="margin:16px 0 6px">🏦 Cash &amp; bank reconciliation — ' +
+           this.esc(rc.from || '') + ' to ' + this.esc(rc.to || '') + '</h4>';
+      const methods = rc.by_method || [];
+      if(!methods.length){
+        h += '<div class="notice" style="font-size:.86rem">No money was received in this period, so there is nothing to reconcile.</div>';
+      } else {
+        h += '<div class="table-wrap"><table style="font-size:.88rem"><thead><tr>'
+          + '<th style="text-align:left">Method</th><th>Receipts</th><th>Amount</th></tr></thead><tbody>'
+          + methods.map(m => '<tr><td style="text-align:left"><b>' + this.esc(m.method || 'unspecified') + '</b></td>'
+              + '<td>' + (m.receipts || 0) + '</td><td>' + this.money(m.amount) + '</td></tr>').join('')
+          + '<tr style="background:var(--gray-50,#f8fafc);font-weight:700"><td style="text-align:left">Cash</td><td></td>'
+          + '<td>' + this.money(rt.cash) + '</td></tr>'
+          + '<tr style="background:var(--gray-50,#f8fafc);font-weight:700"><td style="text-align:left">Bank</td><td></td>'
+          + '<td>' + this.money(rt.bank) + '</td></tr>'
+          + '<tr style="background:#ecfdf5;font-weight:700"><td style="text-align:left">Total received</td>'
+          + '<td>' + (rt.receipts || 0) + '</td><td>' + this.money(rt.total) + '</td></tr>'
+          + '</tbody></table></div>';
+
+        /* the three things that make money indefensible in an audit */
+        const flags = [];
+        if(Number(rt.no_reference) > 0) flags.push('<b>' + rt.no_reference + '</b> receipt(s) carry no reference number — you cannot trace them to a parent.');
+        if(Number(rt.unallocated) > 0)  flags.push('<b>' + rt.unallocated + '</b> receipt(s) are attached to no learner at all.');
+        if(Number(rt.zero_or_negative) > 0) flags.push('<b>' + rt.zero_or_negative + '</b> receipt(s) are zero or negative.');
+        h += '<div class="notice" style="font-size:.85rem;' + (flags.length ? 'border-left:3px solid #f97316' : 'border-left:3px solid #16a34a') + '">'
+          + (flags.length
+              ? 'Fix these before you sign the month off:<br>• ' + flags.join('<br>• ')
+              : 'Every receipt in this period has a reference, belongs to a learner, and carries a real amount.')
+          + '<br><span style="color:var(--gray-500)">' + this.esc(rc.how_to_use || '') + '</span></div>';
+      }
+    }
+
+    document.getElementById('fr-out').innerHTML = h;
+  },
+
+  scrollRecon(){
+    const out = document.getElementById('fr-out');
+    if(!out) return;
+    const h4 = [...out.querySelectorAll('h4')].find(e => /Cash & bank reconciliation|Cash &amp; bank reconciliation/.test(e.textContent));
+    if(h4) h4.scrollIntoView({behavior:'smooth', block:'center'});
+    else toast('Build the reports first — the reconciliation is part of the same sheet.','warning');
+  },
+
+  csv(){
+    const d = this._data; if(!d || !d.aged){ toast('Build the reports first.','warning'); return; }
+    let rows = d.aged.rows || [];
+    const only = document.getElementById('fr-only-overdue');
+    if(only && only.checked) rows = rows.filter(r => r.band !== 'not_due');
+    if(!rows.length){ toast('Nothing to export.','warning'); return; }
+    const keys = ['student','admission_no','class','outstanding','days_overdue','band'];
+    const body = [['Learner','Admission no','Class','Outstanding','Days overdue','Age band'].join(',')]
+      .concat(rows.map(r => keys.map(k => '"' + String(r[k] ?? '').replace(/"/g,'""') + '"').join(',')))
+      .join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([body], {type:'text/csv'}));
+    a.download = 'aged-arrears-' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+  }
+};
+window.FeeReports = FeeReports;
+const _frLoad = document.getElementById('fr-load');
+if(_frLoad) _frLoad.addEventListener('click', () => FeeReports.load());
+const _frCsv = document.getElementById('fr-csv');
+if(_frCsv) _frCsv.addEventListener('click', () => FeeReports.csv());
+const _frOnly = document.getElementById('fr-only-overdue');
+if(_frOnly) _frOnly.addEventListener('change', () => { if(FeeReports._data) FeeReports.render(); });
+/* the reconciliation is part of the same build; this button takes you to it */
+const _frRecon = document.getElementById('fr-recon');
+if(_frRecon) _frRecon.addEventListener('click', () => {
+  if(!FeeReports._data){ FeeReports.load().then(()=>FeeReports.scrollRecon()); return; }
+  FeeReports.scrollRecon();
+});
 </script></body></html>

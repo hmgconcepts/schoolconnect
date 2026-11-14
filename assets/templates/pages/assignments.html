@@ -8,16 +8,16 @@
 <meta name="description" content="School Connect Demo School — Assignments / Homework. Comprehensive school management platform.">
 <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
-<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="icon" type="image/png" href="assets/img/logo-512.jpg">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="assets/img/logo.png">
+<link rel="apple-touch-icon" href="assets/img/logo-512.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Assignments / Homework • School Connect Demo School">
 <meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
-<meta property="og:image" content="assets/img/logo.png">
+<meta property="og:image" content="assets/img/logo-512.jpg">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="assets/css/style.css">
@@ -93,7 +93,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 
 <div id="pwa-install-banner" class="pwa-install">
   <div class="pwa-install-header">
-    <img src="assets/img/logo.png" alt="" class="pwa-install-icon">
+    <img src="assets/img/logo-512.png" alt="" class="pwa-install-icon">
     <div style="flex:1">
       <div class="pwa-install-title">📲 Install School Connect</div>
       <div class="pwa-install-msg">Get push notifications for messages, broadcasts, polls and result slips — even when the app is closed.</div>
@@ -120,7 +120,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher parent student">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
+        <img src="assets/img/logo-512.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.png'">
         <div>
           <strong>School Connect Demo School</strong>
           <div style="font-size:0.7rem;color:var(--gray-500)">SCD</div>
@@ -876,7 +876,7 @@ const AP={
     }).filter(Boolean);
     if(!rows.length){toast('Enter at least one score.','warning');return;}
     const r=await sb.from('assignment_scores').upsert(rows,{onConflict:'assignment_id,student_id'});
-    if(r.error){toast(/assignment_scores/.test(r.error.message)?'Run database/v8.4-assignment-dl-points.sql (or the latest complete-schema.sql) first.':r.error.message,'danger',9000);return;}
+    if(r.error){toast(/assignment_scores/.test(r.error.message)?'Run database/complete-schema.sql (or the latest complete-schema.sql) first.':r.error.message,'danger',9000);return;}
     closeModal();toast('💾 Saved '+rows.length+' score(s). They now count in the accumulated totals.','success',7000);
     try{if(this._matrix)this.matrix();}catch(_){ } /* live-refresh the open score sheet */
   },
@@ -888,7 +888,7 @@ const AP={
     let cp={};try{cp=await (window.CRUD&&CRUD.currentPeriod?CRUD.currentPeriod():{});}catch(_){ }
     let q=sb.from('assignment_scores').select('*').eq('class',cls).limit(5000);
     const r=await q;
-    if(r.error){box.innerHTML='<p style="color:#b91c1c">'+AP.esc(/assignment_scores/.test(r.error.message)?'Run database/v8.4-assignment-dl-points.sql first.':r.error.message)+'</p>';return;}
+    if(r.error){box.innerHTML='<p style="color:#b91c1c">'+AP.esc(/assignment_scores/.test(r.error.message)?'Run database/complete-schema.sql first.':r.error.message)+'</p>';return;}
     let filtered=(r.data||[]).filter(s=>{
       const sSubj=String(s.subject||'').toLowerCase();
       const req=String(sub||'').toLowerCase();
@@ -1069,4 +1069,7 @@ const AP={
   }
 };
 document.addEventListener('DOMContentLoaded',()=>AP.init());
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.AP = AP;
 </script></body></html>

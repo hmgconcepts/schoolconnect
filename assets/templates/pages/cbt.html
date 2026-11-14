@@ -8,9 +8,9 @@
 <meta name="description" content="God of Seed Academy — CBT / Online Exams. Free school management platform by HMG Concepts.">
 <meta name="keywords" content="God of Seed Academy, school management, GOSA, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
-<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="icon" type="image/png" href="assets/img/logo-512.jpg">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="assets/img/logo.png">
+<link rel="apple-touch-icon" href="assets/img/logo-512.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -87,7 +87,7 @@
 
 <div id="pwa-install-banner" class="pwa-install">
   <div class="pwa-install-header">
-    <img src="assets/img/logo.png" alt="" class="pwa-install-icon">
+    <img src="assets/img/logo-512.png" alt="" class="pwa-install-icon">
     <div style="flex:1">
       <div class="pwa-install-title">📲 Install School Connect</div>
       <div class="pwa-install-msg">Get push notifications for messages, broadcasts, polls and result slips — even when the app is closed.</div>
@@ -114,7 +114,7 @@
 <div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.png" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
+        <img src="assets/img/logo-512.png" alt="God of Seed Academy" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.png'">
         <div>
           <strong>God of Seed Academy</strong>
           <div style="font-size:0.7rem;color:var(--gray-500)">GOSA</div>
@@ -602,9 +602,9 @@ window.CBTUI = {
   _filters: { q:'', class:'', subject:'', teacher:'', mode:'all', group:'all', archive:'active', term:'', session:'', sort:'newest', purpose:'all' },
   _isMidtermType(t){return ['ca','test','midterm','midtermtest','midtermca','midtermassessment','midtermcolumn'].includes(String(t||'').toLowerCase().replace(/[^a-z0-9]/g,''));},
   _canonicalType(t){const v=String(t||'').toLowerCase().replace(/[^a-z0-9]/g,'');return this._isMidtermType(t)?'midterm':(v||'exam');},
-  _purposeLabel(t){ const v=this._canonicalType(t);const m={assignment:'🟢 Assignment',midterm:'🔵 Mid-term Assessment',exam:'🔴 Exam',project:'🟣 Project',quiz:'🟡 Quiz',practical:'🟠 Practical'}; return m[v]||'⚪ '+(t||'Other'); },
+  _purposeLabel(t){ const v=this._canonicalType(t);const m={assignment:'🟢 Assignment',midterm:'🔵 Mid-term Assessment',exam:'🔴 Exam',project:'🟣 Project',quiz:'🟡 Quiz',practical:'🟠 Practical',prep:'🧪 Prep Exam (rehearsal)'}; return m[v]||'⚪ '+(t||'Other'); },
   _purposeBadge(t){
-    const key=this._canonicalType(t);const c={assignment:'background:#dcfce7;color:#166534;border:1px solid #86efac', midterm:'background:#dbeafe;color:#1e40af;border:1px solid #93c5fd', exam:'background:#fee2e2;color:#991b1b;border:1px solid #fca5a5', project:'background:#f3e8ff;color:#6b21a8;border:1px solid #c4b5fd', quiz:'background:#fef3c7;color:#92400e;border:1px solid #fcd34d'};
+    const key=this._canonicalType(t);const c={assignment:'background:#dcfce7;color:#166534;border:1px solid #86efac', midterm:'background:#dbeafe;color:#1e40af;border:1px solid #93c5fd', exam:'background:#fee2e2;color:#991b1b;border:1px solid #fca5a5', project:'background:#f3e8ff;color:#6b21a8;border:1px solid #c4b5fd', quiz:'background:#fef3c7;color:#92400e;border:1px solid #fcd34d', prep:'background:#ffedd5;color:#9a3412;border:2px dashed #fb923c'};
     const s=c[key]||'background:#f1f5f9;color:#475569;border:1px solid #e2e8f0';
     return '<span class="badge" style="'+s+'">'+this._purposeLabel(t)+'</span>';
   },
@@ -615,6 +615,7 @@ window.CBTUI = {
     if(t==='assignment') help.innerHTML='<b>🟢 Assignment / Homework:</b> Multiple per term, cumulatively collated. When you create this, it auto-appears in <b>Assignments page</b> for every student of that class with auto-filled link — students click to take it. Score class auto-fills kind/max/scores from CBT results → accumulates → push to Assignment column.';
     else if(this._isMidtermType(t)) help.innerHTML='<b>🔵 Mid-term Assessment:</b> Use this single purpose for a mid-term test or CA. Choose the separate <b>Report-card destination</b> (for example CA1, CA2, or Midterm); legacy CA/Test exams remain supported.';
     else if(t==='exam') help.innerHTML='<b>🔴 Terminal Exam:</b> Once per term. Scores pushed to Exam column.';
+    else if(t==='prep') help.innerHTML='<b>🧪 Prep Exam (rehearsal):</b> A prototype of the school examination, sat to test readiness. It generates its <b>own prep report</b> with a readiness verdict (ready / nearly / needs work / at risk). <b>Its scores can never be pushed to a report card</b> — the platform blocks it in the database, not just on this screen. Leave the report-card column empty for a rehearsal.';
     else help.innerHTML='<b>'+this._purposeLabel(val)+':</b> Other purpose — project/quiz/practical. Can be mapped to any report column.';
     // V12.9: auto-select Assignment column when assignment type chosen
     try{
@@ -626,6 +627,62 @@ window.CBTUI = {
         }
       }
     }catch(_){}
+  },
+  /* V12.72 (item 2): a teacher invents a purpose without a developer. The
+     server is the authority — this only speaks to it and reports back. */
+  async addPurpose(){
+    const box=document.getElementById('ex-new-purpose');
+    const msg=document.getElementById('ex-purpose-msg');
+    const prep=document.getElementById('ex-new-preplike');
+    const label=(box&&box.value||'').trim();
+    if(!label){ if(msg) msg.textContent='Type a name first, for example "Mock UTME".'; return; }
+    if(!window.sb){ if(msg) msg.textContent='Not signed in.'; return; }
+    if(msg) msg.textContent='Saving…';
+    try{
+      const r=await sb.rpc('sc_purpose_create',{p_label:label,p_emoji:'🎯',
+        p_report_eligible:!(prep&&prep.checked),p_feeds_report:(prep&&prep.checked)?'prep':'none'});
+      if(r.error) throw r.error;
+      const d=r.data||{};
+      if(d.ok===false){
+        if(msg) msg.textContent='❌ '+(d.error||'Could not add that purpose.');
+        if(d.existing && d.slug){ this.selectPurpose(d.slug); }
+        return;
+      }
+      if(msg) msg.innerHTML='✅ '+(d.note||'Added.');
+      await this.loadPurposes(d.slug);
+      if(box) box.value='';
+    }catch(e){
+      const m=String(e.message||e);
+      if(msg) msg.textContent=/function|schema cache|does not exist/i.test(m)
+        ? '❌ '+m+' — run the latest database/complete-schema.sql.'
+        : '❌ '+m;
+    }
+  },
+  /* the dropdown the teacher sees is the registry, so a purpose added on one
+     screen is instantly available on every screen and every device */
+  async loadPurposes(select){
+    const sel=document.getElementById('ex-type');
+    if(!sel||!window.sb) return;
+    try{
+      const r=await sb.rpc('sc_purposes',{});
+      if(r.error||!Array.isArray(r.data)) return;
+      const cur=select||sel.value||'exam';
+      sel.innerHTML=r.data.map(p=>'<option value="'+this.esc(p.slug)+'">'+
+        this.esc((p.emoji||'⚪')+' '+p.label)+(p.report_eligible?'':' — rehearsal')+'</option>').join('');
+      if(r.data.some(p=>p.slug===cur)) sel.value=cur;
+      this._purposes=r.data;
+    }catch(_){}
+  },
+  /* live plain-English preview of the date window, so a teacher never has to
+     guess what the student will be told */
+  previewWindow(){
+    const box=document.getElementById('ex-window-preview'); if(!box) return;
+    const s=document.getElementById('ex-start'), c=document.getElementById('ex-close');
+    const sv=s&&s.value, cv=c&&c.value;
+    if(!sv&&!cv){ box.textContent='No window — the link works whenever the test is open.'; return; }
+    if(sv&&cv&&new Date(cv)<=new Date(sv)){ box.innerHTML='<span style="color:#b91c1c">The closing time must be AFTER the opening time.</span>'; return; }
+    const f=v=>new Date(v).toLocaleString(undefined,{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    box.textContent = (sv?'Opens '+f(sv)+'. ':'Opens immediately. ')+(cv?'Closes '+f(cv)+'.':'Stays open until you close it.');
   },
   onEditTypeChange(val){
     const help=document.getElementById('ed-type-help');
@@ -738,7 +795,28 @@ window.CBTUI = {
         <div class="form-group"><label>Class</label><select class="form-select" id="ex-class"><option value="">— select class —</option></select></div>
         <div class="form-group"><label>Term</label><select class="form-select" id="ex-term"><option value="">— select term —</option></select></div>
         <div class="form-group"><label>Session</label><select class="form-select" id="ex-session"><option value="">— select session —</option></select></div>
-        <div class="form-group"><label>UTME / multi-subject package (optional)</label><input class="form-input" id="ex-package" placeholder="e.g. UTME 2026: English, Maths, Physics, Chemistry"></div><div class="form-group"><label>Assessment purpose</label><select class="form-select" id="ex-type" onchange="if(window.CBTUI) CBTUI.onTypeChange(this.value)"><option value="exam">🔴 Terminal Exam</option><option value="midterm">🔵 Mid-term Assessment (single test/CA)</option><option value="assignment">🟢 Assignment / Homework (multiple per term, cumulative → Assignment column)</option><option value="project">🟣 Project (other purpose)</option><option value="quiz">🟡 Quiz (other purpose)</option><option value="practical">🟠 Practical (other purpose)</option></select><div id="ex-type-help" style="font-size:.82rem;color:#475569;margin-top:6px"></div></div>
+        <div class="form-group"><label>UTME / multi-subject package (optional)</label><input class="form-input" id="ex-package" placeholder="e.g. UTME 2026: English, Maths, Physics, Chemistry"></div><div class="form-group"><label>Assessment purpose</label><select class="form-select" id="ex-type" onchange="if(window.CBTUI) CBTUI.onTypeChange(this.value)"><option value="exam">🔴 Terminal Exam</option><option value="midterm">🔵 Mid-term Assessment (single test/CA)</option><option value="assignment">🟢 Assignment / Homework (multiple per term, cumulative → Assignment column)</option><option value="project">🟣 Project (other purpose)</option><option value="quiz">🟡 Quiz (other purpose)</option><option value="practical">🟠 Practical (other purpose)</option><option value="prep">🧪 Prep Exam (rehearsal)</option></select><div id="ex-type-help" style="font-size:.82rem;color:#475569;margin-top:6px"></div>
+          <div style="margin-top:8px;padding:10px;border:1px dashed var(--gray-300);border-radius:8px;background:var(--gray-50)">
+            <div style="font-size:.86rem;font-weight:600;margin-bottom:6px">Need a purpose that is not on this list?</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+              <input class="form-input" id="ex-new-purpose" placeholder="e.g. Mock UTME, Prep Exam, Christmas Test" style="flex:1;min-width:180px">
+              <label style="display:flex;align-items:center;gap:5px;font-size:.82rem"><input type="checkbox" id="ex-new-preplike"> Rehearsal — never reaches the report card</label>
+              <button type="button" class="btn btn-sm btn-outline" onclick="CBTUI.addPurpose()">➕ Add purpose</button>
+            </div>
+            <div id="ex-purpose-msg" style="font-size:.8rem;color:var(--gray-600);margin-top:6px"></div>
+          </div></div>
+
+        <div class="form-group">
+          <label>When may students sit this test?</label>
+          <div class="grid grid-2">
+            <div><label style="font-size:.82rem;color:var(--gray-600)">Opens</label>
+              <input class="form-input" type="datetime-local" id="ex-start"></div>
+            <div><label style="font-size:.82rem;color:var(--gray-600)">Closes</label>
+              <input class="form-input" type="datetime-local" id="ex-close"></div>
+          </div>
+          <small>Leave both empty to let students sit it any time the test is open. Set them and the link refuses entry before the start and after the close, telling the student the exact date and time. Times are school time (Africa/Lagos).</small>
+          <div id="ex-window-preview" style="font-size:.82rem;color:var(--gray-600);margin-top:4px"></div>
+        </div>
         <div class="form-group"><label>Report-card column (auto-maps results)</label><select class="form-select" id="ex-col"><option value="">— select a report-card column —</option></select><small>Only columns configured in Report Cards for the selected class, subject, term and session are shown.</small></div>
         <div class="form-group"><label>Exam access mode</label><select class="form-select" id="ex-mode"><option value="registered">Registered students only — identity required</option><option value="open">Open / anonymous candidates — public code access</option></select><small>Use Registered for school tests; Open for entrance or anonymous assessments.</small></div>
         <div class="form-group"><label>Max score in report card</label><input class="form-input" type="number" id="ex-max" value="100"></div>
@@ -864,6 +942,8 @@ window.CBTUI = {
       select_count: parseInt(document.getElementById('ex-sel').value)||0,
       instructions: document.getElementById('ex-instr').value,
       is_open: true,
+      start_at: (function(){ const v=document.getElementById('ex-start'); return v&&v.value?new Date(v.value).toISOString():null; })(),
+      close_at: (function(){ const v=document.getElementById('ex-close'); return v&&v.value?new Date(v.value).toISOString():null; })(),
       anti_cheat_config: {tab_switch:document.getElementById('ac-tab')?.checked!==false,window_blur:document.getElementById('ac-blur')?.checked!==false,copy_paste:document.getElementById('ac-copy')?.checked!==false,right_click:document.getElementById('ac-right')?.checked!==false,fullscreen:document.getElementById('ac-full')?.checked!==false,watermark:document.getElementById('ac-watermark')?.checked!==false,camera:document.getElementById('ac-camera')?.checked===true,audio_monitor:document.getElementById('ac-audio')?.checked===true,max_violations:parseInt(document.getElementById('ac-max')?.value||'5')},
       csv_data: questions
     };
@@ -932,7 +1012,7 @@ window.CBTUI = {
         if(!payload || !payload.exam_id){ toast('This file is not a School Connect exam backup.','danger'); return; }
         if(!sb){ toast('Database not configured.','warning'); return; }
         var res; try{ res=await sb.rpc('cbt_import_backup',{p_payload:payload}); }catch(e){ res={error:e}; }
-        if(res.error || !res.data || !res.data.saved){ toast('Import failed: '+((res.data&&res.data.error)||(res.error&&res.error.message)||'run database/update-v8-schema.sql first'),'danger',8000); return; }
+        if(res.error || !res.data || !res.data.saved){ toast('Import failed: '+((res.data&&res.data.error)||(res.error&&res.error.message)||'run database/complete-schema.sql first'),'danger',8000); return; }
         toast('✅ Backup imported — '+(payload.student_name||'candidate')+' result saved to '+(res.data.title||'exam')+'.','success',7000);
       };
       r.readAsText(f);
@@ -968,7 +1048,22 @@ window.CBTUI = {
     toast('✅ Deleted '+Number(r.data.deleted||0)+' result(s) for '+code+'. The exam is ready for new attempts.','success',12000);
     this.refresh();
   },
-  appendCSV(id){ openModal('Attach / Append CSV', '<p>Paste an additional CSV question bank. The questions will be appended to the existing exam.</p><textarea id="append-cbt-csv" class="form-input" rows="8" style="font-family:monospace"></textarea>', '<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="CBTUI.saveAppendCSV(\''+id+'\')">Append questions</button>'); },
+  appendCSV(id){
+    /* V12.70 — when the question editor is open for this exam, the CSV merges
+       into the open draft and returns to it. Nothing the tutor already edited
+       is lost, and there is exactly one save.
+       When no editor is open, the old direct-to-server append is used. */
+    const inEditor=!!(CBTUI._eq&&CBTUI._eq.id===id);
+    const mode=inEditor?'draft':'server';
+    const back=inEditor?"CBTUI.editQuestions('"+id+"')":"closeModal()";
+    openModal('Attach / Append CSV',
+      (inEditor?'<div class="notice" style="background:#eff6ff;border-color:#93c5fd;color:#1e3a8a"><b>You have the question list open.</b> These questions are added to that list as unsaved changes — you will return to the list and publish everything with one Save.</div>':'')
+      +'<p>Paste an additional CSV question bank. The questions are appended to the existing exam.</p>'
+      +'<p style="font-size:.82rem;color:#64748b">Expected header: <code>Question,A,B,C,D,CorrectAnswer,Explanation,Type</code>. Lines without a question or a correct answer are reported, not silently dropped.</p>'
+      +'<textarea id="append-cbt-csv" class="form-input" rows="8" style="font-family:monospace" placeholder="Question,A,B,C,D,CorrectAnswer,Explanation,Type"></textarea>',
+      '<button class="btn btn-outline" onclick="'+back+'">'+(inEditor?'← Back to questions':'Cancel')+'</button>'
+      +'<button class="btn btn-primary" onclick="CBTUI.saveAppendCSV(\''+id+'\',\''+mode+'\')">'+(inEditor?'Add to the list':'Append questions')+'</button>');
+  },
   /* ============================================================
      ENTERPRISE V6 (issue 4): FULL EXAM EDITING AFTER CREATION.
      Teachers can now edit every setting of an exam, edit/delete
@@ -989,7 +1084,7 @@ window.CBTUI = {
         <div class="form-group"><label>Class *</label><select class="form-select" id="ed-class" onchange="CBTUI.refreshEditReportColumns()">${opts(this._classes,e.class,'select class')}</select></div>
         <div class="form-group"><label>Term *</label><select class="form-select" id="ed-term" onchange="CBTUI.refreshEditReportColumns()">${opts(this._terms,e.term,'select term')}</select></div>
         <div class="form-group"><label>Session *</label><select class="form-select" id="ed-session" onchange="CBTUI.refreshEditReportColumns()">${opts(this._sessions,e.session,'select session')}</select></div>
-        <div class="form-group"><label>Assessment type — purpose (clear differentiation)</label><select class="form-select" id="ed-type" onchange="if(window.CBTUI) CBTUI.onEditTypeChange(this.value)">${['exam','midterm','assignment','project','quiz','practical'].map(x=>{const labels={exam:'🔴 Terminal Exam',midterm:'🔵 Mid-term Assessment (single test/CA)',assignment:'🟢 Assignment / Homework (multiple per term, cumulative → Assignment column)',project:'🟣 Project (other)',quiz:'🟡 Quiz (other)',practical:'🟠 Practical (other)'};const selected=x==='midterm'?CBTUI._isMidtermType(e.assessment_type):String(e.assessment_type||'exam').toLowerCase()===x;return '<option value="'+x+'" '+(selected?'selected':'')+'>'+labels[x]+'</option>';}).join('')}</select><div id="ed-type-help" style="font-size:.82rem;color:#475569;margin-top:6px"></div></div>
+        <div class="form-group"><label>Assessment type — purpose (clear differentiation)</label><select class="form-select" id="ed-type" onchange="if(window.CBTUI) CBTUI.onEditTypeChange(this.value)">${(['exam','midterm','assignment','project','quiz','practical','prep']+(CBTUI._purposes||[]).map(p=>p.slug).filter(s=>!['exam','midterm','assignment','project','quiz','practical','prep'].includes(s))).map(x=>{const labels={exam:'🔴 Terminal Exam',midterm:'🔵 Mid-term Assessment (single test/CA)',assignment:'🟢 Assignment / Homework (multiple per term, cumulative → Assignment column)',project:'🟣 Project (other)',quiz:'🟡 Quiz (other)',practical:'🟠 Practical (other)',prep:'🧪 Prep Exam (rehearsal — never on the report card)'};const selected=x==='midterm'?CBTUI._isMidtermType(e.assessment_type):String(e.assessment_type||'exam').toLowerCase()===x;return '<option value="'+x+'" '+(selected?'selected':'')+'>'+labels[x]+'</option>';}).join('')}</select><div id="ed-type-help" style="font-size:.82rem;color:#475569;margin-top:6px"></div></div>
         <div class="form-group"><label>Candidate mode</label><select class="form-select" id="ed-mode"><option value="registered" ${e.exam_mode!=='open'?'selected':''}>Registered students</option><option value="open" ${e.exam_mode==='open'?'selected':''}>Open / anonymous</option></select></div>
         <div class="form-group"><label>Report-card destination</label><select class="form-select" id="ed-col" onchange="CBTUI.syncEditMax()"></select><small>Loaded from Report Card columns for the selected class/term/session.</small></div>
         <div class="form-group"><label>Maximum report contribution</label><input class="form-input" type="number" id="ed-max" value="${Number(e.max_score||0)}" min="0" step="0.5" readonly><small>Automatically follows the selected report column.</small></div>
@@ -1066,7 +1161,43 @@ window.CBTUI = {
     const cMathKb=!!(document.getElementById('ed-mathkb')||{}).checked, cCalc=!!(document.getElementById('ed-calc')||{}).checked, cShowScore=!!(document.getElementById('ed-showscore')||{}).checked;
     acPatch.math_keyboard=cMathKb; acPatch.calculator=cCalc; acPatch.enable_math_keyboard=cMathKb; acPatch.enable_calculator=cCalc; acPatch.show_score_on_submit=cShowScore; acPatch.show_score=cShowScore;
     const patch={teacher_id:e.teacher_id||((window.SC_PROFILE&&SC_PROFILE.id)||null),title,subject,class:className,term,session,assessment_type:v('ed-type'),exam_mode:v('ed-mode'),report_column:v('ed-col'),max_score:Number(v('ed-max'))||0,duration:Number(v('ed-dur'))||45,duration_min:Number(v('ed-dur'))||45,negative_mark:Number(v('ed-neg'))||0,select_count:Number(v('ed-sel'))||0,attempt_limit:Number(v('ed-att'))||0,pass_mark:Number(v('ed-pass'))||0,topic:v('ed-topic'),instructions:v('ed-instr'),start_at:start||null,close_at:close||null,is_open:c('ed-open'),is_archived:c('ed-arch'),randomise:c('ed-rand'),release_results:c('ed-rel'),certificate_enabled:c('ed-cert'),is_entrance:c('ed-ent'),enable_math_keyboard:cMathKb,enable_calculator:cCalc,show_score_on_submit:cShowScore,public_link:e.public_link||'',anti_cheat_config:acPatch,updated_at:new Date().toISOString()};
-    const {data,error}=await sb.from('cbt_exams').update(patch).eq('id',id).select().maybeSingle();if(error){toast('Could not save exam: '+error.message,'danger',10000);return;}if(!data){toast('Exam update was not confirmed. Check teacher ownership/RLS.','danger',10000);return;}toast('✅ Full exam settings updated. Candidate and report-card values are uniform.','success',7000);closeModal();CBTUI.refresh();
+    /* V12.70 (item 10) — if the tutor changed the report column, their existing
+       scores must MOVE to the new column. The server does that in a trigger, but
+       the tutor has to be told, and has to be warned when the destination column
+       does not exist yet (the trigger correctly refuses to move scores into a
+       column that isn't there). */
+    const oldColumn=String(e.report_column||'').trim(), newColumn=String(patch.report_column||'').trim();
+    const columnChanged=oldColumn!==newColumn;
+    const {data,error}=await sb.from('cbt_exams').update(patch).eq('id',id).select().maybeSingle();
+    if(error){toast('Could not save exam: '+error.message,'danger',10000);return;}
+    if(!data){toast('Exam update was not confirmed. Check teacher ownership/RLS.','danger',10000);return;}
+    if(columnChanged&&newColumn){
+      let out=null;
+      try{ const rc=await sb.rpc('sc_report_recolumn',{p_exam_id:id,p_new_column:newColumn,p_dry_run:false}); out=rc&&rc.data; }catch(_){}
+      if(out&&out.ok===true&&Number(out.moved||0)>0){
+        closeModal();CBTUI.refresh();
+        openModal('✅ Report column changed',
+          '<p><b>'+Number(out.moved)+' score row(s) moved</b> from “'+esc(oldColumn||'the old column')+'” to “'+esc(newColumn)+'”.</p>'
+          +'<p>'+Number(out.snapshots_rebuilt||0)+' mid-term sheet(s) were rebuilt from the corrected column, so the report no longer shows the mark twice.</p>'
+          +'<p style="font-size:.85rem;color:#475569">Nothing was duplicated: a score belongs to exactly one column.</p>',
+          '<button class="btn btn-primary" onclick="closeModal()">Done</button>');
+        return;
+      }
+      if(out&&out.ok===false){
+        closeModal();CBTUI.refresh();
+        openModal('⚠️ Column saved, but the old scores did not move',
+          '<div class="notice notice-warning" style="background:#fffbeb;border-color:#fcd34d;color:#92400e">'
+          +esc(out.error||out.message||'The destination column could not be resolved.')+'</div>'
+          +'<p>The exam now points at “'+esc(newColumn)+'”, but its existing scores are still in “'+esc(oldColumn||'the old column')+'”. '
+          +'Pushing again would create a SECOND copy of every mark.</p>'
+          +'<p><b>Fix:</b> create the column in <b>Report Cards</b> for this class, term and session, then press '
+          +'<b>Repair report sources</b> — it moves the scores without duplicating them.</p>',
+          '<button class="btn btn-outline" onclick="closeModal()">Close</button>'
+          +'<a class="btn btn-primary" href="report-cards.html">Open Report Cards</a>');
+        return;
+      }
+    }
+    toast('✅ Full exam settings updated. Candidate and report-card values are uniform.','success',7000);closeModal();CBTUI.refresh();
   },
   decodeQuestionBank(value){
     let v=value;
@@ -1085,45 +1216,136 @@ window.CBTUI = {
   },
   _isStructuredQuestion(q){return !['mcq','true_false','short_answer','numeric','fill_blank'].includes(String(q&&q.type||'mcq').toLowerCase().replace(/[ -]/g,'_'));},
   _answerLabel(v){if(v==null||v==='')return'';if(typeof v==='object'){try{return JSON.stringify(v);}catch(_){return'[structured answer]';}}return String(v);},
-  async editQuestions(id){
+  /* ==================================================================
+     V12.70 — THE QUESTION EDITOR, REBUILT.
+     ------------------------------------------------------------------
+     WHY IT KEPT "NOT SAVING" (reported eight times, never fixed):
+     saveQ() edited an in-memory draft and then called editQuestions(),
+     which RE-FETCHES the exam from the database and rebuilds the list.
+     The edit was silently thrown away. The tutor then pressed "Save all
+     changes", which wrote the OLD bank back and truthfully reported
+     success. The server was never at fault — which is why every previous
+     server-side fix changed nothing.
+
+     What the editor does now:
+       • the draft in _eq.qs is the ONLY source of truth while it is open;
+         it is never re-read from the database behind the tutor's back;
+       • every change is applied in place and the list re-renders from the
+         DRAFT, so the tutor sees their own words immediately;
+       • the screen always states how many changes are pending;
+       • leaving with unsaved work warns instead of silently discarding it;
+       • Save reports the SERVER's verified question count and the exact
+         text of the first questions it read back, so success can be seen;
+       • Append CSV merges into the SAME draft, so one save publishes both;
+       • a serialised snapshot guards against a slow save racing a re-render.
+     ================================================================== */
+  async editQuestions(id, opts){
     if(!sb)return;
+    opts=opts||{};
+    /* Reopening the SAME exam keeps the live draft and never clobbers it.
+       A different exam always starts from the database. */
+    const same=this._eq&&this._eq.id===id;
+    if(same&&this._eq.qs&&this._eq.qs.length){
+      this._renderEditor();
+      if(this._eq.dirty) toast('Your unsaved changes are still here — ' + this._dirtyCount() + ' pending. Save to publish them.','info',6000);
+      return;
+    }
     const {data:e,error}=await sb.from('cbt_exams').select('*').eq('id',id).maybeSingle();
     if(error||!e){toast('Could not load question bank: '+(error&&error.message||'Exam not found'),'danger',8000);return;}
     const csvBank=this.decodeQuestionBank(e.csv_data),questionAlias=this.decodeQuestionBank(e.questions);
-    // Candidate getter prefers a non-empty csv_data bank; use the same source
-    // for editing and mark divergent legacy aliases for repair on Save.
     const qs=(csvBank.length?csvBank:questionAlias).map((q,i)=>CBT.normalizeQuestion(q,i));
     const aliasesDiverge=csvBank.length&&questionAlias.length&&JSON.stringify(csvBank)!==JSON.stringify(questionAlias);
-    CBTUI._eq={id,qs,code:e.code,title:e.title,bankVersion:Number(e.bank_version||1),aliasesDiverge};
-    const rows=qs.map((q,i)=>'<tr><td>'+(i+1)+'</td><td style="max-width:340px">'+esc((q.question||'').slice(0,90))+'</td><td>'+esc(q.type||'mcq')+'</td><td>'+(q.answer==null||String(q.answer)===''?'<span style="color:#dc2626;font-weight:800">MISSING</span>':esc(CBTUI._answerLabel(q.answer)))+'</td>'+
-      '<td style="white-space:nowrap"><button class="btn btn-sm btn-outline" onclick="CBTUI.editQ('+i+')">Edit</button> <button class="btn btn-sm btn-outline" onclick="CBTUI.delQ('+i+')">Delete</button></td></tr>').join('');
-    const aliasNote=aliasesDiverge?'<div class="notice" style="background:#fffbeb;border-color:#fcd34d;color:#92400e"><b>Legacy bank mismatch detected.</b> The student-facing bank and alternate bank column differ. Save will atomically synchronize both columns; review this question list before publishing.</div>':'';
-    openModal('🛠️ Edit Questions — '+esc(e.title||'')+' ('+qs.length+')',
-      aliasNote+'<div class="table-wrap" style="max-height:380px;overflow:auto"><table><thead><tr><th>#</th><th>Question</th><th>Type</th><th>Answer</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan="5">No questions — use Attach CSV.</td></tr>')+'</tbody></table></div>',
-      '<button class="btn btn-outline" onclick="closeModal()">Close</button><button class="btn btn-outline" onclick="CBTUI.appendCSV(\''+id+'\')">＋ Attach another CSV</button><button class="btn btn-primary" onclick="CBTUI.saveQuestions()">Save all changes</button>');
+    this._eq={id,qs,code:e.code,title:e.title,bankVersion:Number(e.bank_version||1),
+              aliasesDiverge,dirty:false,original:JSON.stringify(qs),loading:false};
+    this._renderEditor();
+  },
+  /* how many questions differ from what was loaded */
+  _dirtyCount(){
+    const eq=this._eq; if(!eq) return 0;
+    try{ return JSON.stringify(eq.qs)!==eq.original ? Math.max(1, (eq.qs||[]).length) : 0; }catch(_){ return 1; }
+  },
+  /* one renderer, always from the draft */
+  _renderEditor(){
+    const eq=this._eq; if(!eq) return;
+    const qs=eq.qs||[];
+    const dirty=!!eq.dirty;
+    const rows=qs.map((q,i)=>{
+      const ans=(q.answer==null||String(q.answer)==='')?'<span style="color:#dc2626;font-weight:800">MISSING</span>':esc(CBTUI._answerLabel(q.answer));
+      const answerLabel=String(q.answer==null?'':q.answer);
+      return '<tr'+(dirty?'':'')+'><td>'+(i+1)+'</td><td style="max-width:340px">'+esc((q.question||'').slice(0,90))+'</td>'
+        +'<td>'+esc(q.type||'mcq')+'</td><td>'+ans+'</td>'
+        +'<td style="white-space:nowrap"><button class="btn btn-sm btn-outline" onclick="CBTUI.editQ('+i+')">Edit</button> '
+        +'<button class="btn btn-sm btn-outline" onclick="CBTUI.delQ('+i+')">Delete</button></td></tr>';
+    }).join('');
+    const aliasNote=eq.aliasesDiverge?'<div class="notice" style="background:#fffbeb;border-color:#fcd34d;color:#92400e"><b>Legacy bank mismatch detected.</b> The student-facing bank and the alternate bank column differ. Saving writes one bank to both columns, so they can never disagree again.</div>':'';
+    const stateNote=dirty
+      ? '<div class="notice" style="background:#eff6ff;border-color:#93c5fd;color:#1e3a8a"><b>Unsaved changes are in this list.</b> They are held in the browser only and are NOT on the server yet. Press <b>Save all changes</b> to publish them — closing this window discards them.</div>'
+      : '<div class="notice" style="background:#f0fdf4;border-color:#86efac;color:#166534">This list matches the server'+(eq.bankVersion?' (bank v'+eq.bankVersion+')':'')+'.</div>';
+    openModal('🛠️ Edit Questions — '+esc(eq.title||'')+' ('+qs.length+(dirty?' · unsaved':'')+')',
+      stateNote+aliasNote+'<div class="table-wrap" style="max-height:340px;overflow:auto"><table><thead><tr><th>#</th><th>Question</th><th>Type</th><th>Answer</th><th></th></tr></thead><tbody>'
+      +(rows||'<tr><td colspan="5">No questions — use Attach CSV or Add question.</td></tr>')+'</tbody></table></div>',
+      '<button class="btn btn-outline" onclick="CBTUI.closeEditor()">Close</button>'
+      +'<button class="btn btn-outline" onclick="CBTUI.addQ()">＋ Add question</button>'
+      +'<button class="btn btn-outline" onclick="CBTUI.appendCSV(\''+eq.id+'\')">＋ Attach CSV</button>'
+      +'<button class="btn btn-primary" onclick="CBTUI.saveQuestions()">'+(dirty?'Save all changes ('+this._dirtyCount()+' pending)':'Save all changes')+'</button>');
+  },
+  /* closing with unsaved work must never be silent */
+  closeEditor(){
+    if(this._eq&&this._eq.dirty){
+      openModal('⚠️ Unsaved question changes',
+        '<p><b>'+this._dirtyCount()+' question(s) have been changed but not published.</b></p>'
+        +'<p>They exist only in this browser tab. Closing loses them.</p>',
+        '<button class="btn btn-outline" onclick="CBTUI._eq.dirty=false;CBTUI.closeEditor()">Discard changes</button>'
+        +'<button class="btn btn-primary" onclick="CBTUI.saveQuestions()">Save all changes</button>'
+        +'<button class="btn btn-outline" onclick="CBTUI.editQuestions(\''+(this._eq.id||'')+'\')">← Keep editing</button>');
+      return;
+    }
+    this._eq=null; closeModal();
   },
   editQ(i){
-    const q=CBTUI._eq.qs[i]||{},advanced=CBTUI._isStructuredQuestion(q);
+    const eq=this._eq; if(!eq) return;
+    const q=eq.qs[i]||{},advanced=CBTUI._isStructuredQuestion(q);
     const common='<div class="form-group"><label>Question / prompt</label><textarea class="form-input" id="eq-q" rows="2">'+esc(q.question||q.prompt||'')+'</textarea></div><div class="grid grid-2"><div class="form-group"><label>Type</label>'+(advanced?'<input class="form-input" id="eq-type" value="'+esc(q.type||'')+'" readonly><small>Type is locked here to preserve the structured answer schema.</small>':'<select class="form-select" id="eq-type">'+['mcq','true_false','multi_select','fill_blank','short_answer','numeric','essay'].map(t=>'<option value="'+t+'" '+((q.type||'mcq')===t?'selected':'')+'>'+t+'</option>').join('')+'</select>')+'</div><div class="form-group"><label>Mark</label><input class="form-input" type="number" id="eq-mark" min="0.01" step="0.25" value="'+esc(q.mark||1)+'"></div><div class="form-group"><label>Subject/Section</label><input class="form-input" id="eq-sec" value="'+esc(q.section||q.subject||'')+'"></div><div class="form-group"><label>Explanation</label><input class="form-input" id="eq-exp" value="'+esc(q.explanation||'')+'"></div></div>';
     const answer=advanced?'<div class="notice" style="background:#fffbeb;border-color:#fcd34d;color:#92400e">Structured answer data (options, matching pairs, categories, rubric, etc.) is preserved exactly. Use the CSV attachment/import workflow to change those structured fields.<pre style="white-space:pre-wrap;max-height:180px;overflow:auto">'+esc(JSON.stringify({options:q.options,items:q.items,answer:q.answer,correct:q.correct,correct_answer:q.correct_answer},null,2))+'</pre></div>':'<div class="grid grid-2"><div class="form-group"><label>Option A</label><input class="form-input" id="eq-a" value="'+esc(q.a||(q.options&&q.options[0])||'')+'"></div><div class="form-group"><label>Option B</label><input class="form-input" id="eq-b" value="'+esc(q.b||(q.options&&q.options[1])||'')+'"></div><div class="form-group"><label>Option C</label><input class="form-input" id="eq-c" value="'+esc(q.c||(q.options&&q.options[2])||'')+'"></div><div class="form-group"><label>Option D</label><input class="form-input" id="eq-d" value="'+esc(q.d||(q.options&&q.options[3])||'')+'"></div><div class="form-group" style="grid-column:1/-1"><label>Correct answer (text or letter)</label><input class="form-input" id="eq-ans" value="'+esc(CBTUI._answerLabel(q.answer||q.correct||''))+'"></div></div>';
-    openModal('Edit Question '+(i+1),common+answer,'<button class="btn btn-outline" onclick="CBTUI.editQuestions(\''+CBTUI._eq.id+'\')">← Back</button><button class="btn btn-primary" onclick="CBTUI.saveQ('+i+')">Apply</button>');
+    openModal('Edit Question '+(i+1),common+answer,
+      '<button class="btn btn-outline" onclick="CBTUI.editQuestions(\''+eq.id+'\')">← Back to list</button>'
+      +'<button class="btn btn-primary" onclick="CBTUI.saveQ('+i+')">Apply change</button>');
   },
+  /* Applies the edit to the DRAFT and re-renders from the draft.
+     It never re-reads the database, so the edit cannot be thrown away. */
   saveQ(i){
-    const v=(x)=>document.getElementById(x)?.value||'';
-    const q=CBTUI._eq.qs[i]||{},advanced=CBTUI._isStructuredQuestion(q);
+    const eq=this._eq; if(!eq) return;
+    const v=(x)=>{const el=document.getElementById(x);return el?el.value:'';};
+    const q=Object.assign({},eq.qs[i]||{});
+    const advanced=CBTUI._isStructuredQuestion(q);
     q.question=v('eq-q');q.mark=Number(v('eq-mark'))||1;q.section=v('eq-sec');q.subject=v('eq-sec');q.explanation=v('eq-exp');
     if(!advanced){
-      const oldOptions=Array.isArray(q.options)?q.options.slice():[];q.type=v('eq-type')||q.type||'mcq';q.a=v('eq-a');q.b=v('eq-b');q.c=v('eq-c');q.d=v('eq-d');q.answer=v('eq-ans');
-      // Edit visible A-D while preserving any additional legacy options beyond D.
+      const oldOptions=Array.isArray(q.options)?q.options.slice():[];
+      q.type=v('eq-type')||q.type||'mcq';q.a=v('eq-a');q.b=v('eq-b');q.c=v('eq-c');q.d=v('eq-d');q.answer=v('eq-ans');
       q.options=[q.a,q.b,q.c,q.d].filter(x=>String(x||'').trim()!=='').concat(oldOptions.slice(4));
     }
-    CBTUI._eq.qs[i]=q;toast('Question updated in draft — press “Save all changes”.','info');CBTUI.editQuestions(CBTUI._eq.id);
+    eq.qs[i]=q;
+    eq.dirty=true;
+    this._renderEditor();
+    toast('Question '+(i+1)+' updated in the list (unsaved). Press “Save all changes” to publish.','info',5000);
   },
-  delQ(i){ if(!confirm('Delete question '+(i+1)+'?'))return; CBTUI._eq.qs.splice(i,1); CBTUI.editQuestions(CBTUI._eq.id); },
+  addQ(){
+    const eq=this._eq; if(!eq) return;
+    eq.qs.push({question:'',options:['','','',''],answer:'',type:'mcq',mark:1});
+    eq.dirty=true;
+    this.editQ(eq.qs.length-1);
+  },
+  delQ(i){
+    const eq=this._eq; if(!eq) return;
+    if(!confirm('Delete question '+(i+1)+'? This removes it from the unsaved list; nothing is deleted on the server until you save.'))return;
+    eq.qs.splice(i,1); eq.dirty=true; this._renderEditor();
+  },
   async saveQuestions(){
-    // V12.46 EXPERT: Different approach — single atomic force RPC + JSON.stringify compare + broadcast
-    // No more 5-layer fallback with md5(::text) which failed for TEXT vs JSONB
-    const {id,qs}=CBTUI._eq||{}; if(!id) return;
+    /* V12.70 — saves exactly what the tutor sees in the list. `qs` is the live
+       draft; nothing re-reads the database before this point. */
+    const eq=CBTUI._eq||{}; const id=eq.id, qs=eq.qs;
+    if(!id) return;
+    if(!(qs||[]).length){ toast('This exam has no questions. Use Attach CSV or Add question first.','warning',8000); return; }
     const btn=document.querySelector('#modal-backdrop .btn-primary');
     let orig=''; if(btn){orig=btn.textContent; btn.textContent='⏳ Saving…'; btn.disabled=true;}
     toast('⏳ Validating question bank…','info',1200);
@@ -1175,7 +1397,22 @@ window.CBTUI = {
       return;
     }
     if(btn){btn.textContent=orig; btn.disabled=false;}
-    toast('✅ Published and re-read '+Number(verify.count)+' questions in both database bank columns (v'+(verify.bank_version||res.data.version||curVer||1)+'). Canonical content and aliases match.', 'success', 7000);
+    /* V12.70 — the server has confirmed the bank it stored. Take a fresh
+       baseline from the SERVER's counts so "unsaved" can never lie, and show
+       the tutor the first question exactly as the database now holds it. */
+    if(CBTUI._eq&&CBTUI._eq.id===id){
+      CBTUI._eq.dirty=false;
+      CBTUI._eq.bankVersion=Number(verify.bank_version||res.data.version||curVer||1);
+      try{ CBTUI._eq.original=JSON.stringify(CBTUI._eq.qs); }catch(_){ CBTUI._eq.original=''; }
+    }
+    let firstQ='';
+    try{
+      const rb=await sb.from('cbt_exams').select('csv_data').eq('id',id).maybeSingle();
+      const b=CBTUI.decodeQuestionBank(rb&&rb.data&&rb.data.csv_data);
+      firstQ=String((b[0]&&(b[0].question||b[0].prompt))||'');
+    }catch(_){}
+    toast('✅ Published — the server re-read '+Number(verify.count)+' questions from BOTH bank columns (bank v'+(verify.bank_version||res.data.version||curVer||1)+').'
+      +(firstQ?' Question 1 on the server now reads: “'+firstQ.slice(0,80)+'”.':''), 'success', 12000);
     // Robust cache bust + broadcast to student tabs
     try{
       const codeNorm=String(curCode||CBTUI._eq.code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
@@ -1189,10 +1426,28 @@ window.CBTUI = {
     }catch(_){}
     closeModal(); CBTUI.refresh(); return;
   },
-  async saveAppendCSV(id){
-    const txt=(document.getElementById('append-cbt-csv')||{}).value?.trim()||'';
-    const qs=CBT.parseCSV(txt); if(!qs.length){toast('No valid questions found','warning');return;}
-    const check=CBT.validateQuestionBank(qs);if(!check.ok){toast('Cannot append: '+check.errors.map((e,i)=>(i+1)+'. '+e).join(' | '),'danger',12000);return;}
+  async saveAppendCSV(id, mode){
+    /* V12.70 — "Attach CSV" now has two honest modes and never diverts the
+       tutor's unsaved work:
+         mode 'draft'  — merge the parsed questions into the OPEN draft and stay
+                         in the editor, so one "Save all changes" publishes the
+                         edited list AND the new questions together;
+         otherwise     — append straight to the server (the old behaviour) and
+                         verify it, which is correct when no draft is open. */
+    const txt=((document.getElementById('append-cbt-csv')||{}).value||'').trim();
+    let parsed=[]; try{ parsed=CBT.parseCSV(txt)||[]; }catch(err){ parsed=[]; }
+    if(!parsed.length){ toast('No valid questions found. Check the header row: Question,A,B,C,D,CorrectAnswer,Explanation,Type','warning',9000);return; }
+    const check=CBT.validateQuestionBank(parsed);if(!check.ok){toast('Cannot append: '+check.errors.map((e,i)=>(i+1)+'. '+e).join(' | '),'danger',12000);return;}
+    const eq=CBTUI._eq;
+    if((mode==='draft'||(eq&&eq.id===id&&eq.dirty))&&eq&&eq.id===id){
+      const start=eq.qs.length;
+      parsed.forEach(q=>eq.qs.push(CBT.normalizeQuestion(q,eq.qs.length)));
+      eq.dirty=true;
+      CBTUI._renderEditor();
+      toast('＋ Added '+parsed.length+' question(s) to the list (positions '+(start+1)+'–'+eq.qs.length+'). They are UNSAVED — press “Save all changes” to publish the whole bank.','success',12000);
+      return;
+    }
+    const qs=parsed;
     const btn=document.querySelector('#modal-backdrop .btn-primary');let original='';if(btn){original=btn.textContent;btn.disabled=true;btn.textContent='⏳ Appending…';}
     try{
       const res=await sb.rpc('cbt_force_append_bank_v2',{p_exam_id:id,p_new_questions:qs});
@@ -1262,7 +1517,7 @@ window.CBTUI = {
       if(error) throw error;
       sum=data;
     }catch(e){
-      openModal('Flagged questions', '<div class="notice notice-error"><b>Flag review is not installed in this database yet.</b><p>Run <code>database/v12.60-expert-fix-pack.sql</code> in the Supabase SQL editor, then reload.</p><small>'+esc(e.message||e)+'</small></div>','<button class="btn btn-outline" onclick="closeModal()">Close</button>');
+      openModal('Flagged questions', '<div class="notice notice-error"><b>Flag review is not installed in this database yet.</b><p>Run <code>database/complete-schema.sql</code> in the Supabase SQL editor, then reload.</p><small>'+esc(e.message||e)+'</small></div>','<button class="btn btn-outline" onclick="closeModal()">Close</button>');
       return;
     }
     if(!sum||sum.ok===false){ openModal('Flagged questions','<div class="notice notice-error">'+esc((sum&&sum.error)||'Could not load flags.')+'</div>','<button class="btn btn-outline" onclick="closeModal()">Close</button>'); return; }
@@ -1343,7 +1598,7 @@ window.CBTUI = {
     const r = await sb.rpc('cbt_allow_retake', {p_exam_id: examId, p_student_ref: studentRef, p_reason: reason||''});
     if(r.error || !r.data || r.data.ok === false){
       const msg = (r.data&&r.data.error) || (r.error&&r.error.message) || 'Allow retake failed';
-      if(/cbt_allow_retake|schema cache|function/i.test(String(msg))) toast('Retake engine not installed — admin must run database/v12.31-cbt-retake-robust.sql once.','warning',10000);
+      if(/cbt_allow_retake|schema cache|function/i.test(String(msg))) toast('Retake engine not installed — admin must run database/complete-schema.sql once.','warning',10000);
       else toast(msg,'danger',8000);
       return;
     }
@@ -1470,8 +1725,39 @@ window.CBTUI = {
     if(!confirm('Flush ALL server pending submissions for '+code+'? This will attempt to grade and insert each stranded payload.')) return;
     const r=await sb.rpc('cbt_flush_pending_server',{p_exam_id: examId});
     if(r.error||!r.data||r.data.ok===false){ toast((r.data&&r.data.error)||r.error?.message||'Flush failed','danger',10000); return; }
-    toast('✅ Server flush: '+Number(r.data.saved||0)+' saved, '+Number(r.data.failed||0)+' failed.','success',8000);
-    if(r.data.errors && r.data.errors.length) console.warn('Flush errors', r.data.errors);
+    /* V12.71 (round-15 item 10) — "0 saved, 1 failed" was a dead end.
+       The reasons were written to console.warn, which a bursar or head teacher
+       never opens, so the school saw a failure with no name and no cause and
+       could do nothing about it. Every failed row is now shown on screen with
+       the code, the pupil, and the server's own words. */
+    const saved=Number(r.data.saved||0), failed=Number(r.data.failed||0);
+    const errs=Array.isArray(r.data.errors)?r.data.errors:[];
+    if(failed>0){
+      /* The RPC returns errors as plain strings of the form
+         "<client_ref>: <server words>" (see cbt_flush_pending_server in
+         database/complete-schema.sql), so parse that shape rather than
+         assuming an object — assuming an object is what produced a table of
+         three blank cells. */
+      const rows=errs.map(e=>{
+        let ref='', why='';
+        if(typeof e==='string'){ const i=e.indexOf(':'); if(i>0){ref=e.slice(0,i).trim(); why=e.slice(i+1).trim();} else why=e; }
+        else { ref=(e&&(e.client_ref||e.admission_no||e.student_name||e.student_id))||''; why=(e&&(e.error||e.message||e.reason))||''; }
+        let hint='';
+        if(/no exam|not found|does not exist|deleted|invalid exam/i.test(why)) hint=' <b>Unrecoverable</b> — the exam this belongs to no longer exists. Enter these marks by hand.';
+        else if(/duplicate|already/i.test(why)) hint=' <b>Already saved</b> — this pupil\u2019s paper is in the results; nothing to do.';
+        else if(/permission|policy|rls|denied/i.test(why)) hint=' <b>Permissions</b> — run the schema and sign in as staff.';
+        return '<tr><td><b>'+esc(ref||'(no reference)')+'</b></td><td>'+esc(why||'no reason returned by the server')+hint+'</td></tr>';
+      }).join('');
+      openModal('☁️ Server flush — '+saved+' saved, '+failed+' could not be saved',
+        '<div class="notice" style="background:#fffbeb;border-color:#fcd34d;color:#92400e"><b>'+saved+' submission(s) were attached to their exam and graded.</b><br>'+failed+' could not be, and here is exactly why — each row is one pupil\u2019s paper.</div>'
+        + (rows?'<div class="table-wrap" style="max-height:320px;overflow:auto;margin-top:10px"><table><thead><tr><th>Submission</th><th>Why it could not be saved</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+              :'<p style="font-size:.85rem;color:#64748b">The server did not return a reason. Copy this and send it to support: <code>'+esc(JSON.stringify(r.data).slice(0,500))+'</code></p>')
+        + '<p style="font-size:.82rem;color:#475569;margin-top:10px"><b>What to do:</b> a row naming an exam that no longer exists cannot be recovered — the exam was deleted or its code changed while pupils were sitting it. Enter those marks by hand on the exam\u2019s Results screen. Any other reason is a permissions or column problem: send the line above to support.</p>',
+        '<button class="btn btn-outline" onclick="closeModal()">Close</button>');
+      toast('☁️ Server flush: '+saved+' saved, '+failed+' failed — see the table for which and why.','warning',12000);
+    } else {
+      toast('✅ Server flush: '+saved+' saved, 0 failed.','success',8000);
+    }
     this.recoverMissing(examId, code);
   },
   // V12.38: Global audit for ANY CBT's missing/uncompleted (not just civic SSS1-3) — robust, all-inclusive
@@ -1493,8 +1779,43 @@ window.CBTUI = {
       const serverPendingTotal=Number(d.pending_server_total||0);
       const missingExams=exams.filter(e=> Number(e.total_results||0)===0 || Number(e.has_missing) || Number(e.pending_server||0)>0);
       const pendingReviewExams=exams.filter(e=> Number(e.pending_review||0)>0);
-      let html='<div class="stats-grid"><div class="stat-card"><div class="stat-value">'+d.total_exams+'</div><div class="stat-label">Total CBTs</div></div><div class="stat-card"><div class="stat-value">'+exams.filter(e=>!e.is_archived).length+'</div><div class="stat-label">Active</div></div><div class="stat-card"><div class="stat-value">'+exams.filter(e=>e.is_archived).length+'</div><div class="stat-label">Archived</div></div><div class="stat-card"><div class="stat-value">'+missingExams.length+'</div><div class="stat-label" style="color:'+(missingExams.length?'#b91c1c':'#16a34a')+'">'+(missingExams.length?'⚠️ Potential missing':'No missing')+'</div></div><div class="stat-card"><div class="stat-value">'+pendingCnt+'</div><div class="stat-label">Pending in THIS browser</div></div><div class="stat-card"><div class="stat-value">'+serverPendingTotal+'</div><div class="stat-label" style="color:'+(serverPendingTotal?'#b91c1c':'#16a34a')+'">Pending on SERVER</div></div></div>';
-      html+='<div class="table-wrap" style="max-height:400px;overflow:auto;margin-top:10px"><table><thead><tr><th>Code / Title</th><th>Subject / Class</th><th>Status</th><th>Results (total/graded/pending/server)</th><th>Roster</th><th>Alert</th><th>Action</th></tr></thead><tbody>'+exams.slice(0,100).map(e=>{
+      /* ================================================================
+         V12.71 (round-15 item 10) — "33 ⚠️ Potential missing" and
+         "10 Pending on SERVER" told a head teacher NOTHING. Two bare
+         numbers, no explanation of what they counted, why they mattered,
+         or what to press. The school was right: a number without a meaning
+         and an action is noise, and noise in a results screen is dangerous,
+         because the one figure that DID matter was hidden among it.
+         Every tile now says what it counts, what it means, and carries the
+         button that deals with it. A tile that needs nothing says so.
+         ================================================================ */
+      const emptyExams=exams.filter(e=>Number(e.total_results||0)===0 && !e.is_archived);
+      const shortExams=exams.filter(e=>{const t2=Number(e.total_results||0),r2=Number(e.roster_count||0);return r2>0&&t2<r2;});
+      const tile=(value,label,meaning,colour,action)=>'<div class="stat-card"><div class="stat-value" style="color:'+colour+'">'+value+'</div><div class="stat-label">'+label+'</div><div style="font-size:.72rem;color:#64748b;margin-top:4px;line-height:1.35">'+meaning+'</div>'+(action?'<div style="margin-top:6px">'+action+'</div>':'')+'</div>';
+      let html='<div class="stats-grid">'
+        + tile(d.total_exams,'Total CBTs','Every CBT on this portal, archived included.','#0f172a','')
+        + tile(exams.filter(e=>!e.is_archived).length,'Active','Open for sitting. Their results appear in the report-card columns you mapped.','#0f172a','')
+        + tile(exams.filter(e=>e.is_archived).length,'Archived','Hidden from pupils but their marks are KEPT and still count.','#0f172a','')
+        + tile(missingExams.length,'⚠️ Needs attention',
+               missingExams.length
+                 ? 'Exams where pupils sat but marks are not fully in the system (roster not matched, or submissions stranded on the server). Open an exam and press <b>Recover/Repair</b>.'
+                 : 'Every exam\u2019s roster matches its results. Nothing to do.',
+               missingExams.length?'#b91c1c':'#16a34a',
+               missingExams.length?'<button class="btn btn-sm btn-outline" onclick="document.getElementById(\'cbt-audit-table\')&&document.getElementById(\'cbt-audit-table\').scrollIntoView({behavior:\'smooth\'})">↓ Show which</button>':'')
+        + tile(pendingCnt,'📦 Waiting in THIS browser',
+               pendingCnt
+                 ? 'Submissions saved on this device only (the pupil\u2019s phone lost signal). They are safe but NOT in the database yet. Press <b>Recover</b> below to upload them.'
+                 : 'Nothing unsent on this device.',
+               pendingCnt?'#b45309':'#16a34a',
+               pendingCnt?'<button class="btn btn-sm btn-primary" onclick="CBTUI.recoverPending&&CBTUI.recoverPending()">📦 Recover now</button>':'')
+        + tile(serverPendingTotal,'☁️ Stranded on SERVER',
+               serverPendingTotal
+                 ? 'Submissions reached the server but were never attached to an exam \u2014 usually because the exam was deleted or its code changed mid-sitting. <b>Flush</b> attaches them; if a flush reports "1 failed" that one row names an exam that no longer exists and can only be discarded.'
+                 : 'No orphans on the server.',
+               serverPendingTotal?'#b91c1c':'#16a34a',
+               serverPendingTotal?'<button class="btn btn-sm btn-primary" onclick="CBTUI.flushServer&&CBTUI.flushServer()">☁️ Flush now</button>':'')
+        + '</div>';
+      html+='<div id="cbt-audit-table" class="table-wrap" style="max-height:400px;overflow:auto;margin-top:10px"><table><thead><tr><th>Code / Title</th><th>Subject / Class</th><th>Status</th><th>Results (total/graded/pending/server)</th><th>Roster</th><th>Alert</th><th>Action</th></tr></thead><tbody>'+exams.slice(0,100).map(e=>{
         const total=Number(e.total_results||0), graded=Number(e.graded||0), rev=Number(e.pending_review||0), roster=Number(e.roster_count||0), pendSrv=Number(e.pending_server||0);
         const hasMissing = e.has_missing || (roster>0 && total<roster) || (total===0 && !e.is_archived) || pendSrv>0;
         const alert = hasMissing ? (pendSrv?'<span style="color:#dc2626;font-weight:800">☁️ '+pendSrv+' stranded on server</span>':(total===0 ? '<span style="color:#dc2626;font-weight:800">Empty — no results</span>' : '<span style="color:#d97706;font-weight:700">Roster '+roster+' → Results '+total+'</span>')) : (rev>0?'<span style="color:#92400e">✍️ '+rev+' pending review</span>':'<span style="color:#16a34a">✅ OK</span>');
@@ -1562,7 +1883,7 @@ window.CBTUI = {
     const r=await sb.rpc('cbt_review_result',{p_result_id:resultId,p_awards:awards});
     if(r.error||!r.data||r.data.ok===false){
       const msg=(r.data&&r.data.error)||(r.error&&r.error.message)||'Review failed';
-      if(/cbt_review_result|schema cache|function/i.test(String(msg)))toast('The review engine is not installed in this database yet — an administrator must run database/v10.6-cbt-review-community.sql once.','warning',12000);
+      if(/cbt_review_result|schema cache|function/i.test(String(msg)))toast('The review engine is not installed in this database yet — an administrator must run database/complete-schema.sql once.','warning',12000);
       else toast(msg,'danger',9000);
       return;
     }
@@ -1604,7 +1925,15 @@ window.CBTUI = {
     toast('Template downloaded — it demonstrates all 17+ question types including matching, ordering, grids, gap-fills, hot-text and multi-part numeric with worked JSON shapes.','success',9000);
   }
 };
-document.addEventListener('DOMContentLoaded', CBTUI.refresh); CBTUI.refresh();
+document.addEventListener('DOMContentLoaded', function(){
+  CBTUI.refresh();
+  if(CBTUI.loadPurposes) CBTUI.loadPurposes();
+  ['ex-start','ex-close'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('change', function(){ CBTUI.previewWindow(); });
+  });
+});
+CBTUI.refresh();
 </script><script>
 // School Connect v5: real UTME-style multi-subject CBT package builder.
 (function(){
@@ -1683,7 +2012,7 @@ document.addEventListener('DOMContentLoaded', CBTUI.refresh); CBTUI.refresh();
     if(!sb){toast('Database not configured.','warning');return;}
     if(!confirm('Recalculate every saved result for this exam from its retained answers_data using V5.1? Rows without answers or with missing bank keys are left unchanged and reported.'))return;
     const {data,error}=await sb.rpc('cbt_regrade_exam_results_v5',{p_exam_id:id});
-    if(error){toast('Regrade function unavailable. Run database/cbt-v5.1-zero-score-hotfix.sql. '+error.message,'danger',12000);return;}
+    if(error){toast('Regrade function unavailable. Run database/complete-schema.sql. '+error.message,'danger',12000);return;}
     if(!data||data.ok===false){toast('Regrade failed: '+((data&&data.message)||'Unknown error'),'danger',10000);return;}
     toast('✅ Regraded '+Number(data.regraded_count||0)+' result(s). Unchanged: '+Number(data.skipped_no_answer_rows||0)+' without saved answers, '+Number(data.skipped_missing_key_rows||0)+' with missing keys.','success',12000);
     this.results(id,'');

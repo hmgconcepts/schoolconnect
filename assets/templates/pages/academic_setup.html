@@ -8,16 +8,16 @@
 <meta name="description" content="School Connect Demo School — Academic Setup. Comprehensive school management platform.">
 <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
-<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="icon" type="image/png" href="assets/img/logo-512.jpg">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="assets/img/logo.png">
+<link rel="apple-touch-icon" href="assets/img/logo-512.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Academic Setup • School Connect Demo School">
 <meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
-<meta property="og:image" content="assets/img/logo.png">
+<meta property="og:image" content="assets/img/logo-512.jpg">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="assets/css/style.css">
@@ -93,7 +93,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 
 <div id="pwa-install-banner" class="pwa-install">
   <div class="pwa-install-header">
-    <img src="assets/img/logo.png" alt="" class="pwa-install-icon">
+    <img src="assets/img/logo-512.png" alt="" class="pwa-install-icon">
     <div style="flex:1">
       <div class="pwa-install-title">📲 Install School Connect</div>
       <div class="pwa-install-msg">Get push notifications for messages, broadcasts, polls and result slips — even when the app is closed.</div>
@@ -120,7 +120,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
+        <img src="assets/img/logo-512.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.png'">
         <div>
           <strong>School Connect Demo School</strong>
           <div style="font-size:0.7rem;color:var(--gray-500)">SCD</div>
@@ -494,7 +494,21 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       <div class="grid grid-2">
         <div class="card"><h3>🏢 Departments</h3><div class="form-group"><label>Department name</label><input class="form-input" id="as-dept" placeholder="Science"></div><div class="form-group"><label>Head of department</label><input class="form-input" id="as-head" placeholder="optional"></div><button class="btn btn-primary" onclick="AS.addDepartment()">Add Department</button><div id="as-depts" style="margin-top:12px"></div></div>
         <div class="card"><h3>📅 Terms / Sessions / Arms</h3><div class="grid grid-2"><div class="form-group"><label>Kind</label><select class="form-select" id="as-kind"><option value="term">Term</option><option value="session">Session</option><option value="arm">Arm</option><option value="assessment">Assessment Column</option><option value="audience">Audience</option></select></div><div class="form-group"><label>Value</label><input class="form-input" id="as-value" placeholder="First Term / 2026/2027 / A"></div></div><button class="btn btn-primary" onclick="AS.addLookup()">Add Lookup</button><div id="as-lookups" style="margin-top:12px"></div></div>
-        <div class="card" style="grid-column:1/-1"><h3>🗓️ Academic Period</h3><div class="grid grid-4"><div class="form-group"><label>Session</label><select class="form-select" id="as-p-session"><option value="">— select registered session —</option></select></div><div class="form-group"><label>Term</label><select class="form-select" id="as-p-term"><option value="">— select registered term —</option></select></div><div class="form-group"><label>Starts</label><input class="form-input" type="date" id="as-start"></div><div class="form-group"><label>Ends</label><input class="form-input" type="date" id="as-end"></div></div><label style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" id="as-current"> Set as current term/session</label><button class="btn btn-primary" onclick="AS.addPeriod()">Save Academic Period</button><div id="as-periods" style="margin-top:12px"></div></div>
+        <div class="card" style="grid-column:1/-1"><h3>🗓️ Academic Period</h3><div class="grid grid-4"><div class="form-group"><label>Session</label><select class="form-select" id="as-p-session"><option value="">— select registered session —</option></select></div><div class="form-group"><label>Term</label><select class="form-select" id="as-p-term"><option value="">— select registered term —</option></select></div><div class="form-group"><label>Starts</label><input class="form-input" type="date" id="as-start"></div><div class="form-group"><label>Ends</label><input class="form-input" type="date" id="as-end"></div></div><label style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" id="as-current"> Set as current term/session</label><button class="btn btn-primary" onclick="AS.addPeriod()">Save Academic Period</button><div id="as-periods" style="margin-top:12px"></div>
+          <div style="border-top:1px dashed var(--gray-200);margin:16px 0 12px"></div>
+          <h4 style="margin:0 0 6px">🔄 Roll the school into a new term</h4>
+          <p style="color:var(--gray-500);font-size:.86rem;margin:0 0 10px">
+            Closing a term is a financial event, so this does the whole job in one press:
+            it <b>records the bills of the term you are leaving</b> (so no unpaid balance can vanish
+            because a date passed), <b>raises the new term's bill for every learner</b> from the published
+            class fee structure, and makes exactly one period current. Nothing is copied and no debt is
+            duplicated — what a learner still owes follows them as <i>earlier terms owing</i>, counted once.
+            Scores stay with the term in which the work was done; the new term starts clean.
+          </p>
+          <div id="as-roll-preview" style="font-size:.86rem"></div>
+          <button class="btn btn-outline" onclick="AS.rollPreview()">👁️ Preview the roll (changes nothing)</button>
+          <button class="btn btn-primary" id="as-roll-go" style="display:none" onclick="AS.rollApply()">✅ Roll into this term</button>
+        </div>
       </div>
     </div>
     <footer style="padding:20px 28px;border-top:1px solid var(--gray-200);font-size:0.82rem;color:var(--gray-500);text-align:center">
@@ -537,7 +551,76 @@ const AS={
  async addDepartment(){ if(!sb)return; const name=document.getElementById('as-dept').value.trim(); if(!name){toast('Enter department name','warning');return;} const {error}=await sb.from('departments').insert({name,head:document.getElementById('as-head').value.trim()||null}); if(error){toast(error.message,'danger');return;} toast('Department added','success'); this.load(); },
  async addLookup(){ if(!sb)return; const kind=document.getElementById('as-kind').value, value=document.getElementById('as-value').value.trim(); if(!value){toast('Enter value','warning');return;} const {error}=await sb.from('lookups').insert({kind,value,position:0}); if(error){toast(error.message,'danger');return;} toast('Lookup added','success'); this.load(); },
  async del(table,id){if(!confirm('Delete this setup item permanently? Existing reports keep their text values.'))return;const{data,error}=await sb.from(table).delete().eq('id',id).select('id');if(error){toast(error.message,'danger');return;}if(!data||!data.length){toast('Nothing was deleted. Your role may not have permission, or the record was already removed.','danger',7000);await this.load();return;}try{Object.keys(sessionStorage).filter(k=>k.startsWith('sc-table-cache:')).forEach(k=>sessionStorage.removeItem(k));}catch(_){}const v=await sb.from(table).select('id').eq('id',id).maybeSingle();if(v.data){toast('Delete verification failed; the record still exists.','danger');return;}toast('Deleted permanently and verified.','success');await this.load();},
+ async rollPreview(){
+   if(!sb)return;
+   const term=document.getElementById('as-p-term').value.trim(), session=document.getElementById('as-p-session').value.trim();
+   const box=document.getElementById('as-roll-preview'), go=document.getElementById('as-roll-go');
+   if(!term||!session){box.innerHTML='<div class="pill pill-warning">Choose the NEW term and session above first.</div>';go.style.display='none';return;}
+   box.innerHTML='<div class="pill">Checking…</div>';
+   const {data,error}=await sb.rpc('sc_term_rollover',{p_new_term:term,p_new_session:session,p_dry_run:true});
+   if(error||!data||data.ok===false){box.innerHTML='<div class="pill pill-danger">'+esc((data&&data.error)||error.message)+'</div>';go.style.display='none';return;}
+   this._roll=data;
+   /* V12.71 (round-15 item 6) — the roll used to move money and stop. The new
+      term then had no assessment columns, so Results was empty and every
+      teacher rebuilt the whole report sheet by hand. Ask the server what the
+      SECOND half of opening a term would do, and show both halves together. */
+   let open=null;
+   try{ const o=await sb.rpc('sc_term_open',{p_new_term:term,p_new_session:session,p_from_term:data.from.term,p_from_session:data.from.session,p_dry_run:true});
+        if(!o.error&&o.data&&o.data.ok!==false) open=o.data;
+        else if(o.error) open={error:o.error.message};
+        else open={error:(o.data&&o.data.error)||'preview failed'}; }
+   catch(e){ open={error:e.message}; }
+   this._open=open;
+   const warn=(data.without_structure_students||[]).slice(0,12).join(', ');
+   box.innerHTML='<div class="pill pill-info"><b>From '+esc(data.from.term+' '+data.from.session)+' → '+esc(data.to.term+' '+data.to.session)+'</b><br>'
+     +'• '+data.invoices_to_raise+' learner(s) would be billed for the new term<br>'
+     +'• '+esc((window.SC_SETTINGS&&SC_SETTINGS.currency)||'₦')+(Number(data.carried_owing_total)||0).toLocaleString()+' of unpaid balance follows learners as <i>earlier terms owing</i> — not re-charged<br>'
+     +(data.without_structure>0?'<br><b class="pill pill-warning">'+data.without_structure+' learner(s) have no published fee structure for '+esc(term)+' and would be skipped:</b> '+esc(warn):'<br>Every active learner has a published structure for the new term.')
+     +'<hr style="border:none;border-top:1px solid #dbeafe;margin:8px 0">'
+     +'<b>📋 Report sheet for the new term</b><br>'
+     +(open&&open.error
+        ? '<span style="color:#b45309">Could not preview the report sheet: '+esc(open.error)+'. The term will still roll; build its columns on the Results page afterwards.</span>'
+        : open
+          ? '• '+Number(open.columns_created||0)+' assessment column(s) will be created for '+((open.classes_opened||[]).length)+' class(es), with the <b>same names, maxima and weights</b> as '+esc(open.from.term)+'<br>'
+            +'• <b>No marks move.</b> Every mark stays in '+esc(open.from.term)+' where it was earned — this only prepares an empty sheet to fill.<br>'
+            +( (open.classes_without_structure||[]).length
+                ? '<b class="pill pill-warning">'+esc((open.classes_without_structure||[]).join(', '))+'</b> have no structure to copy — check them before results are entered.'
+                : '<span style="color:#166534">Every class has structure to carry.</span>')
+          : '')
+     +'</div>';
+   go.style.display='inline-block';
+ },
+ async rollApply(){
+   if(!sb)return;
+   const d=this._roll; if(!d){toast('Preview the roll first.','warning');return;}
+   if(!confirm('Roll the school from '+d.from.term+' '+d.from.session+' into '+d.to.term+' '+d.to.session+'?\n\n'+d.invoices_to_raise+' bill(s) will be raised. Nothing else changes, and no debt is duplicated.'))return;
+   const {data,error}=await sb.rpc('sc_term_rollover',{p_new_term:d.to.term,p_new_session:d.to.session,p_dry_run:false});
+   if(error||!data||data.ok===false){toast((data&&data.error)||error.message,'danger',12000);return;}
+   /* second half of "one click": carry the report sheet's structure (never its
+      marks) so Results is ready the moment the term opens */
+   let opened=null, openErr=null;
+   try{
+     const o=await sb.rpc('sc_term_open',{p_new_term:d.to.term,p_new_session:d.to.session,
+       p_from_term:d.from.term,p_from_session:d.from.session,p_dry_run:false});
+     if(o.error) openErr=o.error.message;
+     else if(!o.data||o.data.ok===false) openErr=(o.data&&o.data.error)||'The report sheet could not be prepared.';
+     else opened=o.data;
+   }catch(e){ openErr=e.message; }
+   toast('✅ '+data.message,'success',14000);
+   document.getElementById('as-roll-go').style.display='none';
+   document.getElementById('as-roll-preview').innerHTML='<div class="pill pill-success">'+esc(data.message)
+     +'<hr style="border:none;border-top:1px solid #bbf7d0;margin:8px 0">'
+     +(opened
+        ? '<b>📋 Report sheet ready:</b> '+Number(opened.columns_created||0)+' column(s) created. '+esc(opened.message||'')
+          +(opened.next_step?'<br><span style="font-size:.86rem">'+esc(opened.next_step)+'</span>':'')
+        : '<b>📋 Report sheet:</b> <span style="color:#b45309">'+esc(openErr||'not prepared')+'</span> — build it on the Results page.')
+     +'</div>';
+   this.load();
+ },
  async addPeriod(){ if(!sb)return; const row={session:document.getElementById('as-p-session').value.trim(),term:document.getElementById('as-p-term').value.trim(),starts_on:document.getElementById('as-start').value||null,ends_on:document.getElementById('as-end').value||null,is_current:document.getElementById('as-current').checked}; if(!row.session||!row.term){toast('Select a registered session and term (add them in the Terms / Sessions / Arms card above first)','warning');return;} if(row.is_current) await sb.from('academic_periods').update({is_current:false}).neq('id','00000000-0000-0000-0000-000000000000'); const {error}=await sb.from('academic_periods').upsert(row,{onConflict:'session,term'}); if(error){toast(error.message,'danger');return;} toast('Academic period saved','success'); this.load(); }
 };
 document.addEventListener('DOMContentLoaded',()=>AS.init()); AS.init();
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.AS = AS;
 </script></body></html>

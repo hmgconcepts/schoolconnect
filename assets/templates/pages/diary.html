@@ -8,16 +8,16 @@
 <meta name="description" content="School Connect Demo School — Student Diary. Comprehensive school management platform.">
 <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
-<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="icon" type="image/png" href="assets/img/logo-512.jpg">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="assets/img/logo.png">
+<link rel="apple-touch-icon" href="assets/img/logo-512.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Student Diary • School Connect Demo School">
 <meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
-<meta property="og:image" content="assets/img/logo.png">
+<meta property="og:image" content="assets/img/logo-512.jpg">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="assets/css/style.css">
@@ -93,7 +93,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 
 <div id="pwa-install-banner" class="pwa-install">
   <div class="pwa-install-header">
-    <img src="assets/img/logo.png" alt="" class="pwa-install-icon">
+    <img src="assets/img/logo-512.png" alt="" class="pwa-install-icon">
     <div style="flex:1">
       <div class="pwa-install-title">📲 Install School Connect</div>
       <div class="pwa-install-msg">Get push notifications for messages, broadcasts, polls and result slips — even when the app is closed.</div>
@@ -120,7 +120,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher parent student">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
+        <img src="assets/img/logo-512.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.png'">
         <div>
           <strong>School Connect Demo School</strong>
           <div style="font-size:0.7rem;color:var(--gray-500)">SCD</div>
@@ -582,7 +582,15 @@ const DRY={
     }catch(_){}
   },
   async loadEntries(){
-    const {data}=await sb.from('diary').select('*').order('date', {ascending:false}).limit(200);
+    /* V12.66: sc_diary_feed applies the platform's class scoping on the server
+       (admins see all, staff see all, families see their children's classes). */
+    let data=null, err=null;
+    try { const r=await sb.rpc('sc_diary_feed',{p_class:null, p_limit:200}); data=r.data; err=r.error; }
+    catch(e){ err=e; }
+    if(err || !Array.isArray(data)){
+      const r2=await sb.from('diary').select('*').order('date', {ascending:false}).limit(200);
+      data=r2.data||[];
+    }
     this.rows=data||[];
     this.renderList();
     this.renderToday();
@@ -683,13 +691,16 @@ const DRY={
   async ack(id){
     const rec = this.rows.find(x=>x.id===id);
     if(!rec) return;
-    const acks = Array.isArray(rec.acks)?rec.acks:[];
-    const profile = window.SC_PROFILE || {};
-    acks.push({parent: profile.full_name || 'Parent', at: new Date().toISOString(), note:'seen', role: profile.role||'parent'});
-    const {error}=await sb.from('diary').update({acks}).eq('id', id);
-    if(error){toast(error.message,'danger');return;}
+    /* V12.66: acknowledge through the RPC so the diary.acks array and the
+       diary_ack table are written together and cannot drift apart. A second
+       acknowledgement by the same reader updates rather than duplicates. */
+    const {data,error}=await sb.rpc('sc_diary_ack',{p_diary_id:id, p_note:'seen'});
+    if(error || (data && data.ok===false)){toast((error&&error.message)||data.error||'Could not acknowledge','danger');return;}
     toast('✓ Acknowledged.','success'); DRY.refresh();
   }
 };
 document.addEventListener('DOMContentLoaded',()=>DRY.refresh()); DRY.refresh();
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.DRY = DRY;
 </script></body></html>

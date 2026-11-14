@@ -101,7 +101,7 @@
 <div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.svg" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
+        <img src="assets/img/logo.svg" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.png'">
         <div>
           <strong>School Connect Demo School</strong>
           <div style="font-size:0.7rem;color:var(--gray-500)">SCD</div>
@@ -629,7 +629,7 @@ const EN={ rows:[], exam:null,
         if(!sb){ toast('Database not configured.','warning'); return; }
         var res; try{ res=await sb.rpc('cbt_import_backup',{p_payload:payload}); }catch(e){ res={error:e}; }
         if(res.error || !res.data || !res.data.saved){
-          toast('Import failed: '+((res.data&&res.data.error)||(res.error&&res.error.message)||'run database/update-v8-schema.sql first'),'danger',8000); return;
+          toast('Import failed: '+((res.data&&res.data.error)||(res.error&&res.error.message)||'run database/complete-schema.sql first'),'danger',8000); return;
         }
         toast('✅ Backup imported for '+(payload.student_name||'candidate')+' — result saved.','success',7000);
         if(EN.exam) EN.loadResults();
@@ -643,4 +643,7 @@ const EN={ rows:[], exam:null,
   exportCSV(){ if(!this.rows.length){toast('No results','warning');return;} var keys=['student_name','student_class','score','total','percent','correct_count','wrong_count']; var csv=[keys.join(',')].concat(this.rows.map(r=>keys.map(k=>'"'+String(r[k]==null?'':r[k]).replace(/"/g,'""')+'"').join(','))).join('\n'); var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='assessment-results.csv';a.click(); }
 };
 document.addEventListener('DOMContentLoaded',()=>EN.init()); EN.init();
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.EN = EN;
 </script></body></html>

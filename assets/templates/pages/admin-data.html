@@ -8,16 +8,16 @@
 <meta name="description" content="School Connect Demo School — Admin Data. Comprehensive school management platform.">
 <meta name="keywords" content="School Connect Demo School, school management, SCD, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
-<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="icon" type="image/png" href="assets/img/logo-512.jpg">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="assets/img/logo.png">
+<link rel="apple-touch-icon" href="assets/img/logo-512.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <meta property="og:title" content="Admin Data • School Connect Demo School">
 <meta property="og:description" content="School Connect Demo School — Free school management by HMG Concepts">
-<meta property="og:image" content="assets/img/logo.png">
+<meta property="og:image" content="assets/img/logo-512.jpg">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="assets/css/style.css">
@@ -93,7 +93,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 
 <div id="pwa-install-banner" class="pwa-install">
   <div class="pwa-install-header">
-    <img src="assets/img/logo.png" alt="" class="pwa-install-icon">
+    <img src="assets/img/logo-512.png" alt="" class="pwa-install-icon">
     <div style="flex:1">
       <div class="pwa-install-title">📲 Install School Connect</div>
       <div class="pwa-install-msg">Get push notifications for messages, broadcasts, polls and result slips — even when the app is closed.</div>
@@ -120,7 +120,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
+        <img src="assets/img/logo-512.png" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.png'">
         <div>
           <strong>School Connect Demo School</strong>
           <div style="font-size:0.7rem;color:var(--gray-500)">SCD</div>
@@ -529,7 +529,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
             <div class="form-group"><label>Every (days)</label><input class="form-input" id="gd-days" type="number" min="1" value="7"></div>
             <div style="display:flex;align-items:end"><button class="btn btn-primary" onclick="GD.save()">💾 Save Drive settings</button></div>
           </div>
-          <p style="font-size:.82rem;color:var(--gray-500);margin:6px 0 0">How auto-sync works on a free stack: whenever an admin opens any page and a backup is due, it uploads silently in the background (after the first authorisation in that browser). Full setup steps: <code>docs/GOOGLE-DRIVE-SYNC-GUIDE.md</code> in this package. One-time DB update for older installs: run <code>database/drive-sync.sql</code>.</p>
+          <p style="font-size:.82rem;color:var(--gray-500);margin:6px 0 0">How auto-sync works on a free stack: whenever an admin opens any page and a backup is due, it uploads silently in the background (after the first authorisation in that browser). Full setup steps: <code>docs/GOOGLE-DRIVE-SYNC-GUIDE.md</code> in this package. One-time DB update for older installs: run <code>database/complete-schema.sql</code>.</p>
         </details>
       </div>
       <div class="card" style="margin-bottom:16px;border:2px solid #38bdf8" data-admin-only>
@@ -691,6 +691,9 @@ const DataTools = {
   }
 };
 document.addEventListener('DOMContentLoaded',()=>DataTools.init());if(document.readyState!=='loading')DataTools.init();
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.DataTools = DataTools;
 </script><script src="assets/js/drive-sync.js"></script>
 <script src="assets/js/recovery.js"></script>
 <script>
@@ -730,6 +733,9 @@ const GD={
   async del(id,name){if(!confirm('Delete the Drive backup “'+name+'” permanently?'))return;try{await DriveSync.deleteBackup(id);toast('Drive backup deleted.','info');this.list();}catch(e){toast(e.message||e,'danger');}}
 };
 document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>GD.refreshStatus(),800);});
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.GD = GD;
 </script>
 <script src="assets/js/demo-sample-data.js"></script>
 <script>
@@ -804,5 +810,11 @@ const DS={
     }catch(e){box.textContent='';toast(e.message||e,'danger',9000);}
   }
 };
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.DS = DS;
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.RL = RL;
 </script>
 </body></html>

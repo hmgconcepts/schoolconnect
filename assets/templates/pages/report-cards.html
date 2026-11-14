@@ -8,9 +8,9 @@
 <meta name="description" content="Build printable termly report cards. Custom columns (CA1, CA2, Assignment, Project, Exam). Family-safe: parents and students see only their own.">
 <meta name="keywords" content="report cards, results, scoresheet, broadsheet, school, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
-<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="icon" type="image/png" href="assets/img/logo-512.jpg">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="assets/img/logo.png">
+<link rel="apple-touch-icon" href="assets/img/logo-512.jpg">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Report Cards • School Portal">
 <meta name="twitter:card" content="summary_large_image">
@@ -82,7 +82,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 
 <div id="pwa-install-banner" class="pwa-install">
   <div class="pwa-install-header">
-    <img src="assets/img/logo.png" alt="" class="pwa-install-icon">
+    <img src="assets/img/logo-512.png" alt="" class="pwa-install-icon">
     <div style="flex:1">
       <div class="pwa-install-title">📲 Install School Connect</div>
       <div class="pwa-install-msg">Get push notifications for messages, broadcasts, polls and result slips — even when the app is closed.</div>
@@ -109,7 +109,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
 <div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher parent student">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.png" alt="School" style="object-fit:contain" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{textContent:('S'),style:'width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900'}))">
+        <img src="assets/img/logo-512.png" alt="School" style="object-fit:contain" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{textContent:('S'),style:'width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900'}))">
         <div>
           <strong>School Portal</strong>
           <div style="font-size:0.7rem;color:var(--gray-500)" data-school-short></div>
@@ -495,8 +495,54 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
           <div class="form-group"><label>Term</label><select class="form-select" id="rc-term"><option value="">— select term —</option></select></div>
           <div class="form-group"><label>Session</label><select class="form-select" id="rc-session"><option value="">— select session —</option></select></div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><span id="score-grid"></span><button class="btn btn-primary" onclick="RC.load()">Load / Build</button><button class="btn btn-outline" onclick="ReportEngine.openBulkCBTExportModal()">🚀 Bulk Push CBT Scores</button><button class="btn btn-outline" onclick="RC.openScoreAudit()">🔎 Audit / Clear Unwanted Scores</button><button class="btn btn-outline" style="color:#b45309;border-color:#f59e0b" onclick="RC.sweepGhosts()" data-admin-only title="Remove leftover report sheets from deleted columns/students">🧹 Sweep Ghost Report Sheets</button><button class="btn btn-outline" onclick="RC.openMetrics()">📏 Height / Weight / Health Metrics</button></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><span id="score-grid"></span><button class="btn btn-primary" onclick="RC.load()">Load / Build</button><button class="btn btn-outline" onclick="ReportEngine.openBulkCBTExportModal()">🚀 Bulk Push CBT Scores</button><button class="btn btn-outline" onclick="RC.openScoreAudit()">🔎 Audit / Clear Unwanted Scores</button><button class="btn btn-outline" style="color:#b45309;border-color:#f59e0b" onclick="RC.sweepGhosts()" data-admin-only title="Remove leftover report sheets from deleted columns/students">🧹 Sweep Ghost Report Sheets</button><button class="btn btn-outline" style="color:#7c3aed;border-color:#c4b5fd" onclick="RC.repairRanking()" data-admin-only title="Re-measure every terminal report against the class's full expected subject load and re-rank fairly. Use this on any class generated before V12.64, where a student who sat fewer subjects could be placed above one who sat them all.">🏅 Repair percentages &amp; positions</button><button class="btn btn-outline" onclick="RC.openMetrics()">📏 Height / Weight / Health Metrics</button></div>
       </div>
+
+      <!-- V12.66: the school decides what a report prints -->
+      <div class="card" style="margin-top:16px;border:2px solid #6366f1;background:#eef2ff" data-admin-only id="rc-policy-card">
+        <h3 style="margin-top:0">⚙️ What the report prints — positions &amp; columns</h3>
+        <p style="color:var(--gray-700);font-size:.88rem;margin-top:0">
+          A school may rank learners, or it may choose not to. This panel is the switch — it applies to
+          <b>every</b> report, printed or on screen, from now on. Changing it does not touch a single mark;
+          it only decides what is shown.
+        </p>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:end;margin-bottom:12px">
+          <div class="form-group" style="margin:0;min-width:170px"><label>Report type</label>
+            <select class="form-select" id="pol-kind">
+              <option value="terminal">Terminal report card</option>
+              <option value="midterm">Midterm report</option>
+              <option value="subject">Subject broadsheet</option>
+            </select></div>
+          <div class="form-group" style="margin:0;min-width:170px"><label>Term</label>
+            <select class="form-select" id="pol-term"><option value="">All terms</option></select></div>
+          <div class="form-group" style="margin:0;min-width:150px"><label>Session</label>
+            <select class="form-select" id="pol-session"><option value="">All sessions</option></select></div>
+          <button class="btn btn-primary" onclick="ReportPolicy.load()">Load current setting</button>
+        </div>
+        <div id="pol-body"><span style="color:var(--gray-500);font-size:.88rem">Choose a report type and press <b>Load current setting</b>.</span></div>
+        <div id="pol-preview" style="margin-top:12px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          <button class="btn btn-primary" onclick="ReportPolicy.save()">💾 Save for this term</button>
+          <button class="btn btn-outline" onclick="ReportPolicy.saveAll()">💾 Save as the school default</button>
+        </div>
+        <p style="font-size:.8rem;color:var(--gray-600);margin-top:10px">
+          <b>Withhold one learner only:</b> a class teacher can hide a single learner's position (for example after a
+          bereavement, or where a mark is under appeal) without hiding anyone else's.
+        </p>
+        <details style="margin-top:6px">
+          <summary style="cursor:pointer;font-weight:700;font-size:.88rem;color:#4338ca">👤 Withhold the position for one learner</summary>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:10px">
+            <div class="form-group" style="margin:0;min-width:200px"><label>Class</label>
+              <select class="form-select" id="pol-class"><option value="">All classes</option></select></div>
+            <button class="btn btn-outline" onclick="ReportPolicy.openHolds()">Show learners</button>
+          </div>
+          <p style="font-size:.79rem;color:var(--gray-600);margin:8px 0 0">
+            A withheld position prints as <i>“Not published”</i>. Every other learner in the class is unaffected, and the
+            marks themselves are never touched.
+          </p>
+        </details>
+      </div>
+
       <div id="rc-cols" data-staff-only></div>
       <div id="rc-grid"></div>
       <!-- V12.16: One-Click Student Report Access Control -->
@@ -931,6 +977,24 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       };
     },
 
+    /* V12.64 — one-click repair for terminal reports. Mirrors the midterm
+       button and calls the same engine, so both create identical numbers. */
+    async repairRanking(){
+      const c=(this.ctxVals()||{}).class||'', t=(this.ctxVals()||{}).term||'', s=(this.ctxVals()||{}).session||'';
+      if(!c||!t||!s){ toast('Choose a class, term and session first.','warning',6000); return false; }
+      if(!window.sb){ toast('Database not configured.','warning'); return false; }
+      try{
+        const dry=await window.sb.rpc('sc_reports_recompute',{p_class:c,p_term:t,p_session:s,p_dry_run:true});
+        if(dry.error) throw new Error(dry.error.message);
+        const n=Number((dry.data&&dry.data.finding_count)||0);
+        if(!confirm(n?('Found '+n+' card(s) that do not meet the reporting standard in '+c+'.\n\nRe-measure and re-rank now?'):('No defects found in '+c+'.\n\nRe-measure and re-rank anyway? (safe, idempotent)'))) return false;
+        const fix=await window.sb.rpc('sc_reports_recompute',{p_class:c,p_term:t,p_session:s,p_dry_run:false});
+        if(fix.error || !fix.data || fix.data.ok===false) throw new Error((fix.data&&fix.data.error)||fix.error?.message||'Repair failed');
+        toast('Re-ranked '+c+': '+Number(fix.data.midterm_groups_repaired||0)+' midterm and '+Number(fix.data.terminal_groups_repaired||0)+' terminal card(s). '+(n?n+' defect(s) corrected.':'Nothing needed changing.'),'success',12000);
+        await this.load();
+        return true;
+      }catch(e){ toast('Repair failed: '+(e.message||e),'warning',10000); return false; }
+    },
     async load(){
       if (!window.sb) { toast('Database not configured. Add your Supabase keys in assets/js/config.js.', 'warning'); return; }
       if (!this._loaded) await this.init();
@@ -1017,12 +1081,12 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
           '<div style="float:right"><button class="btn btn-sm btn-outline" onclick="RC._lastRoleRendered=null;RC.renderCols()">↻ Re-check my role</button></div>'+
           '<p style="color:var(--gray-600);font-size:.86rem">These assessment columns were designed by the administrator. As a teacher you <b>enter scores</b> into them in the Subject Broadsheet grid below — you cannot add, rename or delete columns. Need a new column? Ask an admin.</p>'+
           '<div class="table-wrap"><table><thead><tr><th>Name</th><th>Max mark</th><th>Source</th></tr></thead><tbody>'+
-          (this.cols.length?this.cols.map(c=>'<tr><td>'+esc(c.name)+'</td><td>'+c.max_mark+'</td><td>'+(c.source==='cbt'?'<span class="badge">From CBT</span>':'Manual')+'</td></tr>').join(''):'<tr><td colspan="3">No columns yet — the administrator has not designed the report template for this class/term.</td></tr>')+
+          (this.cols.length?this.cols.map(c=>'<tr><td>'+esc(c.name)+'</td><td>'+(c.max_mark==null||c.max_mark===''?'<span style="color:#b45309">not set</span>':esc(String(c.max_mark)))+'</td><td>'+(c.source==='cbt'?'<span class="badge">From CBT</span>':'Manual')+'</td></tr>').join(''):'<tr><td colspan="3">No columns yet — the administrator has not designed the report template for this class/term.</td></tr>')+
           '</tbody></table></div></div>';
         return;
       }
       const configuredTotal=this.cols.reduce((a,c)=>a+Number(c.max_mark||0),0),suspicious=this.cols.filter(c=>!(Number(c.max_mark)>0)||Number(c.max_mark)>100),keys=this.cols.map(c=>String(c.name||'').toLowerCase().replace(/[^a-z0-9]/g,'')),duplicates=keys.filter((x,i)=>keys.indexOf(x)!==i);
-      const audit='<div class="notice" style="margin:8px 0;background:'+(suspicious.length||duplicates.length?'#fef2f2':'#f0fdf4')+';border-color:'+(suspicious.length||duplicates.length?'#fca5a5':'#86efac')+';color:'+(suspicious.length||duplicates.length?'#991b1b':'#166534')+'"><b>Configured maximum: '+configuredTotal+'</b>. Printed headings use these exact names/maxima. '+(suspicious.length?'Review unusual maximum: '+suspicious.map(c=>esc(c.name)+' ('+Number(c.max_mark)+')').join(', ')+'. ':'')+(duplicates.length?'Duplicate-like headings detected; rename or delete duplicates.':'Structure looks consistent.')+'</div>';
+      const audit='<div class="notice" style="margin:8px 0;background:'+(suspicious.length||duplicates.length?'#fef2f2':'#f0fdf4')+';border-color:'+(suspicious.length||duplicates.length?'#fca5a5':'#86efac')+';color:'+(suspicious.length||duplicates.length?'#991b1b':'#166534')+'"><b>Configured maximum: '+configuredTotal+'</b>. Printed headings use these exact names/maxima. '+(suspicious.length?'Review unusual maximum: '+suspicious.map(c=>esc(c.name)+' ('+(c.max_mark==null||c.max_mark===''?'no maximum set':'maximum '+esc(String(c.max_mark)))+')').join(', ')+'. ':'')+(duplicates.length?'Duplicate-like headings detected; rename or delete duplicates.':'Structure looks consistent.')+'</div>';
       $('rc-cols').innerHTML =
         '<div class="card" data-admin-only><h3>School-wide assessment columns (admin only)</h3><p style="color:var(--gray-600);font-size:.86rem">Only administrators create, rename or delete report-card columns (CA1, CA2, CBT, project, examination). Teachers do not design the template — they simply enter scores in the Subject Broadsheet grid below; the same admin-approved template is reused for every subject.</p>' +audit+
         '<div class="table-wrap"><table><thead><tr><th>Name</th><th>Max mark</th><th>Source</th><th></th></tr></thead><tbody>' +
@@ -1122,7 +1186,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       try { rpcRes = await window.sb.rpc('sc_save_report_score', { p_rows: row }); } catch(_) { rpcRes = { error: { message: 'rpc unavailable' } }; }
       if (rpcRes.error && /could not find|does not exist|schema cache|rpc unavailable/i.test(String(rpcRes.error.message||''))) {
         const { error } = await window.sb.from('report_scores').upsert(row, { onConflict: 'column_id,student_id_ref,student_name,class,subject,term,session' });
-        if (error) { const em=String(error.message||error); toast(em.includes('row-level security') ? 'Score not saved: this database needs one update. Admin: run the latest database/complete-schema.sql (or database/v6.9-report-score-save.sql) once in the Supabase SQL Editor, then saving works for every teacher.' : ('Score not saved: ' + em), 'danger', 10000); return; }
+        if (error) { const em=String(error.message||error); toast(em.includes('row-level security') ? 'Score not saved: this database needs one update. Admin: run the latest database/complete-schema.sql (or database/complete-schema.sql) once in the Supabase SQL Editor, then saving works for every teacher.' : ('Score not saved: ' + em), 'danger', 10000); return; }
       } else if (rpcRes.error) { toast('Score not saved: ' + rpcRes.error.message, 'danger', 9000); return; }
       else {
         const d = rpcRes.data || {};
@@ -1191,7 +1255,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
             else { await this.syncScoreToResults(e.el, e.v); ok++; }
           }
           if (fail && lastError && String(lastError.message||'').includes('row-level security')) {
-            lastError = { message: 'This database needs one update — Admin: run the latest database/complete-schema.sql (or database/v6.9-report-score-save.sql) once in the Supabase SQL Editor, then saving works for every teacher.' };
+            lastError = { message: 'This database needs one update — Admin: run the latest database/complete-schema.sql (or database/complete-schema.sql) once in the Supabase SQL Editor, then saving works for every teacher.' };
           }
         }
       } else {
@@ -1242,11 +1306,35 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
     async openMetrics(){if(this._familyMode){toast('Metrics entry is staff-only.','warning');return;}if(!window.sb){toast('Database not configured','warning');return;}const c=this.ctx&&this.ctx.class?this.ctx:this.ctxVals();if(!c.class||!c.term||!c.session){toast('Choose class, term and session, then Load / Build.','warning');return;}const sr=await window.sb.from('students').select('id,admission_no,full_name,class').eq('class',c.class).order('full_name'),mr=await window.sb.from('student_term_metrics').select('*').eq('class',c.class).eq('term',c.term).eq('session',c.session);if(mr.error&&/student_term_metrics|schema cache/i.test(mr.error.message)){toast('Run the latest complete-schema.sql to enable term metrics.','danger',9000);return;}this.students=sr.data||[];const map=new Map((mr.data||[]).map(x=>[String(x.student_id||x.student_id_ref||x.student_name),x]));this._metricContext=c;const rows=(sr.data||[]).map(st=>{const m=map.get(String(st.id))||map.get(st.admission_no)||map.get(st.full_name)||{};return '<tr data-metric-student="'+esc(st.id)+'"><td><b>'+esc(st.full_name)+'</b><br><small>'+esc(st.admission_no||'')+'</small></td><td><input class="form-input mt-h" type="number" step="0.1" value="'+(m.height_cm??'')+'" placeholder="cm"></td><td><input class="form-input mt-w" type="number" step="0.1" value="'+(m.weight_kg??'')+'" placeholder="kg"></td><td><input class="form-input mt-bp" value="'+esc(m.blood_pressure||'')+'" placeholder="e.g. 110/70"></td><td><input class="form-input mt-vis" value="'+esc(m.vision||'')+'" placeholder="Normal"></td><td><input class="form-input mt-bg" value="'+esc(m.blood_group||'')+'" placeholder="O+"></td><td><input class="form-input mt-gen" value="'+esc(m.genotype||'')+'" placeholder="AA"></td><td><input class="form-input mt-date" type="date" value="'+esc(m.measured_on||new Date().toISOString().slice(0,10))+'"></td></tr>';}).join('');openModal('📏 Beginning-of-term student metrics — '+esc(c.class)+' · '+esc(c.term)+' · '+esc(c.session),'<p>Enter only values actually measured by the school. Blank details print as —. BMI is calculated automatically from height and weight.</p><div class="table-wrap"><table><thead><tr><th>Student</th><th>Height cm</th><th>Weight kg</th><th>Blood pressure</th><th>Vision</th><th>Blood group</th><th>Genotype</th><th>Measured</th></tr></thead><tbody>'+rows+'</tbody></table></div>','<button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="RC.saveMetrics()">Save all entered metrics</button>');},
     async saveMetrics(){const c=this._metricContext,students=this.students||[],rows=[];for(const tr of document.querySelectorAll('[data-metric-student]')){const id=tr.dataset.metricStudent,st=students.find(x=>String(x.id)===String(id));if(!st)continue;const value=sel=>tr.querySelector(sel).value.trim(),h=value('.mt-h'),w=value('.mt-w'),bp=value('.mt-bp'),vis=value('.mt-vis'),bg=value('.mt-bg'),gen=value('.mt-gen');if(!h&&!w&&!bp&&!vis&&!bg&&!gen)continue;rows.push({student_id:st.id,student_id_ref:st.admission_no||'',student_name:st.full_name,class:c.class,term:c.term,session:c.session,height_cm:h?Number(h):null,weight_kg:w?Number(w):null,blood_pressure:bp,vision:vis,blood_group:bg,genotype:gen,measured_on:value('.mt-date')||new Date().toISOString().slice(0,10),recorded_by:(window.SC_PROFILE&&SC_PROFILE.id)||null,updated_at:new Date().toISOString()});}if(!rows.length){toast('No metrics entered.','warning');return;}const r=await window.sb.from('student_term_metrics').upsert(rows,{onConflict:'student_id_ref,student_name,class,term,session'});if(r.error){toast(r.error.message,'danger',9000);return;}closeModal();toast('✅ Saved metrics for '+rows.length+' student(s). They will appear on reports for this term/session.','success',8000);},
 
+    /* V12.70 (item 6) — the score audit now also answers the question it never
+       asked: is any mark IMPOSSIBLE? A mark above its assessment's maximum, or
+       below zero, inflates a total and re-orders the class. The database now
+       refuses new negative marks, but rows written before that guard existed
+       are still out there, so the page names them here rather than letting a
+       school hand out a wrong position. Nothing is deleted. */
+    _markIntegrityHtml(c){
+      const box='mi-'+Math.random().toString(36).slice(2,8);
+      setTimeout(async()=>{
+        const el=document.getElementById(box); if(!el) return;
+        try{
+          const r=await window.sb.rpc('sc_report_mark_audit',{p_class:(c&&c.class)||null,p_term:(c&&c.term)||null,p_session:(c&&c.session)||null});
+          const d=r.data||{};
+          if(r.error){ el.innerHTML='<div class="notice">Mark check unavailable: '+esc(r.error.message||r.error)+'</div>'; return; }
+          if(d.ok){ el.innerHTML='<div class="notice" style="background:#f0fdf4;border-color:#86efac;color:#166534">✅ <b>Every mark is within its maximum.</b> No impossible score was found in this class, term and session.</div>'; return; }
+          const list=(d.above_maximum||[]).map(x=>'<tr><td>'+esc(x.student_name)+'</td><td>'+esc(x.subject)+'</td><td>'+esc(x.column_name)+'</td><td><b style="color:#b91c1c">'+esc(x.score)+'</b></td><td>'+esc(x.max_mark)+'</td><td>'+(x.percent_of_max!=null?esc(x.percent_of_max)+'%':'—')+'</td></tr>').join('');
+          el.innerHTML='<div class="notice" style="background:#fef2f2;border-color:#fca5a5;color:#991b1b"><b>⚠️ '+Number(d.counts.defects)+' impossible mark(s) found.</b> '+esc(d.verdict||'')+
+            '<div style="margin-top:6px;font-size:.82rem">These marks are <b>kept</b> — correct them in Results, then press <b>🏅 Repair percentages &amp; positions</b> so the ranking is re-measured.</div>'+
+            (list?'<div class="table-wrap" style="margin-top:8px"><table style="font-size:.82rem"><thead><tr><th>Learner</th><th>Subject</th><th>Assessment</th><th>Mark</th><th>Max</th><th>% of max</th></tr></thead><tbody>'+list+'</tbody></table></div>':'')+
+            (Number(d.counts.negative_marks)>0?'<div style="margin-top:6px">Also: '+Number(d.counts.negative_marks)+' negative mark(s) stored before the guard existed.</div>':'')+'</div>';
+        }catch(e){ el.innerHTML='<div class="notice">Mark check failed: '+esc(String(e.message||e))+'</div>'; }
+      },0);
+      return '<div id="'+box+'"><span class="pulse">Checking every mark against its maximum…</span></div>';
+    },
     async openScoreAudit(){
       if(this._familyMode){toast('Score audit is staff-only.','warning');return;}if(!window.sb){toast('Database not configured','warning');return;}const c=this.ctx&&this.ctx.class?this.ctx:this.ctxVals();if(!c.class||!c.term||!c.session){toast('Choose class, term and session, then Load / Build first.','warning');return;}
       const cr=await window.sb.from('assessment_columns').select('id,name,max_mark').eq('class',c.class).eq('term',c.term).eq('session',c.session);const cols=cr.data||[],map=Object.fromEntries(cols.map(x=>[x.id,x]));if(!cols.length){toast('No assessment columns for this context.','info');return;}let q=window.sb.from('report_scores').select('*').in('column_id',cols.map(x=>x.id)).eq('class',c.class).eq('term',c.term).eq('session',c.session).order('student_name');if(c.subject)q=q.eq('subject',c.subject);const rr=await q;if(rr.error){toast(rr.error.message,'danger');return;}this._auditRows=rr.data||[];
       const rows=this._auditRows.map(r=>'<tr><td><input type="checkbox" class="rc-audit-row" value="'+esc(r.id)+'" data-zero="'+(Number(r.score)===0?'1':'0')+'"></td><td>'+esc(r.student_name||'')+'<br><small>'+esc(r.student_id_ref||'')+'</small></td><td>'+esc(r.subject||'')+'</td><td>'+esc((map[r.column_id]||{}).name||r.column_id)+'</td><td><b>'+Number(r.score||0)+'</b> / '+Number((map[r.column_id]||{}).max_mark||0)+'</td><td>'+esc(r.source||'manual')+'</td><td>'+esc(String(r.updated_at||r.created_at||'').slice(0,16).replace('T',' '))+'</td></tr>').join('');
-      openModal('🔎 Official Score Audit — '+esc(c.class)+' · '+esc(c.term)+' · '+esc(c.session),'<div class="notice" style="background:#fffbeb;border-color:#fcd34d;color:#92400e"><b>Nothing is deleted automatically.</b> Review source, subject and column. Select only records that were created unintentionally. A genuine entered score of zero must be kept.</div><div style="display:flex;gap:8px;margin-bottom:8px"><button class="btn btn-sm btn-outline" onclick="document.querySelectorAll(\'.rc-audit-row[data-zero=1]\').forEach(x=>x.checked=true)">Select zero rows for review</button><button class="btn btn-sm btn-outline" onclick="document.querySelectorAll(\'.rc-audit-row\').forEach(x=>x.checked=false)">Clear selection</button></div><div class="table-wrap"><table><thead><tr><th>Clear</th><th>Student</th><th>Subject</th><th>Column</th><th>Score</th><th>Source</th><th>Updated</th></tr></thead><tbody>'+(rows||'<tr><td colspan="7">No official scores in this context.</td></tr>')+'</tbody></table></div>','<button class="btn btn-outline" onclick="closeModal()">Close</button><button class="btn btn-danger" onclick="RC.clearAuditedScores()">Delete selected score records</button>');
+      openModal('🔎 Official Score Audit — '+esc(c.class)+' · '+esc(c.term)+' · '+esc(c.session),this._markIntegrityHtml(c)+'<div class="notice" style="background:#fffbeb;border-color:#fcd34d;color:#92400e"><b>Nothing is deleted automatically.</b> Review source, subject and column. Select only records that were created unintentionally. A genuine entered score of zero must be kept.</div><div style="display:flex;gap:8px;margin-bottom:8px"><button class="btn btn-sm btn-outline" onclick="document.querySelectorAll(\'.rc-audit-row[data-zero=1]\').forEach(x=>x.checked=true)">Select zero rows for review</button><button class="btn btn-sm btn-outline" onclick="document.querySelectorAll(\'.rc-audit-row\').forEach(x=>x.checked=false)">Clear selection</button></div><div class="table-wrap"><table><thead><tr><th>Clear</th><th>Student</th><th>Subject</th><th>Column</th><th>Score</th><th>Source</th><th>Updated</th></tr></thead><tbody>'+(rows||'<tr><td colspan="7">No official scores in this context.</td></tr>')+'</tbody></table></div>','<button class="btn btn-outline" onclick="closeModal()">Close</button><button class="btn btn-danger" onclick="RC.clearAuditedScores()">Delete selected score records</button>');
     },
     async clearAuditedScores(){const ids=[...document.querySelectorAll('.rc-audit-row:checked')].map(x=>x.value);if(!ids.length){toast('Select at least one row.','warning');return;}if(!confirm('Permanently delete '+ids.length+' selected official score record(s)? Genuine zero scores should not be deleted.'))return;const {error}=await window.sb.from('report_scores').delete().in('id',ids);if(error){toast('Delete failed: '+error.message,'danger');return;}closeModal();toast('Deleted '+ids.length+' selected score record(s). Blank report cells will now print as —.','success',8000);this.load();},
 
@@ -1345,7 +1433,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
       const cls=this.ctx.class||($('rc-class')||{}).value||'', term=this.ctx.term||($('rc-term')||{}).value||'', ses=this.ctx.session||($('rc-session')||{}).value||'';
       if(!confirm('Sweep ghost report sheets'+(cls?' for '+cls:'')+(term?' — '+term:'')+(ses?' ('+ses+')':'')+'?\n\nRemoves:\n• leftover sheets from report columns you deleted/re-created\n• score rows of students who were deleted\n\nLive scores backed by existing columns and students are NEVER touched.'))return;
       const r=await window.sb.rpc('sc_sweep_report_ghosts',{p_class:cls,p_term:term,p_session:ses});
-      if(r.error){toast(/could not find|does not exist|schema cache/i.test(String(r.error.message||''))?'This database needs one update — run the latest database/complete-schema.sql (or database/v7.0-clean-data-lifecycle.sql) once in the Supabase SQL Editor.':('Sweep failed: '+r.error.message),'danger',9000);return;}
+      if(r.error){toast(/could not find|does not exist|schema cache/i.test(String(r.error.message||''))?'This database needs one update — run the latest database/complete-schema.sql (or database/complete-schema.sql) once in the Supabase SQL Editor.':('Sweep failed: '+r.error.message),'danger',9000);return;}
       const d=r.data||{};
       toast('🧹 Ghost sweep complete: '+(d.mirrored_removed||0)+' leftover sheet row(s), '+(d.orphan_scores_removed||0)+' orphan score(s), '+(d.ghost_results_removed||0)+' ghost result(s) removed. Regenerate the report cards now — only current data prints.','success',10000);
       if(window.App&&App.logActivity)App.logActivity('sweep-ghosts','report_scores',cls+'|'+term+'|'+ses);

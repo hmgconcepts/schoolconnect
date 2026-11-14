@@ -8,9 +8,9 @@
 <meta name="description" content="Take an online CBT exam. Multi-subject support with subject tabs, anti-cheat monitoring, automatic grading, and printable certificates.">
 <meta name="keywords" content="CBT, online exam, multi-subject, UTME, school, HMG Concepts">
 <meta name="theme-color" content="#0506ae">
-<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="icon" type="image/png" href="assets/img/logo-512.jpg">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="assets/img/logo.png">
+<link rel="apple-touch-icon" href="assets/img/logo-512.jpg">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Take Exam • School Portal">
 <meta name="twitter:card" content="summary_large_image">
@@ -191,6 +191,42 @@ textarea.form-input{min-height:80px;resize:vertical}
 
   /* ---------- State ---------- */
   const Exam = {
+  /* V12.72 (item 4) — an honest countdown. It is derived from the server's
+     own start time, so a learner who changes their device clock gains nothing. */
+  countdownText(ms){
+    if(!(ms>0)) return 'Opening now…';
+    const s=Math.floor(ms/1000), d=Math.floor(s/86400), h=Math.floor((s%86400)/3600),
+          m=Math.floor((s%3600)/60), sec=s%60;
+    if(d>0) return d+'d '+h+'h '+m+'m';
+    if(h>0) return h+'h '+m+'m '+sec+'s';
+    if(m>0) return m+'m '+sec+'s';
+    return sec+'s';
+  },
+  startCountdown(ms){
+    if(this._cdTimer) clearInterval(this._cdTimer);
+    const started=Date.now();
+    this._cdTimer=setInterval(()=>{
+      const left=ms-(Date.now()-started);
+      const el=document.getElementById('cbt-countdown');
+      if(!el){ clearInterval(this._cdTimer); this._cdTimer=null; return; }
+      if(left<=0){
+        clearInterval(this._cdTimer); this._cdTimer=null;
+        el.textContent='Opening now…';
+        /* unlock by itself — the learner does not have to know to reload */
+        this.reload();
+        return;
+      }
+      el.textContent=this.countdownText(left);
+    },1000);
+  },
+  reload(){
+    if(this._cdTimer){ clearInterval(this._cdTimer); this._cdTimer=null; }
+    try{
+      const code=new URLSearchParams(location.search).get('code')||'';
+      if(code) location.href='./cbt-exam.html?code='+encodeURIComponent(code);
+      else location.reload();
+    }catch(_){ location.reload(); }
+  },
     data: null,
     answers: [],
     idx: 0,
@@ -654,7 +690,7 @@ textarea.form-input{min-height:80px;resize:vertical}
 
     if (error || !data) {
       const missingRpc=error&&/cbt_get_public_exam_v6|schema cache|function/i.test(String(error.message||error));
-      const msg=missingRpc?'The registered/open V5.5 exam reader is not installed in Supabase. The administrator must run database/cbt-v5.1-zero-score-hotfix.sql.':('Could not contact the exam service. '+esc(error&&error.message||''));
+      const msg=missingRpc?'The registered/open V5.5 exam reader is not installed in Supabase. The administrator must run database/complete-schema.sql.':('Could not contact the exam service. '+esc(error&&error.message||''));
       this.root().innerHTML = '<div class="card"><div class="notice notice-error"><h2 style="margin-top:0">❌ Exam service unavailable</h2><p>'+msg+'</p><p><b>Code entered:</b> '+esc(code)+'</p></div>' + this.codeEntryHTML(code) + '</div>';
       return;
     }
@@ -666,7 +702,17 @@ textarea.form-input{min-height:80px;resize:vertical}
       return;
     }
     if (data.wait) {
-      this.root().innerHTML = '<div class="card"><h2>⏳ Please wait</h2><p>'+esc(data.message||'This exam has not started yet.')+'</p><p>Opens at <strong>' + (window.fmtDMYT ? fmtDMYT(data.start_at) : new Date(data.start_at).toLocaleString()) + '</strong>.</p></div>';
+      /* V12.72 (item 4) — a learner should not have to guess when to come back.
+         Show the exact opening moment AND a live countdown to it. */
+      const _opens = window.fmtDMYT ? fmtDMYT(data.start_at) : new Date(data.start_at).toLocaleString();
+      const _ms = data.start_at ? (new Date(data.start_at).getTime() - Date.now()) : 0;
+      this.root().innerHTML = '<div class="card"><h2>⏳ Not open yet</h2>'
+        + '<p>'+esc(data.message||'This exam has not started yet.')+'</p>'
+        + '<p>Opens at <strong>'+esc(_opens)+'</strong>.</p>'
+        + '<div id="cbt-countdown" style="font-size:1.5rem;font-weight:700;color:#1e3a8a;margin:10px 0">'+this.countdownText(_ms)+'</div>'
+        + '<p style="font-size:.88rem;color:#475569">Keep this page open — it will unlock by itself the moment the test opens. Do not reload.</p>'
+        + '<button class="btn btn-outline" onclick="Exam.reload()">🔄 Check again now</button></div>';
+      this.startCountdown(_ms);
       return;
     }
     if (data.closed) {
