@@ -29,8 +29,18 @@ for m in re.finditer(r'create table if not exists public\.(\w+)\s*\((.*?)\);', s
         w = line.strip().split()
         if w and re.match(r'^[a-z_][a-z0-9_]*$', w[0]) and w[0] not in ('primary','unique','check','constraint','foreign'):
             cset.add(w[0])
-for m in re.finditer(r'alter table (?:if exists )?public\.(\w+) add column if not exists (\w+)', schema):
-    cols.setdefault(m.group(1), set()).add(m.group(2))
+# V12.70 — the old pattern matched ONE `add column` per ALTER, so a block like
+#   alter table public.admissions
+#     add column if not exists photo_url text,
+#     add column if not exists data jsonb, ...
+# registered only its first column. Anything added in the 2nd or later position
+# was reported as missing — a false positive that pushed real findings into the
+# ALLOW list and taught people to ignore this audit. Scan whole ALTER statements
+# and collect every `add column` inside them.
+for m in re.finditer(r'alter table\s+(?:if exists\s+)?public\.(\w+)([^;]*);', schema, re.S):
+    tbl, body = m.group(1), m.group(2)
+    for c in re.finditer(r'add\s+column\s+(?:if not exists\s+)?(?:"?(\w+)"?)', body, re.I):
+        cols.setdefault(tbl, set()).add(c.group(1))
 
 # Views / RPC-backed pseudo-tables and embedded-resource selects are exempt.
 EXEMPT_TABLES = {t for t in re.findall(r'create (?:or replace )?view (?:public\.)?(\w+)', schema)}
