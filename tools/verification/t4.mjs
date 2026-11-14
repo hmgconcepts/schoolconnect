@@ -1,0 +1,17 @@
+import { PGlite } from '@electric-sql/pglite';
+import fs from 'node:fs';
+const {schemaText}=await import('./schema-loader.mjs');
+const db=await PGlite.create();
+const H=new URL('.', import.meta.url).pathname;
+await db.exec(fs.readFileSync(H+'pglite-boot.sql','utf8'));
+await db.exec(`create or replace function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true),'')::uuid $$;`);
+await db.exec(schemaText(H+'../../database/complete-schema.sql'));
+const q=async s=>(await db.query(s)).rows;
+const ADM='11111111-1111-1111-1111-111111111111';
+await db.exec(`insert into auth.users(id,email) values('${ADM}','a@x.t') on conflict do nothing;
+ insert into profiles(id,full_name,role,status) values('${ADM}','B','admin','approved') on conflict(id) do update set role='admin',status='approved';`);
+await db.query(`select set_config('request.jwt.claim.sub',$1,false)`,[ADM]);
+console.log('auth.uid():', JSON.stringify((await q('select auth.uid() as u'))[0]));
+console.log('is_staff :', JSON.stringify((await q(`select public.is_staff(auth.uid()) as s`))[0]));
+console.log('is_admin :', JSON.stringify((await q(`select public.is_admin(auth.uid()) as s`))[0]));
+console.log('profile  :', JSON.stringify((await q(`select role,status from profiles where id='${ADM}'`))[0]));

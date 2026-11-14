@@ -4,7 +4,7 @@ const HERE = new URL('.', import.meta.url).pathname;
 const BOOT = HERE + 'pglite-boot.sql';
 const db = await PGlite.create();
 await db.exec(fs.readFileSync(BOOT,'utf8'));
-const schema = fs.readFileSync(process.env.SC_SCHEMA || (HERE + '../../database/complete-schema.sql'),'utf8').replace(/create extension[^;]*;/gi,'select 1;');
+const schema = fs.readFileSync(process.env.SC_SCHEMA || (HERE + '../../database/complete-schema.sql'),'utf8');
 await db.exec(schema);
 await db.exec(schema);   // full re-run must not fail
 console.log('SCHEMA RUNS TWICE: OK');

@@ -8,7 +8,7 @@ const HERE = new URL('.', import.meta.url).pathname;
 const db = await PGlite.create();
 await db.exec(fs.readFileSync(HERE + 'pglite-boot.sql', 'utf8'));
 const schema = fs.readFileSync(process.env.SC_SCHEMA || (HERE + '../../database/complete-schema.sql'), 'utf8')
-  .replace(/create extension[^;]*;/gi, 'select 1;');
+  ;
 await db.exec(schema);
 await db.exec(`create or replace function auth.uid() returns uuid language sql stable as $f$ select nullif(current_setting('app.uid', true),'')::uuid $f$;`);
 await db.exec(`

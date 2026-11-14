@@ -1,0 +1,15 @@
+import { PGlite } from '@electric-sql/pglite';
+import fs from 'fs';
+import { schemaText } from './schema-loader.mjs';
+const HERE = new URL('.', import.meta.url).pathname;
+const S = p => schemaText(HERE + '../../database/' + p);
+const db = await PGlite.create();
+await db.exec(fs.readFileSync(HERE + 'pglite-boot.sql', 'utf8'));
+await db.exec(S('complete-schema.sql'));
+await db.exec(S('v12.65-class-diary.sql'));
+const ins = await db.query(`insert into public.diary(class, classwork) values ('JSS 2','x') returning id`);
+const r = await db.query(`select public.sc_diary_ack($1,'seen') r`, [ins.rows[0].id]);
+console.log('result:', JSON.stringify(r.rows[0].r));
+console.log('auth.uid() =>', JSON.stringify((await db.query('select auth.uid() u')).rows[0]));
+const p = await db.query(`select id, full_name, role from public.profiles limit 3`);
+console.log('profiles:', p.rows);
