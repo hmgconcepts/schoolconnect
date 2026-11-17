@@ -24,6 +24,9 @@ TARGETS={
     _first_existing(ROOT/'schoolconnectdemo', ROOT/'demo-site'): dict(name='School Connect Demonstration College',short='SCD',motto='A fully simulated school — explore every feature',address='HMG Demo Campus, Lagos, Nigeria',phone='+234 810 086 6322',email='buildingmyictcareer@gmail.com',ext='svg'),
 }
 RUNTIME=[
+ # V12.76 — vendored third-party runtime (pages reference these instead of a CDN)
+ 'assets/vendor/supabase-js-2.58.0.js','assets/vendor/chart.umd.js',
+ 'assets/vendor/jsqr.min.js','assets/vendor/jszip.min.js',
  'assets/css/style.css','assets/js/app.js','assets/js/analytics.js','assets/js/cbt-engine.js','assets/js/cbt-types.js','assets/js/cbt-richtext.js','assets/js/cbt-speech.js','assets/js/chatbot.js',
  'assets/js/crud.js','assets/js/demo.js','assets/js/demo-sample-data.js','assets/js/recovery.js','assets/js/enterprise.js','assets/js/license.js',
  'assets/js/notifications.js','assets/js/ai-assistant.js','assets/js/drive-sync.js','assets/js/data-portability.js','assets/js/v57-enhancements.js','assets/js/pwa-install.js','assets/js/report-engine.js',
@@ -45,8 +48,10 @@ RUNTIME=[
  'tools/verification/tmp-notify-order.mjs','tools/verification/tmp-dash-card.mjs',
  'tools/audit-single-sql.py','tools/audit-duplicate-methods.py','tools/audit-repo-parity.py',
  'tools/audit-template-drift.py','tools/audit-client-seo.py',
+ # V12.76 — the two new auditors and the vendoring tool travel with the product
+ 'tools/audit-client-hardening.py','tools/vendor-cdn-libs.py','tools/verification/t40-security-audit.mjs',
  'tools/verification/fonts/color-emoji-subset.woff2',
- 'tools/verification/tmp-emoji-colour.mjs','tools/verification/tmp-purpose-guard.mjs','tools/verification/tmp-cbt-window.mjs','tools/verification/tmp-prep-ui.mjs','tools/verification/tmp-signature.mjs','tools/verification/tmp-cbt-recolumn.mjs','tools/verification/tmp-bulk-timeout.mjs','tools/verification/tmp-prep-family.mjs','tools/verification/tmp-fee-sync.mjs','tools/fix-logo-transparency.py', 'database/README.md','assets/img/demo-signature.svg','assets/img/founder-adewale.jpg','CBT_AND_REPORTCARD_GUIDE.md','ID_CARD_PRINT_GUIDE.md','DEPLOYMENT-GUIDE.md'
+ 'tools/verification/tmp-emoji-colour.mjs','tools/verification/tmp-purpose-guard.mjs','tools/verification/tmp-cbt-window.mjs','tools/verification/tmp-prep-ui.mjs','tools/verification/tmp-signature.mjs','tools/verification/tmp-cbt-recolumn.mjs','tools/verification/tmp-bulk-timeout.mjs','tools/verification/tmp-prep-family.mjs','tools/verification/tmp-fee-sync.mjs','tools/fix-logo-transparency.py', 'database/README.md','assets/img/demo-signature.svg','assets/img/founder-adewale.jpg','CBT_AND_REPORTCARD_GUIDE.md','ID_CARD_PRINT_GUIDE.md','DEPLOYMENT-GUIDE.md','DEPLOYMENT.md','FEATURES.md'
 ]
 RICH=['midterm-reports.html','platform-health.html','developer.html','idcards.html','voting.html','messages.html','inbox.html','notifications.html','cbt-exam.html','cbt-multi.html','cbt.html','report-cards.html','student-profile.html','academic-records.html','profile.html','timetable-generator.html','admin-data.html','storage.html','health.html','login.html','change-password.html','forgot-password.html','rubrics.html','transcripts.html','analytics.html','fees.html','settings.html','entrance.html','exam-register.html','academic_setup.html','certificates.html','admissions.html','approvals.html','diary.html','digital_library.html','sow.html','exam-timetable.html','timetable.html','assignments.html','license.html','punctuality.html','checkin-staff.html','checkin.html','cbt-prompts.html','attendance.html']
 
@@ -129,6 +134,41 @@ def main():
             src=GEN/rel
             if src.exists():
                 dst=target/rel; dst.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(src,dst)
+        # V12.74 (round-18 item 8): sw.js was never synchronised, so the service
+        # worker that actually runs in a client deployment was months behind the
+        # generator's (schoolconnectdemo was still on v12.58). The worker carries
+        # real logic — including the GET_VERSION reply the Update-now banner needs —
+        # but its CACHE name is per-school. Copy the generator's worker and keep
+        # the target's own cache name so branding is preserved.
+        _sw = GEN/'sw.js'
+        if _sw.exists():
+            _dst = target/'sw.js'
+            _keep = None
+            if _dst.exists():
+                _m = re.search(r"CACHE\s*=\s*'([^']+)'", _dst.read_text(encoding='utf-8'))
+                if _m: _keep = _m.group(1)
+            _txt = _sw.read_text(encoding='utf-8')
+            if _keep:
+                # V12.76 — KEEP THE SCHOOL'S NAME, TAKE THE VERSION.
+                #
+                # The old code copied the target's cache name verbatim, so a
+                # client deployment's worker could carry new logic under an OLD
+                # cache key: gosaportal was still answering `v12.59-20261101`
+                # after three releases. The cache name is the version a device
+                # compares, so a device that updated never dropped the old
+                # entries — and this release rewrites every page to stop using a
+                # CDN, which is exactly the kind of change a stale cache hides.
+                # Prefix (`sc-client`) is branding; everything from `-v` onward
+                # is version, and the generator owns it.
+                _gen_m = re.search(r"CACHE\s*=\s*'([^']+)'", _txt)
+                _gen = _gen_m.group(1) if _gen_m else ''
+                _pre = _keep.split('-v')[0] if '-v' in _keep else _keep
+                _ver = _gen[_gen.index('-v'):] if '-v' in _gen else ''
+                _new = _pre + _ver if _ver else _keep
+                _txt = re.sub(r"(CACHE\s*=\s*')[^']+(')",
+                              lambda mm: mm.group(1)+_new+mm.group(2), _txt, count=1)
+                print('  sw cache:', _keep, '->', _new)
+            _dst.write_text(_txt, encoding='utf-8')
         # V12.60: sync every page the generator owns. The old hard-coded RICH
         # list of 42 silently left ~90 generated pages stale (students,
         # dashboard, index, apply, contact …) which is how the sibling repos
