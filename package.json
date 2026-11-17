@@ -17,5 +17,8 @@
     "@electric-sql/pglite": "0.3.10",
     "jsdom": "^26.1.0",
     "jszip": "3.10.1"
+  },
+  "dependencies": {
+    "playwright-core": "^1.49.1"
   }
 }

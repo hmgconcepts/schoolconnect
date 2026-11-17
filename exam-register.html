@@ -8,9 +8,9 @@
 <meta name="description" content="Public examination registration page for WAEC, NECO, NABTEB, NCEE, UTME/JAMB, GCE, IGCSE and other exams. Applicants enter biodata, exam type, subjects, candidate details and supporting information for school review.">
 <meta name="keywords" content="examination, registration, WAEC, NECO, UTME, JAMB, IGCSE, BECE, NCEE, GCE, NABTEB, school portal">
 <meta name="theme-color" content="#0506ae">
-<link rel="icon" type="image/png" href="assets/img/logo.png">
+<link rel="icon" type="image/png" href="assets/img/logo-512.jpg">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="assets/img/logo.png">
+<link rel="apple-touch-icon" href="assets/img/logo-512.jpg">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Public Examination Registration">
 <meta name="twitter:card" content="summary_large_image">
@@ -68,7 +68,7 @@ body{background:#f8fafc;margin:0;font-family:'Plus Jakarta Sans',system-ui,-appl
 <body>
 <main class="pub-wrap">
   <section class="pub-hero">
-    <img src="assets/img/logo.png" alt="" onerror="this.style.display='none'">
+    <img src="assets/img/logo-512.png" alt="" onerror="this.style.display='none'">
     <div>
       <h1>📝 Public Examination Registration</h1>
       <p>Register for external or internal examinations. No portal account required. The school examination officer will review and extract your details. This free form is verified, stored and downloadable as CSV / PDF by school staff.</p>
@@ -642,7 +642,7 @@ body{background:#f8fafc;margin:0;font-family:'Plus Jakarta Sans',system-ui,-appl
 <div id="modal-backdrop" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.58);z-index:9998;padding:5vh 16px;overflow:auto"><div style="background:#fff;max-width:960px;margin:auto;border-radius:16px;padding:20px"><div style="display:flex;justify-content:space-between"><h2 id="modal-title"></h2><button class="btn btn-outline" onclick="closeModal()">✕</button></div><div id="modal-body"></div><div id="modal-footer" style="margin-top:14px"></div></div></div>
 <script>function toast(m,t){var c=document.getElementById('toast-container'),e=document.createElement('div');e.style.cssText='background:'+(t==='danger'?'#b91c1c':t==='warning'?'#b45309':'#166534')+';color:#fff;padding:10px 14px;border-radius:10px;margin-top:8px;box-shadow:0 6px 18px #0003';e.textContent=m;c.appendChild(e);setTimeout(function(){e.remove()},5000)}function openModal(t,b,f){document.getElementById('modal-title').textContent=t;document.getElementById('modal-body').innerHTML=b;document.getElementById('modal-footer').innerHTML=f||'';document.getElementById('modal-backdrop').style.display='block'}function closeModal(){document.getElementById('modal-backdrop').style.display='none'}</script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/vendor/supabase-js-2.58.0.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/theme-manager.js"></script>
 <script src="assets/js/legibility.js"></script>

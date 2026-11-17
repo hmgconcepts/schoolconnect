@@ -107,7 +107,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
 <div class="app-layout sidebar" data-require-role="super_admin admin principal proprietor head_teacher bursar staff teacher parent student">
   <aside class="app-sidebar" id="app-sidebar">
       <div class="app-brand">
-        <img src="assets/img/logo.svg" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.svg'">
+        <img src="assets/img/logo.svg" alt="School Connect Demo School" style="object-fit:contain" onerror="this.onerror=null;this.src='assets/img/logo.png'">
         <div>
           <strong>School Connect Demo School</strong>
           <div style="font-size:0.7rem;color:var(--gray-500)">SCD</div>
@@ -513,8 +513,8 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{display:none!importa
     </footer>
   </main>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="assets/vendor/supabase-js-2.58.0.js"></script>
+<script src="assets/vendor/chart.umd.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/license.js"></script>
 <script src="assets/js/demo.js"></script>
@@ -625,4 +625,7 @@ const CTUI={ code:'', sig:'',
   }
 };
 document.addEventListener('DOMContentLoaded',()=>{ CTUI.loadStudents(); CTUI.render(); }); CTUI.render();
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.CTUI = CTUI;
 </script></body></html>

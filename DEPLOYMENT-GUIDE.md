@@ -7,6 +7,20 @@ This guide has **two parts**:
 
 Everything uses **free tools only**. No credit card, no monthly fees, no AI APIs.
 
+> **V12.75 SIZE NOTE:** the complete schema is deliberately kept under 1 MB so the
+> Supabase SQL Editor accepts it ("Query is too large to be run via the SQL Editor"
+> appears above 1 MB). It is built by `tools/build-complete-schema.py`, never edited
+> by hand, and `tools/verify-complete-schema.mjs` proves it is object-identical to the
+> raw cumulative file. As of V12.75 it installs **134 tables** and is **998,862 bytes**
+> — 1,138 bytes below the cap. If a future edit pushes it over the limit the builder
+> refuses to write; re-run the builder and read its `rebuilt …headroom` line.
+>
+> **Where to read next**
+> - `DEPLOYMENT.md` — the step-by-step school deployment (schema → keys → host →
+>   first admin → configuration → verification → updates → backups → troubleshooting).
+> - `FEATURES.md` — every feature in the platform, module by module, with the
+>   guarantee each one makes.
+>
 > **V5.6.1 ONE-SQL RULE:** back up Supabase and run the entire
 > `database/complete-schema.sql` for a fresh install or any upgrade. It includes
 > every earlier focused pack and is safe to re-run. Do not run versioned/focused
@@ -63,11 +77,17 @@ live data on the builder site itself:
 ## B2. Install the tables (run ONE SQL file)
 1. Supabase → **SQL Editor → + New query**.
 2. Open **`database/complete-schema.sql`** from the ZIP, copy **all** of it, paste, **Run**.
-3. Confirm the final success message: **`School Connect CBT V5.1 definitive grading engine installed — use RPC cbt_submit_v5 ✅`**.
-   - ✅ This one file installs everything (all tables, RLS, triggers, views, and
-     **every RPC the app calls** — all 16 — plus the CBT scale pack and the
-     Punctuality Points engine).
-   - ✅ It is **idempotent** — safe to run again.
+3. Wait for the run to finish. On success the last statements return without error
+   and the file ends by reloading the API cache (`pg_notify('pgrst','reload schema')`).
+   - ✅ This one file installs everything: **130 tables, 1,586 columns, 236 functions,
+     5 views, 309 RLS policies, 252 indexes, 365 constraints**, every trigger, grant
+     and seed row, plus every RPC the app calls. (Counts verified V12.70 against a
+     freshly booted PostgreSQL.)
+   - ✅ It is **idempotent** — safe to run again, and safe on an existing project.
+   - ✅ It is **976,856 bytes** (954 KiB), inside Supabase's 1 MB SQL Editor limit,
+     so it pastes and runs from the dashboard in one go. Headroom at V12.70 is
+     **23,144 bytes** — `tools/build-complete-schema.py` fails the build rather than
+     let the file cross the cap.
    - ✅ Apart from the optional demo packs (`demo-users.sql`, `demo-seed.sql`),
      this is the **only** SQL your deployment ever needs.
    - ❌ You do **not** need to run any smaller feature SQL separately (each of those
@@ -177,3 +197,39 @@ This build implements the blueprint you requested for assignments:
 
 **SW:** `sc-builder-v12.10-20260925-17` / `sc-client-v12.10-20260925-17` — includes `assignment-cbt.js` for offline.
 
+
+---
+
+## Verifying a deployment (V12.70)
+
+Run these from the repository root **before** you hand a build to a school.
+Every one of them exits non-zero on failure, so they can go straight into CI.
+
+```bash
+python3 tools/audit-every-page.py     # 398 pages, 45,047 links, 3 deployments
+python3 tools/audit-42703.py          # 178 files, 130 tables — no phantom columns
+python3 tools/audit-v5.py             # 513 platform checks (V5 → V12)
+python3 tools/audit-repo-parity.py    # client deployments match the generator
+python3 tools/audit-duplicate-methods.py --self-test
+python3 tools/audit-single-sql.py     # "one SQL file only" is still true
+python3 tools/test-inline-scripts.py  # every inline script parses
+node    tools/verify-complete-schema.mjs   # schema is object-identical & idempotent
+```
+
+The whole gate at once:
+
+```bash
+bash work/run-all-tests.sh    # 38 suites, 1,122 checks
+```
+
+**If an audit fails, do not ship.** Two of these audits had been broken and
+unreported for several releases precisely because nobody ran them; that is why
+they are all inside the gate now.
+
+### Two checks worth running on your own real data after install
+
+1. **Report Cards → 🔎 Audit / Clear Unwanted Scores** — the top banner checks
+   every mark against its maximum. Green means no impossible score exists.
+2. **Report Cards → 🏅 Repair percentages & positions** — re-measures and
+   re-ranks. Run it after importing historical marks from another system, then
+   compare one report card against its broadsheet row.
