@@ -115,7 +115,7 @@ const Generator = {
   async build(config) {
     // Load JSZip lazily
     if (!window.JSZip) {
-      await Generator.loadScript('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');
+      await Generator.loadScript('assets/vendor/jszip.min.js');
     }
     const zip = new JSZip();
     // FIX RC-D (audit): track every page filename we emit so two modules (or a
@@ -243,6 +243,12 @@ const Generator = {
 
     // ---- 3. Fetch all required JS files ----
     const jsFiles = [
+      /* V12.76 — vendored runtime. The generated site must not need a CDN
+         to boot: these four files are the whole third-party surface. */
+      'assets/vendor/supabase-js-2.58.0.js',
+      'assets/vendor/chart.umd.js',
+      'assets/vendor/jsqr.min.js',
+      'assets/vendor/jszip.min.js',
       'assets/js/app.js',
       'assets/js/crud.js',
       'assets/js/cbt-engine.js',
@@ -1048,8 +1054,8 @@ console.log('[School Platform] Config loaded — ${cfg.schoolName}');
 
   /** Standard <script> tags for all generated pages (after T.shell() body close) */
   standardScripts() {
-    return `<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    return `<script src="assets/vendor/supabase-js-2.58.0.js"></script>
+<script src="assets/vendor/chart.umd.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/license.js"></script>
 <script src="assets/js/demo.js"></script>
@@ -1531,7 +1537,7 @@ ${publicPages.map(u => `  <url><loc>${base}${u.p}</loc><changefreq>${u.cf}</chan
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(self), microphone=(self), geolocation=(self)
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://accounts.google.com/gsi/style; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src https://accounts.google.com/gsi/; connect-src 'self' https://*.supabase.co https://*.supabase.io wss://*.supabase.co https://accounts.google.com/gsi/ https://www.googleapis.com
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://accounts.google.com/gsi/style; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src https://accounts.google.com/gsi/; connect-src 'self' https://*.supabase.co https://*.supabase.io wss://*.supabase.co https://accounts.google.com/gsi/ https://www.googleapis.com
 
 /sw.js
   Cache-Control: public, max-age=0, must-revalidate
@@ -1775,7 +1781,7 @@ ${(Array.isArray(cfg.modules) ? cfg.modules : []).map(m => `- ${m.replace(/_/g, 
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/vendor/supabase-js-2.58.0.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
@@ -1831,7 +1837,7 @@ ${(Array.isArray(cfg.modules) ? cfg.modules : []).map(m => `- ${m.replace(/_/g, 
     </div>
   </main>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/vendor/supabase-js-2.58.0.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/notifications.js"></script>
 <script src="assets/js/voting.js"></script>
