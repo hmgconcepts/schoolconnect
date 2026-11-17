@@ -1,6 +1,6 @@
 // School Connect — Service Worker (V5 cumulative release, generator v8)
 // Bump this literal on every runtime release so previously cached CBT/report code is purged.
-const CACHE = 'sc-builder-v12.59-20261101-67';
+const CACHE = 'sc-builder-v12.76-20261108-68';
 const CORE = [
   './', './index.html', './builder.html', './voting.html', './notifications.html',
   './install.html', './midterm-reports.html', './ecosystem.html', './about.html', './guide.html', './offline.html',
@@ -9,7 +9,10 @@ const CORE = [
   './assets/js/notifications.js', './assets/js/voting.js', './assets/js/pwa-install.js',
   './assets/js/qrcode-generator.js','./assets/js/super.js', './assets/js/wizard.js', './assets/js/generator.js', './assets/js/templates.js', './assets/js/site-help.js',
   './assets/js/theme-manager.js', './assets/js/messages-center.js', './assets/js/drive-sync.js', './assets/js/proctor.js',
-  './assets/img/logo.svg', './assets/img/favicon.svg', './manifest.json'
+  './assets/img/logo.svg', './assets/img/favicon.svg', './manifest.json',
+  /* V12.76 — the libraries are part of the app now, not a CDN's favour */
+  './assets/vendor/supabase-js-2.58.0.js', './assets/vendor/chart.umd.js',
+  './assets/vendor/jsqr.min.js', './assets/vendor/jszip.min.js'
 ];
 
 self.addEventListener('install', e => {
@@ -31,6 +34,13 @@ self.addEventListener('activate', e => {
 // Manual skipWaiting trigger (kept for pwa-install.js Update Now button)
 self.addEventListener('message', e => {
   if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+  /* V12.74 (item 8) — the client needs a REAL version identity. It used
+     registration.scriptURL, which is the same string for every release, so it
+     could not tell an old version from a new one and the "Update now" banner
+     reappeared even when the platform was already current. */
+  if (e.data && e.data.type === 'GET_VERSION' && e.ports && e.ports[0]) {
+    e.ports[0].postMessage({ version: CACHE });
+  }
 });
 
 self.addEventListener('fetch', e => {

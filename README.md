@@ -75,7 +75,17 @@ The generated school platforms operate as high-performance, offline-first Progre
 
 
 ## School Connect v1 Final Deployment Note
-Run `database/complete-schema.sql` once in Supabase SQL Editor for a fresh deployment. It is now cumulative and self-contained: it includes base schema, CBT, voting, report cards, enterprise tables, class fee structures, product store, status audit log, parent-child access policies, staff check-in deadline settings, and schema-cache reload notifications. The smaller update SQL files are retained only for upgrading older deployed clients.
+Run `database/complete-schema.sql` once in Supabase SQL Editor for a fresh deployment. It is cumulative, self-contained and **stays under Supabase's 1 MB SQL Editor limit** (786 KB), so it pastes and runs from the dashboard in one go. It installs **127 tables, 1,541 columns, 195 functions, 4 views, 292 RLS policies, 242 indexes and 354 constraints** — base schema, CBT, voting, midterm/terminal reports with the fair-ranking engine, the class diary, enterprise tables, class fee structures, product store, status audit log, parent-child access policies, staff check-in deadline settings, and schema-cache reload notifications. The smaller update SQL files are retained only for upgrading older deployed clients.
+
+Two tools keep that promise honest:
+
+```bash
+python3 tools/build-complete-schema.py        # rebuild the file (deduplicates, never drops an object)
+node   tools/verify-complete-schema.mjs       # prove the rebuild is object-identical to the raw schema
+python3 tools/audit-schema-coverage.py        # prove every table/RPC the frontend uses exists
+```
+
+`complete-schema.sql` is **generated** — edit a versioned `v*.sql` pack and rebuild, do not hand-edit it.
 
 ## School Connect V5.1 definitive CBT repair
 

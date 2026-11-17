@@ -57,7 +57,7 @@
     <div class="table-wrap" style="margin-top:12px"><table id="ph-table"><thead><tr><th>Date</th><th>Student</th><th>Term</th><th>Session</th><th>Method</th><th>Reference</th><th>Paid</th><th>Balance</th></tr></thead><tbody><tr><td colspan="8" style="color:var(--gray-500)">Pick a range and press “Load history”.</td></tr></tbody></table></div>
   </div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/vendor/supabase-js-2.58.0.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/license.js"></script>
 <script src="assets/js/demo.js"></script>
@@ -174,5 +174,18 @@ const PH = {
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function toast(m,t){ alert(m); }
 PH.lookups();
+
+/* V12.62: inline handlers resolve through window — expose the controller. */
+window.PH = PH;
 </script>
+<div id="modal-backdrop" class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="modal-title">Modal</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="modal-body" class="modal-body"></div>
+    <div id="modal-footer" class="modal-footer"></div>
+  </div>
+</div>
 </body></html>
