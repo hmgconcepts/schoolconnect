@@ -597,7 +597,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
           Fixable problems are repaired; money records are <b>never</b> deleted by a tool.
         </p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <select class="form-select" id="fdx-class" style="max-width:220px"><option value="">ALL classes</option></select>
+          <select class="form-select" id="fdx-class" data-class-picker style="max-width:220px"><option value="">ALL classes</option></select>
           <button class="btn btn-outline" onclick="FeeDoctor.run(false)">🔍 Check only (changes nothing)</button>
           <button class="btn btn-primary" style="background:#6d28d9;border-color:#5b21b6" onclick="FeeDoctor.run(true)">🩹 Fix everything fixable</button>
         </div>
@@ -611,7 +611,7 @@ body:not([data-role-ready="1"]) .app-nav a[data-role-allow]{visibility:visible!i
         A learner with no bill is reported as <b>unknown, never as ₦0</b>, and the audit names the reason and the page that fixes it.
         This is the check that proves the Round-9 “₦0 total fees” fault is gone for every learner, not just the two reported.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
-          <div class="form-group" style="margin:0"><label>Class</label><select class="form-select" id="fba-class"><option value="">ALL classes</option></select></div>
+          <div class="form-group" style="margin:0"><label>Class</label><select class="form-select" id="fba-class" data-class-picker><option value="">ALL classes</option></select></div>
           <button class="btn btn-primary" onclick="FeeBillAudit.run()">🔎 Run the audit</button>
         </div>
         <div id="fba-out" style="margin-top:12px"></div>
@@ -748,14 +748,9 @@ window.FeeDaily = FeeDaily;
 const FeeBillAudit = {
   esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));},
   money(n){return ((window.SCHOOL&&SCHOOL.currency)||'₦')+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2});},
-  async fillClasses(){
-    try{const {data}=await sb.from('students').select('class').not('class','is',null).order('class');
-      const set=[...new Set((data||[]).map(x=>x.class).filter(Boolean))];
-      for(const id of ['fba-class']){const el=document.getElementById(id);if(!el)return;
-        set.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;el.appendChild(o);});}
-    }catch(_){}
-  },
+  async fillClasses(){ await window.FeeClassPickers.fill(); },
   async run(){
+    try{ const sel=document.getElementById('fdx-class'); if(sel && sel.options.length<=1) await window.FeeClassPickers.fill(); }catch(_){ }
     const box=document.getElementById('fba-out');if(!box)return;
     const cls=((document.getElementById('fba-class')||{}).value||'');
     box.innerHTML='<span class="pulse">Auditing every learner…</span>';
@@ -1477,6 +1472,40 @@ const FeeSegment={
   }
 };
 document.addEventListener('DOMContentLoaded',function(){ try{ FeeSegment.init(); }catch(_){ } });
+const FeeClassPickers = {
+  IDS: ['fdx-class', 'fba-class'],
+  async sources(){
+    const out = new Set();
+    const add = v => { const t = String(v == null ? '' : v).trim(); if (t) out.add(t); };
+    try { const r = await sb.from('students').select('class').not('class','is',null).limit(5000); (r.data||[]).forEach(x=>add(x.class)); } catch(_){ }
+    if (!out.size) { try { const r = await sb.from('classes').select('name').limit(500); (r.data||[]).forEach(x=>add(x.name)); } catch(_){ } }
+    if (!out.size) { try { const r = await sb.from('class_fee_structure').select('class').limit(500); (r.data||[]).forEach(x=>add(x.class)); } catch(_){ } }
+    return [...out].sort((a,b)=>a.localeCompare(b, undefined, {numeric:true}));
+  },
+  paint(el, list){
+    if (!el) return 0;
+    const keep = el.value;
+    const head = el.querySelector('option[value=""]');
+    const label = head ? head.textContent : 'ALL classes';
+    el.innerHTML = '<option value="">' + label + '</option>' +
+      list.map(c => '<option value="' + String(c).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])) + '">' + String(c).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])) + '</option>').join('');
+    if (keep && list.includes(keep)) el.value = keep;
+    el.disabled = list.length === 0;
+    el.title = list.length ? '' : 'No classes found yet — add learners or a class fee structure first.';
+    return list.length;
+  },
+  async fill(){
+    const els = [...new Set([...this.IDS, ...[...document.querySelectorAll('select[data-class-picker]')].map(e=>e.id).filter(Boolean)])]
+      .map(id => document.getElementById(id)).filter(Boolean);
+    if (!els.length) return 0;
+    const list = await this.sources();
+    let n = 0; els.forEach(el => { n = this.paint(el, list); });
+    return n;
+  }
+};
+window.FeeClassPickers = FeeClassPickers;
+document.addEventListener('DOMContentLoaded', () => { try { FeeClassPickers.fill(); } catch(_){ } });
+
 const FeeDoctor={
   esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));},
   /* V12.66 — prefer the 14-check doctor; fall back to the 7-check one on a
