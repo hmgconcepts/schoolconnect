@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>/* School Connect V12.23 pre-paint theme — robust like Fleet Console + Adewale — runs synchronously before CSS to avoid FOUC */(function(){try{var m=null;try{m=localStorage.getItem('sc-theme');}catch(e){}if(!m){try{m=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}catch(e){m='light';}}m=(m==='dark'?'dark':'light');document.documentElement.setAttribute('data-theme',m);document.documentElement.dataset.theme=m;try{var c=JSON.parse(localStorage.getItem('sc-theme-colors')||'null');if(c&&c.primary){var r=document.documentElement.style;r.setProperty('--primary',c.primary);r.setProperty('--sc-primary',c.primary);if(c.accent){r.setProperty('--accent',c.accent);r.setProperty('--sc-accent',c.accent);r.setProperty('--gradient','linear-gradient(135deg,'+c.primary+' 0%,'+c.accent+' 100%)');}}}catch(e){}}catch(e){}})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offline • School Connect</title>
+<style>
+  body{font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#fff;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
+  .box{max-width:420px}
+  h1{font-size:1.6rem;margin:12px 0}
+  p{color:#94a3b8;line-height:1.6}
+  button{margin-top:18px;background:#4f46e5;color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:1rem;cursor:pointer}
+</style>
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <meta name="author" content="HMG Concepts">
+    <link rel="canonical" href="./offline.html">
+    <meta property="og:url" content="./offline.html">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+  <div class="box">
+    <div style="font-size:3rem">📡</div>
+    <h1>You're offline</h1>
+    <p>School Connect works offline for cached pages, but this page needs a connection.
+       Reconnect to load the latest results, fees and messages, then try again.</p>
+    <button onclick="location.reload()">Retry</button>
+    <p style="margin-top:24px;font-size:.8rem">Powered by HMG Concepts</p>
+  </div>
+<script src="assets/js/theme-manager.js"></script>
+<script src="assets/js/legibility.js"></script>
+</body>
+</html>

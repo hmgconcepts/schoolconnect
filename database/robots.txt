@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /builder.html
+
+Sitemap: https://schoolconnectportal.vercel.app/sitemap.xml
+
+# Optimized for SEO lead-generation.
+# Each generated school site ships its own robots.txt + sitemap.xml,
+# pointing back to HMG Concepts for discovery.

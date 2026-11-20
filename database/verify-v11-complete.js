@@ -1,0 +1,16 @@
+const fs=require('fs'),path=require('path');const root=__dirname,generated=path.resolve(root,'..','generated-site');const schema=fs.readFileSync(path.join(root,'database','complete-schema.sql'),'utf8');let p=0,f=0;const ok=(n,c)=>{console.log((c?'OK  - ':'FAIL- ')+n);c?p++:f++};const at=x=>schema.indexOf(x);
+ok('v11 complete schema exists',fs.existsSync(path.join(root,'database','complete-schema.sql')));
+ok('generated client has one active complete schema',fs.existsSync(path.join(generated,'database','complete-schema.sql'))&&!fs.existsSync(path.join(generated,'database','complete-schema-v4.sql')));
+ok('school_settings school_id backfill precedes seed',at('add column if not exists school_id uuid references public.schools')<at('insert into public.school_settings (id, school_id'));
+ok('schools columns backfill precedes seed',at('alter table public.schools add column if not exists short_name')<at('insert into public.schools (name, short_name'));
+ok('ownership compatibility precedes policy loop',at('v10 guarded ownership-policy compatibility backfill')<at('declare owned_tables text[]'));
+ok('student_id guarded repair precedes policies',at('v10 guarded legacy-column repair')<at('create policy "att_read"'));
+ok('all literal FOREACH arrays use valid PLpgSQL syntax',!/foreach\s+\w+\s+in\s+array\[/.test(schema)&&/foreach\s+\w+\s+in\s+array\s+ARRAY\[/.test(schema));
+for(const t of ['class_fee_structure','psychomotor_traits','report_comments','school_products','role_status_log','report_scores','attendance'])ok('table '+t+' declared',new RegExp('create table if not exists public\\.'+t+'\\b').test(schema));
+ok('report score unique key matches browser',/unique \(column_id, student_id_ref, student_name, class, subject, term, session\)/.test(schema)&&/onConflict: 'column_id,student_id_ref,student_name,class,subject,term,session'/.test(fs.readFileSync(path.join(root,'report-cards.html'),'utf8')));
+ok('student_id guard covers policy tables',/public\.support_plans[\s\S]*add column if not exists student_id/.test(schema)&&/public\.health[\s\S]*add column if not exists student_id/.test(schema));
+ok('recorded_by exists before dynamic policy creation',/add column if not exists recorded_by/.test(schema)&&/add column if not exists recorded_by[\s\S]*create policy/.test(schema));
+ok('parent attendance is read-only family scoped',/v7_attendance_read/.test(schema)&&/v7_attendance_write_staff/.test(schema)&&/parent_child/.test(fs.readFileSync(path.join(root,'attendance.html'),'utf8')));
+ok('acronym triggers exist',/sc_generate_admission_no/.test(schema)&&/sc_generate_staff_no/.test(schema));
+const cbt=fs.readFileSync(path.join(root,'cbt.html'),'utf8');ok('CBT export/import controls exist',/exportExamCSV/.test(cbt)&&/importExamCSV/.test(cbt));ok('CBT result CSV/PDF/JSON exports exist',/exportResultsPDF/.test(cbt)&&/exportResultsJSON/.test(cbt));ok('CBT export fields are explicit',/Question,Option A,Option B,Option C,Option D,Correct Answer,Explanation/.test(cbt));
+ok('schema cache reload exists',/notify pgrst, 'reload schema'/.test(schema));console.log(`\nSchool Connect v11 audit: ${p} passed, ${f} failed.`);process.exitCode=f?1:0;

@@ -1,0 +1,15 @@
+const fs=require('fs'),path=require('path');const root=__dirname, generated=path.resolve(root,'..','generated-site');const schema=fs.readFileSync(path.join(root,'database','complete-schema.sql'),'utf8');let p=0,f=0;const ok=(n,c)=>{console.log((c?'OK  - ':'FAIL- ')+n);c?p++:f++};const at=x=>schema.indexOf(x);
+ok('complete schema exists',fs.existsSync(path.join(root,'database','complete-schema.sql')));
+ok('one active generated schema',fs.existsSync(path.join(generated,'database','complete-schema.sql'))&&!fs.existsSync(path.join(generated,'database','complete-schema-v4.sql')));
+ok('school_settings columns are backfilled before seed',at('add column if not exists school_id uuid references public.schools')<at('insert into public.school_settings (id, school_id'));
+ok('schools columns are backfilled before seed',at('alter table public.schools add column if not exists short_name')<at('insert into public.schools (name, short_name'));
+ok('ownership columns precede policy loop',at('v9 ownership-policy compatibility backfill')<at('declare owned_tables text[]'));
+for(const t of ['class_fee_structure','psychomotor_traits','report_comments','school_products','role_status_log','report_scores','attendance'])ok('table '+t+' declared',new RegExp('create table if not exists public\\.'+t+'\\b').test(schema));
+ok('report ON CONFLICT has exact key',/unique \(column_id, student_id_ref, student_name, class, subject, term, session\)/.test(schema));
+ok('report duplicate cleanup precedes unique key',at('delete from public.report_scores a using')<at('report_scores_context_unique'));
+ok('parent attendance is family read-only',/v7_attendance_read/.test(schema)&&/v7_attendance_write_staff/.test(schema)&&/parent_child/.test(fs.readFileSync(path.join(root,'attendance.html'),'utf8')));
+ok('acronym generators exist',/sc_generate_admission_no/.test(schema)&&/sc_generate_staff_no/.test(schema));
+const cbt=fs.readFileSync(path.join(root,'cbt.html'),'utf8');ok('CBT export/import controls exist',/exportExamCSV/.test(cbt)&&/importExamCSV/.test(cbt));ok('CBT result CSV/PDF/JSON exports exist',/exportResultsPDF/.test(cbt)&&/exportResultsJSON/.test(cbt));ok('CBT export headings are explicit',/Question,Option A,Option B,Option C,Option D,Correct Answer,Explanation/.test(cbt));
+const engine=fs.readFileSync(path.join(root,'assets/js/cbt-engine.js'),'utf8');ok('CBT importer accepts readable option headings',/option a/.test(engine)&&/correct answer/.test(engine));
+ok('recorded_by exists on every dynamic policy table',schema.includes('alter table public.assignments add column if not exists recorded_by')&&schema.includes('alter table public.scheme_of_work add column if not exists recorded_by')&&schema.includes('alter table public.lesson_plans add column if not exists recorded_by')&&schema.includes('alter table public.cbt_exams add column if not exists recorded_by')&&schema.includes('alter table public.attendance add column if not exists recorded_by'));
+ok('schema cache reload exists',/notify pgrst, 'reload schema'/.test(schema));console.log(`\nSchool Connect v9 audit: ${p} passed, ${f} failed.`);process.exitCode=f?1:0;

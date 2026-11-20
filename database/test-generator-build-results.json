@@ -1,0 +1,18 @@
+[
+  {
+    "kind": "traditional",
+    "entries": 280,
+    "bytes": 4603596,
+    "orphans": 0,
+    "brokenLinks": 184,
+    "missing": []
+  },
+  {
+    "kind": "modern",
+    "entries": 385,
+    "bytes": 5027084,
+    "orphans": 0,
+    "brokenLinks": 184,
+    "missing": []
+  }
+]
