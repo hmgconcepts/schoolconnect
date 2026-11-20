@@ -35,25 +35,37 @@ const res=await pg.evaluate(()=>{
   for(const [label,w,h] of [['ID-1 landscape',85.6,53.98],['ID-1 portrait',53.98,85.6],
                             ['60x90 portrait',60,90],['100x60 landscape',100,60],
                             ['CR80 square',70,70],['ID-2',105,74]]){
-    const o={widthMm:w,heightMm:h,widthPx:Math.round(w*96/25.4),heightPx:Math.round(h*96/25.4),template:TPL};
-    const face=(html)=>{
-      const holder=document.createElement('div');
-      /* NOT position:absolute — an absolutely-positioned parent gives the
-         card a 0-height containing block, so 100% height collapses and every
-         measurement lies. Off-screen but in normal flow is what we need. */
-      holder.style.cssText='position:relative;left:-9999px;width:'+w+'mm;height:'+h+'mm;overflow:hidden';
-      holder.innerHTML=html;
-      document.body.appendChild(holder);
-      const card=holder.querySelector('.sc-idcard');
-      card.style.setProperty('max-width','none','important');
+    /* V12.77 — measwhat the platform actually RENDERS. html() is the design
+       renderer (it composes a card at its own canvas); the public renderers are
+       frontFace() for one face and pairHtml() for the printed pair, and those
+       are what every screen and the PDF use. Measuring html() directly tested a
+       contract nobody calls. */
+    const o={widthMm:w,heightMm:h,template:TPL};
+    const holder=document.createElement('div');
+    holder.style.cssText='position:relative;left:-9999px;width:'+w+'mm;height:'+h+'mm;overflow:hidden';
+    holder.innerHTML=Super.idcard.pairHtml(person,o);
+    document.body.appendChild(holder);
+    const faces=[...holder.querySelectorAll('.sc-idcard-face')];
+    const read=(f)=>{
+      const card=f.querySelector('.sc-idcard');
       const r=card.getBoundingClientRect();
-      const m={w:Math.round(r.width),h:Math.round(r.height),
-               over:Math.max(0,card.scrollHeight-card.clientHeight),
-               overW:Math.max(0,card.scrollWidth-card.clientWidth),
-               rules:card.querySelectorAll('ol li').length};
-      holder.remove(); return m;
+      let maxR=r.left,maxB=r.top;
+      card.querySelectorAll('*').forEach(n=>{
+        const cs=getComputedStyle(n);
+        if(cs.position==='absolute'||cs.position==='fixed')return;
+        const b=n.getBoundingClientRect();
+        if(!b.width&&!b.height)return;
+        if(b.right>maxR)maxR=b.right;
+        if(b.bottom>maxB)maxB=b.bottom;
+      });
+      return {w:Math.round(r.width),h:Math.round(r.height),
+              over:Math.max(0,Math.round(maxB-r.bottom)),
+              overW:Math.max(0,Math.round(maxR-r.right)),
+              rules:card.querySelectorAll('ol li').length};
     };
-    out.push({label,w,h,front:face(Super.idcard.html(person,o)),back:face(Super.idcard.backHtml(person,o))});
+    const front=read(faces[0]), back=read(faces[1]);
+    holder.remove();
+    out.push({label,w,h,front,back});
   }
   return out;
 });
