@@ -610,6 +610,36 @@ def build(raw: str) -> tuple[str, dict]:
         return '\n'.join(out)
     out = _drop_release_essays(out)
     out = _trim_banner(out)
+
+    # ---- 9b2. the last of the prose ---------------------------------------
+    # V12.79 — after the release essays and the banner are gone, the pack still
+    # carried ~48 KB of comment-only lines: explanation written for a maintainer,
+    # sitting inside a file that must fit Supabase's 1 MB SQL editor. The RAW
+    # source (complete-schema.raw.sql) keeps every one of those comments, and the
+    # release notes carry the reasoning; the shipped pack carries the statements.
+    # Comments INSIDE dollar-quoted bodies are left exactly as written — a
+    # function body is code, and rewriting code to save bytes is how silent
+    # breakage happens.
+    def _strip_outer_comments(text):
+        lines = text.split('\n')
+        res, tag, dropped = [], None, 0
+        for ln in lines:
+            if tag is None:
+                m = re.search(r'\$(\w*)\$', ln)
+                if m:
+                    # open a body unless the tag also closes on this same line
+                    tag = m.group(0)
+                if ln.lstrip().startswith('--'):
+                    dropped += len(ln) + 1
+                    continue
+                res.append(ln)
+            else:
+                res.append(ln)
+                if ln.count(tag) % 2 == 1:
+                    tag = None
+        stats['outer-comment-bytes'] += dropped
+        return '\n'.join(res)
+    out = _strip_outer_comments(out)
     # ---- 9c. blank-line squeeze (outside bodies only) --------------------
     # Runs of blank lines carry no meaning to Postgres and none to a reader.
     out = re.sub(r'\n{3,}', '\n\n', out)
@@ -617,6 +647,77 @@ def build(raw: str) -> tuple[str, dict]:
     out = re.sub(r'\A(?:\s*--[^\n]*\n)+?\s*(?=create|comment|do|alter|grant|--   )', '', out, count=1)
     out = re.sub(r'\n{3,}', '\n\n', out)
     out = out.rstrip() + '\n'
+
+    # ---- 9d. THE UPGRADE PRELUDE ------------------------------------------
+    # V12.79 — the school's own report, and the reason this step exists:
+    #
+    #     ERROR: 42P13: cannot change return type of existing function
+    #     DETAIL: Row type defined by OUT parameters is different.
+    #     HINT: Use DROP FUNCTION sc_my_prep_exams(text,text) first.
+    #
+    # `create or replace function` replaces a BODY. It cannot replace a SIGNATURE,
+    # and a `returns table(...)` function's column list IS part of its signature.
+    # So the moment a release added a column to sc_my_prep_exams, the file stopped
+    # being re-runnable on any school that already had the older function: a fresh
+    # database installed cleanly, an existing one failed, and the school was left
+    # to run a manual DROP that the file could have run itself.
+    #
+    # Every row-returning function in this file is now dropped first if it exists,
+    # in one small block placed before the first function is created. The list of
+    # names is DERIVED from the file, so a function added next year is protected
+    # without anybody remembering this comment.
+    #
+    # Only `record`-returning functions are touched (TABLE(...) and OUT-parameter
+    # functions) — a scalar-returning function cannot hit this error in a way the
+    # file would not also fix by redefining it, and dropping more than necessary
+    # is exactly how a schema loses a function it still needs.
+    rowtype_names = []
+    for s_ in st:
+        if s_.kind != 'function':
+            continue
+        b = body_of(s_)
+        # the HEADER only: name, arguments, and the returns clause. Searching the
+        # whole body matched the word "out" in prose and dragged six perfectly
+        # safe jsonb-returning functions into the drop list.
+        m = re.match(r'\s*create\s+(?:or\s+replace\s+)?function\s+(?:public\.)?"?([\w]+)"?\s*'
+                     r'\((.*?)\)\s*(.*)$', b, re.S | re.I)
+        if not m:
+            continue
+        nm, args, rest = m.group(1), m.group(2), m.group(3)
+        row_type = bool(re.match(r'\s*returns\s+(table\s*\(|setof\b|record\b)', rest, re.I))
+        out_params = bool(re.search(r'(?:^|,)\s*(?:inout|out)\s+\w+', args, re.I))
+        if row_type or out_params:
+            if nm not in rowtype_names:
+                rowtype_names.append(nm)
+    if rowtype_names:
+        names_sql = ','.join("'" + n.replace("'", "''") + "'" for n in rowtype_names)
+        prelude = (
+            "-- V12.79 — A ROW-RETURNING FUNCTION CANNOT BE REPLACED IN PLACE.\n"
+            "-- `returns table(...)` puts the column list in the signature, so adding a\n"
+            "-- column to one of these functions makes a re-run of this file fail with\n"
+            "-- 42P13 on every school that already installed the older version. They are\n"
+            "-- dropped first (only if they exist, and only if nothing depends on them —\n"
+            "-- a failure here is reported, never fatal).\n"
+            "do $sc_upgrade$declare r record;begin\n"
+            "for r in select p.oid::regprocedure::text sig from pg_proc p\n"
+            "join pg_namespace n on n.oid=p.pronamespace\n"
+            # V12.79 — NO RETURN-TYPE FILTER. An earlier draft dropped only
+            # `record`-returning functions, which left one gap: a function whose
+            # old shape had a SINGLE out column is stored as a scalar
+            # (`returns table(zzz int)` == `returns int`), so the filter skipped
+            # it and the very error this block exists to prevent came back. Every
+            # overload of these names is dropped; the file recreates the ones it
+            # defines, and the schema equivalence verifier proves nothing was lost.
+            "where n.nspname='public' and p.proname in (" + names_sql + ") loop\n"
+            "begin execute 'drop function '||r.sig;\n"
+            "exception when others then raise notice 'School Connect: % kept in place (%). A dependent object holds it; drop that object first.',r.sig,sqlerrm;\n"
+            "end;end loop;end$sc_upgrade$;\n")
+        first_fn = re.search(r'(?m)^create\s+(?:or\s+replace\s+)?function\s+public\.', out)
+        if first_fn:
+            out = out[:first_fn.start()] + prelude + out[first_fn.start():]
+            stats['upgrade-prelude-functions'] += len(rowtype_names)
+        else:
+            out += '\n' + prelude
 
     # ---- 11. the schema-cache signal must be the LAST statement -------------
     if final_notify is not None:
@@ -631,6 +732,13 @@ def build(raw: str) -> tuple[str, dict]:
                 "-- API until the cache expires — which is exactly how a perfectly good\n"
                 "-- database came to report \"run database/v9.4-fees-and-exams.sql\".\n"
                 "-- ---------------------------------------------------------------------\n"
+                # V12.78 — a human-readable row a school can read back to us. The
+                # per-migration progress notices are stripped during the build, so
+                # without this the deployment guide could not tell the user what
+                # success LOOKS like. It sits BEFORE the reload signal, because the
+                # notification must remain the last executable statement in the
+                # file (see tmp-notify-order.mjs and tmp-selfcontained.mjs).
+                "select 'V12.81 installed — a prep exam opens at the time the school typed, closes when it ends, and keeps the answers of anyone already sitting' as status;\n"
                 "select pg_notify('pgrst', 'reload schema');\n")
         stats['notify-moved-last'] += 1
     return out, stats, drop, st
