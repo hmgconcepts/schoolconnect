@@ -69,6 +69,68 @@ function fmtDMYT(v){ if(!v) return ''; const d=new Date(v); if(isNaN(d)) return 
   return fmtDMY(d)+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
 window.fmtDMY = fmtDMY; window.fmtDMYT = fmtDMYT;
 
+/* ---------------------------------------------------------------------------
+   V12.81 — SCHOOL TIME, WRITTEN DOWN ONCE.
+   ---------------------------------------------------------------------------
+   A `<input type="datetime-local">` hands the page a string with NO timezone:
+   "2026-11-20T10:00". What that string means depends on who reads it:
+
+     · `new Date("2026-11-20T10:00")`  → the DEVICE's local time (ES2016+; older
+       WebKit read it as UTC, so the same page meant two different times);
+     · a text column posted straight to Postgres → the DATABASE's session
+       timezone, which on Supabase is UTC. A tutor in Lagos typing 10:00 was
+       therefore writing 10:00Z = 11:00 school time, and the learner could not
+       start until 11:00.
+
+   One conversion, used by every page that reads or writes a timetable instant.
+   `toIso` reads the parts and builds a local Date, so the meaning never depends
+   on the browser's parser; `toLocalInput` is its exact inverse, so opening a
+   form and saving it unchanged can never move the exam.
+   --------------------------------------------------------------------------- */
+const SCTime = {
+  TZ: 'Africa/Lagos',
+  parts(v) {
+    const m = String(v == null ? '' : v).trim().match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/);
+    if (!m) return null;
+    const p = { y: +m[1], mo: +m[2], d: +m[3], h: +m[4], mi: +m[5], s: +(m[6] || 0) };
+    if (!(p.mo >= 1 && p.mo <= 12 && p.d >= 1 && p.d <= 31 && p.h <= 23 && p.mi <= 59)) return null;
+    return p;
+  },
+  /* datetime-local text → the instant it names, as UTC ISO. Null when empty. */
+  toIso(v) {
+    const p = this.parts(v);
+    if (!p) return null;
+    const d = new Date(p.y, p.mo - 1, p.d, p.h, p.mi, p.s, 0);
+    if (isNaN(d)) return null;
+    /* a wall-clock the device does not have (DST gap) still has to mean
+       something: the nearest real instant is better than silently null */
+    if (d.getFullYear() !== p.y && p.y > 1970) {
+      const alt = new Date(p.y, p.mo - 1, p.d, p.h, p.mi + 60, 0, 0);
+      return isNaN(alt) ? d.toISOString() : alt.toISOString();
+    }
+    return d.toISOString();
+  },
+  /* an instant (ISO / timestamptz) → datetime-local text in the SAME clock */
+  toLocalInput(v) {
+    if (!v) return '';
+    const d = new Date(v);
+    if (isNaN(d)) return typeof v === 'string' ? String(v).slice(0, 16) : '';
+    const p = n => String(n).padStart(2, '0');
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+      'T' + p(d.getHours()) + ':' + p(d.getMinutes());
+  },
+  /* "HH:MM" of an instant, on this device's clock */
+  hhmm(v) { const t = this.toLocalInput(v); return t ? t.slice(11, 16) : ''; },
+  /* is the text a bare wall-clock with no zone/offset? (the dangerous kind) */
+  isNaive(v) {
+    const s = String(v == null ? '' : v).trim();
+    return !!s && /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(s);
+  }
+};
+window.SC = window.SC || {};
+window.SC.time = SCTime;
+window.SCTime = SCTime;
+
 function currentPage() {
   return (location.pathname.split('/').pop() || 'index.html').replace('.html','');
 }
@@ -1309,6 +1371,25 @@ const App = {
     if (!shell) return;
     const active = document.querySelector('.app-nav a.active');
     const required = active ? App.allowTextForElement(active) : shell.getAttribute('data-require-role');
+    /* V12.79 (round 24, item 5) — A PAGE THAT NAMES A ROLE MAY BE READ BY IT.
+       ------------------------------------------------------------------
+       The Exam Timetable is where a learner finds their prep sittings and the
+       "Sit now" door, and its own navigation entry names parent and student as
+       readers. The check below consulted the module maps INSTEAD of that list,
+       so a student who opened the page was shown "🔒 Restricted Page" — locked
+       out of the one screen that tells them when to sit their rehearsal, while
+       the dashboard happily linked them to it. That is why the page looked
+       broken from a phone at home.
+       A role written literally in the page's own data-role-allow list is now
+       believed: the page is served read-only (its edit buttons are stripped by
+       enforceReadOnlyForm, and RLS still guards every row), instead of being
+       replaced by a lock screen. Pages that do not name the role are unchanged. */
+    {
+      const literal = String(App.allowTextForElement(active) || shell.getAttribute('data-require-role') || '')
+        .toLowerCase().split(/\s+/).filter(Boolean);
+      const r0 = String(role || '').toLowerCase();
+      if (literal.includes(r0) || (r0 === 'teacher' && literal.includes('staff'))) return;
+    }
     const blockedByNav = active && active.style.display === 'none';
     const activeId = active ? (active.getAttribute('data-module-id') || active.getAttribute('href') || '') : currentPage();
     const familyReadOnly = ['parent','student'].includes(String(role||'').toLowerCase()) && App.moduleAllowedForRole(activeId, role);
@@ -1917,6 +1998,111 @@ const App = {
       paint(h);
     } catch (e) { paint('<p style="color:var(--gray-500);font-size:.85rem">Could not load. <button class="btn btn-sm btn-outline" onclick="App.loadDashExamTT()">🔄 Retry</button></p>'); }
   },
+  /* V12.78: WHAT DO I SIT, AND WHEN? A prep exam a teacher sets for a class is
+     a sitting with a date, a time and a venue, so the learner has to be able to
+     find it without being handed a code in class. The database answers this
+     question (sc_my_prep_exams) — a student gets their own class, a parent gets
+     their children's classes, staff get the whole school — and it never returns
+     a question, only the door. Fills every #dash-prep-exams container. */
+  /* ==================================================================
+     V12.79 (round 24, item 5) — THE DOOR OPENS BY ITSELF.
+     ------------------------------------------------------------------
+     A prep exam becomes sittable at a fixed date and time, and the rule the
+     school asked for is strict: the "Sit now" button must appear INSIDE that
+     window and nowhere else — a learner sitting at home must not have to know
+     to refresh the dashboard at 09:00.
+
+     So an upcoming row no longer prints a frozen sentence. It carries the
+     moment it opens (worked out from the server's own seconds_to_start, not
+     from the device clock alone) and a one-second countdown. When that
+     countdown reaches zero the list asks the SERVER again — only the server may
+     decide that a paper is open — and the row becomes a real "Sit now" button.
+     Nothing is opened early: the countdown only triggers a re-read.
+     ================================================================== */
+  prepLeft(ms) {
+    let s = Math.max(0, Math.round(Number(ms || 0) / 1000));
+    const d = Math.floor(s / 86400); s -= d * 86400;
+    const h = Math.floor(s / 3600);  s -= h * 3600;
+    const m = Math.floor(s / 60);    s -= m * 60;
+    if (d) return d + 'd ' + h + 'h';
+    if (h) return h + 'h ' + m + 'm';
+    if (m) return m + 'm ' + String(s).padStart(2, '0') + 's';
+    return s + 's';
+  },
+  /* the moment a row opens, as a wall-clock instant on this device */
+  prepOpensAt(row) {
+    const secs = Number(row && row.seconds_to_start);
+    if (!isFinite(secs)) return 0;
+    if (secs <= 0) return 0;
+    return Date.now() + Math.round(secs * 1000);
+  },
+  armingPrep: 0,
+  armPrepOpeners(reload) {
+    try { if (this._prepTick) { clearInterval(this._prepTick); this._prepTick = null; } } catch (_) {}
+    if (!document.querySelector('[data-opens-at]')) return;
+    const tick = () => {
+      let flip = false;
+      document.querySelectorAll('[data-opens-at]').forEach(n => {
+        const at = Number(n.getAttribute('data-opens-at') || 0);
+        if (!at) return;
+        const left = at - Date.now();
+        if (left <= 0) { flip = true; return; }
+        const span = n.querySelector('.prep-countdown');
+        if (span) span.textContent = '· opens in ' + this.prepLeft(left);
+      });
+      if (flip) {
+        try { clearInterval(this._prepTick); this._prepTick = null; } catch (_) {}
+        try { (typeof reload === 'function' ? reload : () => this.loadDashPrepExams())(); } catch (e) {}
+      }
+    };
+    this._prepTick = setInterval(tick, 1000);
+    tick();
+  },
+  /* the two cells that a "when" column needs, shared by every list that shows a
+     prep sitting, so the dashboard and the timetable cannot drift */
+  prepWhenCell(row) {
+    const at = this.prepOpensAt(row);
+    const open = String(row && row.status) === 'open';
+    if (open) return '';
+    if (!at) return '<span style="font-size:.78rem;color:var(--gray-500)">opens ' + esc(row && row.start_local || '') + '</span>';
+    return '<span data-opens-at="' + at + '" style="font-size:.78rem;color:var(--gray-500)">opens ' +
+      esc(row.start_local || '') + ' <span class="prep-countdown">· opens in ' + this.prepLeft(at - Date.now()) + '</span></span>';
+  },
+
+  async loadDashPrepExams() {
+    const boxes = [...document.querySelectorAll('[id="dash-prep-exams"],[id="dash-prep-exams-student"]')];
+    const paint = (html) => boxes.forEach(b => { b.innerHTML = html; });
+    if (!boxes.length || !window.sb) return;
+    const badge = (st) => st === 'open'
+      ? '<span class="badge" style="background:#dcfce7;color:#166534">🟢 Open now</span>'
+      : st === 'closed'
+        ? '<span class="badge" style="background:#f3f4f6;color:#4b5563">🔒 Closed</span>'
+        : '<span class="badge" style="background:#dbeafe;color:#1e40af">🕒 Upcoming</span>';
+    try {
+      for (let i = 0; i < 25 && !(window.SC_PROFILE && SC_PROFILE.role); i++) await new Promise(r => setTimeout(r, 200));
+      const r = await sb.rpc('sc_my_prep_exams');
+      if (r.error) { paint('<p style="color:var(--gray-500);font-size:.85rem">💤 Prep exams appear here after a one-time database update (admin: run database/complete-schema.sql).</p>'); return; }
+      const rows = (r.data || []);
+      if (!rows.length) { paint('<p style="color:var(--gray-500);font-size:.85rem">📭 No prep exam has been set for your class yet. When a teacher creates one, it appears here with its date, time and venue — you do not need to be given a code. <a href="exam-timetable.html#prep-exams">Open the Exam Timetable →</a></p>'); return; }
+      let h = '<div class="table-wrap"><table><thead><tr><th>When</th><th>Subject</th><th>Venue</th><th>Status</th><th>My last score</th><th></th></tr></thead><tbody>';
+      rows.forEach(x => {
+        const code = String(x.code || '');
+        const sit = (x.status === 'open' && code)
+          ? '<a class="btn btn-sm btn-primary" href="cbt-exam.html?code=' + encodeURIComponent(code) + '">Sit now →</a>'
+          : (x.status === 'upcoming' ? this.prepWhenCell(x) : '');
+        const last = (x.attempts_used ? (Number(x.last_percent).toFixed(0) + '%') : '—') + ' <small>(' + Number(x.attempts_used || 0) + '/' + Number(x.attempt_limit || 1) + ')</small>';
+        h += '<tr><td><b>' + esc(x.start_local || '') + '</b>' + (x.end_time ? '<br><small>' + esc(x.start_time || '') + '–' + esc(x.end_time) + ' · ' + Number(x.duration_min || 0) + ' min</small>' : '')
+          + (x.for_student ? '<br><small>👤 ' + esc(x.for_student) + '</small>' : '') + '</td>'
+          + '<td><b>' + esc(x.title || x.subject || '') + '</b><br><small>' + esc(x.subject || '') + (x.class ? ' · ' + esc(x.class) : '') + '</small></td>'
+          + '<td>' + esc(x.venue || '—') + '</td><td>' + badge(x.status) + '</td><td>' + last + '</td><td>' + sit + '</td></tr>';
+      });
+      h += '</tbody></table></div><p style="font-size:.78rem;color:var(--gray-500);margin:6px 0 0">'
+        + rows.length + ' prep exam(s) for you · dates and times are school time · <a href="exam-timetable.html#prep-exams">full exam timetable →</a></p>';
+      paint(h);
+      /* the list re-reads itself the moment the first sitting opens */
+      this.armPrepOpeners(() => this.loadDashPrepExams());
+    } catch (e) { paint('<p style="color:var(--gray-500);font-size:.85rem">Could not load. <button class="btn btn-sm btn-outline" onclick="App.loadDashPrepExams()">🔄 Retry</button></p>'); }
+  },
   async loadDashboard() {
     const supabase = window.sb || this.sb || null;
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
@@ -2127,6 +2313,7 @@ const App = {
              Fills #dash-exam-tt with the linked child(ren)'s / own class's next
              papers; the container only exists in the parent/student sections. */
           try { App.loadDashExamTT(); } catch (e) {}
+          try { App.loadDashPrepExams(); } catch (e) {}
           try { App.loadDashFees(); } catch (e) {}
           try { App.loadDashMyPay(); } catch (e) {}
           try { App.loadDashProducts(); } catch (e) {}
